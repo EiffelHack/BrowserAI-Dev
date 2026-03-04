@@ -3,25 +3,22 @@ set -e
 
 echo "=== Building for Vercel (Build Output API v3) ==="
 
-# Clean previous output
+# Clean ALL output directories
 rm -rf .vercel/output dist
 
 # 1. Build shared package
 echo "Step 1: Building @browse/shared..."
 pnpm --filter @browse/shared build
 
-# 2. Build Vite frontend
-echo "Step 2: Building frontend..."
-pnpm exec vite build
-
-# 3. Create output structure
+# 2. Create output structure FIRST
 mkdir -p .vercel/output/static
 mkdir -p .vercel/output/functions/api.func
 
-# 4. Copy static files
-cp -r dist/* .vercel/output/static/
+# 3. Build Vite frontend directly into .vercel/output/static
+echo "Step 2: Building frontend..."
+pnpm exec vite build --outDir .vercel/output/static
 
-# 5. Bundle API function with esbuild (CommonJS for max compatibility)
+# 4. Bundle API function with esbuild (CJS for compatibility)
 echo "Step 3: Bundling API function..."
 pnpm exec esbuild api/index.ts \
   --bundle \
@@ -31,7 +28,7 @@ pnpm exec esbuild api/index.ts \
   --outfile=.vercel/output/functions/api.func/index.js \
   --packages=bundle
 
-# 6. Function config
+# 5. Function config
 cat > .vercel/output/functions/api.func/.vc-config.json << 'EOF'
 {
   "runtime": "nodejs20.x",
@@ -41,7 +38,7 @@ cat > .vercel/output/functions/api.func/.vc-config.json << 'EOF'
 }
 EOF
 
-# 7. Route config
+# 6. Route config
 cat > .vercel/output/config.json << 'EOF'
 {
   "version": 3,
@@ -53,10 +50,13 @@ cat > .vercel/output/config.json << 'EOF'
 }
 EOF
 
-# 8. Write build debug info to static for verification
-echo "{\"built_at\":\"$(date -u)\",\"function_size\":\"$(wc -c < .vercel/output/functions/api.func/index.js)\",\"static_files\":$(ls .vercel/output/static/ | wc -l),\"config\":$(cat .vercel/output/config.json)}" > .vercel/output/static/_build-info.json
+# 7. Write build verification file
+echo '{"built":true}' > .vercel/output/static/_build-info.json
+
+# 8. Ensure NO dist/ directory exists (Vercel might use it instead)
+rm -rf dist
 
 echo "=== Build complete ==="
-echo "Static files:" && ls .vercel/output/static/
-echo "Function files:" && ls -la .vercel/output/functions/api.func/
+echo "Static:" && ls .vercel/output/static/
+echo "Function:" && ls .vercel/output/functions/api.func/
 echo "Config:" && cat .vercel/output/config.json
