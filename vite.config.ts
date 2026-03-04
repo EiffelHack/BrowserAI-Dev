@@ -18,6 +18,9 @@ export default defineConfig({
       },
     },
   },
+  build: {
+    outDir: "out",
+  },
   plugins: [react()],
   resolve: {
     alias: {
