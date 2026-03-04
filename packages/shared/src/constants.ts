@@ -1,4 +1,4 @@
-export const GEMINI_MODEL = "gemini-2.5-flash";
+export const GEMINI_MODEL = "gemini-2.0-flash";
 export const GEMINI_ENDPOINT =
   "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions";
 export const TAVILY_ENDPOINT = "https://api.tavily.com/search";
