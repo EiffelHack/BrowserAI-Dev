@@ -1,73 +1,79 @@
-# Welcome to your Lovable project
+# AI Agent Browser
 
-## Project info
+Perfect Browsing Infrastructure for AI Agents — convert web pages into structured knowledge with claims, evidence, sources, and confidence scores.
 
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
+## Architecture
 
-## How can I edit this code?
-
-There are several ways of editing your application.
-
-**Use Lovable**
-
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
-
-Changes made via Lovable will be committed automatically to this repo.
-
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
+```
+search (Tavily) → fetch pages (Readability) → extract claims (Gemini Flash) → build evidence graph → structured answer
 ```
 
-**Edit a file directly in GitHub**
+## Project Structure
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+```
+/apps/api          Fastify API server (port 3001)
+/apps/mcp          MCP server (stdio transport)
+/packages/shared   Shared types, Zod schemas, constants
+/src               React frontend (Vite, port 8080)
+/scripts           Demo scripts
+```
 
-**Use GitHub Codespaces**
+## Quick Start
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+```sh
+# Install dependencies
+pnpm install
 
-## What technologies are used for this project?
+# Set up environment variables
+cp .env.example .env
+# Fill in: SERP_API_KEY, GEMINI_API_KEY, REDIS_URL (optional)
 
-This project is built with:
+# Start API + frontend together
+pnpm dev
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+# Or start individually
+pnpm dev:api   # Fastify on :3001
+pnpm dev:web   # Vite on :8080
+pnpm dev:mcp   # MCP server (stdio)
+```
 
-## How can I deploy this project?
+## API Endpoints
 
-Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
+| Endpoint | Description |
+|----------|-------------|
+| `POST /browse/search` | Search the web via Tavily |
+| `POST /browse/open` | Fetch and parse a page via Readability |
+| `POST /browse/extract` | Extract structured knowledge from a page |
+| `POST /browse/answer` | Full pipeline: search → fetch → extract → answer |
 
-## Can I connect a custom domain to my Lovable project?
+## MCP Tools
 
-Yes, you can!
+- `browse.search` — Search the web
+- `browse.open` — Fetch and parse a page
+- `browse.extract` — Extract knowledge from a page
+- `browse.answer` — Full pipeline with structured answer
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+## Demo
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+```sh
+pnpm demo "Explain wormholes with evidence"
+```
+
+## Environment Variables
+
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `SERP_API_KEY` | Yes | Tavily API key |
+| `GEMINI_API_KEY` | Yes | Google Gemini API key |
+| `REDIS_URL` | No | Redis connection URL (falls back to in-memory cache) |
+| `PORT` | No | API server port (default: 3001) |
+
+## Tech Stack
+
+- **API**: Node.js, TypeScript, Fastify, Zod
+- **Search**: Tavily API
+- **Parsing**: @mozilla/readability + linkedom
+- **AI**: Google Gemini 2.5 Flash
+- **Caching**: Redis (optional) / in-memory
+- **Frontend**: React, Tailwind CSS, shadcn/ui
+- **MCP**: @modelcontextprotocol/sdk

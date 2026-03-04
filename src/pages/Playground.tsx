@@ -4,8 +4,7 @@ import { motion } from "framer-motion";
 import { ArrowLeft, Zap, Play, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { firecrawlApi } from "@/lib/api/firecrawl";
-import { browseKnowledge } from "@/lib/api/browse";
+import { browseKnowledge, browseSearch, browseExtract } from "@/lib/api/browse";
 
 const Playground = () => {
   const navigate = useNavigate();
@@ -21,9 +20,9 @@ const Playground = () => {
     try {
       let result;
       if (activeTab === "search") {
-        result = await firecrawlApi.search(input, { limit: 5 });
+        result = await browseSearch(input, 5);
       } else if (activeTab === "extract") {
-        result = await firecrawlApi.scrape(input, { formats: ["markdown"] });
+        result = await browseExtract(input);
       } else {
         result = await browseKnowledge(input);
       }

@@ -1,5 +1,3 @@
-import { supabase } from '@/integrations/supabase/client';
-
 export type BrowseSource = {
   url: string;
   title: string;
@@ -9,7 +7,7 @@ export type BrowseSource = {
 
 export type BrowseClaim = {
   claim: string;
-  sources: string[]; // urls
+  sources: string[];
 };
 
 export type BrowseResult = {
@@ -22,14 +20,71 @@ export type BrowseResult = {
     duration_ms: number;
     detail?: string;
   }[];
+  shareId?: string;
 };
 
-export async function browseKnowledge(query: string): Promise<BrowseResult> {
-  const { data, error } = await supabase.functions.invoke('browse-knowledge', {
-    body: { query },
+export type CompareResult = {
+  query: string;
+  raw_llm: {
+    answer: string;
+    sources: number;
+    claims: number;
+    confidence: null;
+  };
+  evidence_backed: {
+    answer: string;
+    sources: number;
+    claims: number;
+    confidence: number;
+    citations: BrowseSource[];
+  };
+};
+
+const API_BASE = import.meta.env.VITE_API_URL || "/api";
+
+async function apiCall<T>(
+  path: string,
+  body: Record<string, unknown>
+): Promise<T> {
+  const res = await fetch(`${API_BASE}${path}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
   });
 
-  if (error) throw new Error(error.message);
-  if (!data?.success) throw new Error(data?.error || 'Browse failed');
+  const data = await res.json();
+  if (!res.ok || !data.success) {
+    throw new Error(data.error || `API call failed: ${res.status}`);
+  }
+  return data.result;
+}
+
+export async function browseKnowledge(query: string): Promise<BrowseResult> {
+  return apiCall<BrowseResult>("/browse/answer", { query });
+}
+
+export async function browseSearch(query: string, limit?: number) {
+  return apiCall<{ results: any[]; cached: boolean }>("/browse/search", {
+    query,
+    limit,
+  });
+}
+
+export async function browseOpen(url: string) {
+  return apiCall<any>("/browse/open", { url });
+}
+
+export async function browseExtract(url: string, query?: string) {
+  return apiCall<any>("/browse/extract", { url, query });
+}
+
+export async function browseCompare(query: string): Promise<CompareResult> {
+  return apiCall<CompareResult>("/browse/compare", { query });
+}
+
+export async function browseStats(): Promise<{ totalQueries: number }> {
+  const res = await fetch(`${API_BASE}/browse/stats`);
+  const data = await res.json();
+  if (!data.success) throw new Error(data.error);
   return data.result;
 }

@@ -1,10 +1,7 @@
-project_id = "mobaurkcqvfxhakwpnfw"
+[api]
+enabled = true
+port = 54321
+schemas = ["public", "graphql_public"]
 
-[functions.firecrawl-search]
-verify_jwt = false
-
-[functions.firecrawl-scrape]
-verify_jwt = false
-
-[functions.browse-knowledge]
+[functions.get-secrets]
 verify_jwt = false

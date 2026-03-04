@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(test -d /Users/shreyassawant/ai-agent-browser/apps/mcp/dist)",
+      "Bash(pnpm build)"
+    ]
+  }
+}
