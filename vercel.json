@@ -1,13 +1,13 @@
 {
-  "framework": null,
   "buildCommand": "pnpm --filter @browse/shared build && vite build",
   "outputDirectory": "dist",
-  "rewrites": [
-    { "source": "/api/(.*)", "destination": "/api" }
-  ],
   "functions": {
-    "api/index.ts": {
+    "api/**/*.ts": {
+      "runtime": "@vercel/node@3",
       "maxDuration": 30
     }
-  }
+  },
+  "rewrites": [
+    { "source": "/api/(.*)", "destination": "/api" }
+  ]
 }
