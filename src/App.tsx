@@ -13,6 +13,7 @@ import Playground from "./pages/Playground";
 import Dashboard from "./pages/Dashboard";
 import Developers from "./pages/Developers";
 import NotFound from "./pages/NotFound";
+import { ScrollToTop } from "./components/ScrollToTop";
 
 const queryClient = new QueryClient();
 
@@ -23,6 +24,7 @@ const App = () => (
         <Toaster />
         <Sonner />
         <BrowserRouter>
+          <ScrollToTop />
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/results" element={<Results />} />

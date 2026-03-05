@@ -32,7 +32,7 @@ const Compare = () => {
 
   return (
     <div className="min-h-screen">
-      <nav className="flex items-center justify-between px-8 py-5 border-b border-border">
+      <nav className="flex items-center justify-between px-4 sm:px-8 py-5 border-b border-border">
         <div className="flex items-center gap-4">
           <Button variant="ghost" size="icon" onClick={() => navigate("/")}>
             <ArrowLeft className="w-4 h-4" />
@@ -43,7 +43,7 @@ const Compare = () => {
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <p className="text-sm text-muted-foreground truncate max-w-md font-mono">
+          <p className="text-sm text-muted-foreground truncate max-w-[120px] sm:max-w-md font-mono">
             "{query}"
           </p>
           {!authLoading && (user ? <UserMenu /> : <LoginModal />)}
@@ -71,7 +71,7 @@ const Compare = () => {
         {result && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-8">
             {/* Stats bar */}
-            <div className="flex items-center justify-center gap-8 py-4">
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-8 py-4">
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <ShieldAlert className="w-4 h-4 text-orange-400" />
                 <span>Raw LLM: <strong className="text-foreground">0 sources</strong></span>
@@ -197,7 +197,7 @@ const Compare = () => {
                     {result.evidence_backed.trace.map((step, i) => (
                       <div key={i} className="flex items-center gap-3 text-xs">
                         <CheckCircle2 className="w-3 h-3 text-emerald-400 shrink-0" />
-                        <span className="font-medium text-foreground w-36">{step.step}</span>
+                        <span className="font-medium text-foreground w-28 sm:w-36">{step.step}</span>
                         <span className="text-muted-foreground">{step.detail}</span>
                         <span className="ml-auto flex items-center gap-1 text-muted-foreground font-mono">
                           <Clock className="w-3 h-3" />

@@ -73,20 +73,20 @@ const Index = () => {
       <motion.nav
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="fixed top-0 left-0 right-0 flex items-center justify-between px-8 py-5 z-50 bg-background/80 backdrop-blur-sm border-b border-border/50"
+        className="fixed top-0 left-0 right-0 flex items-center justify-between px-4 sm:px-8 py-5 z-50 bg-background/80 backdrop-blur-sm border-b border-border/50"
       >
         <div className="flex items-center gap-2">
           <Zap className="w-5 h-5 text-accent" />
           <span className="font-semibold text-sm tracking-tight">BrowseAI.dev</span>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="ghost" size="sm" className="text-muted-foreground text-xs" onClick={() => navigate("/playground")}>
+          <Button variant="ghost" size="sm" className="hidden sm:inline-flex text-muted-foreground text-xs" onClick={() => navigate("/playground")}>
             Playground
           </Button>
-          <Button variant="ghost" size="sm" className="text-muted-foreground text-xs" onClick={() => navigate("/developers")}>
+          <Button variant="ghost" size="sm" className="hidden sm:inline-flex text-muted-foreground text-xs" onClick={() => navigate("/developers")}>
             Developers
           </Button>
-          <Button variant="ghost" size="sm" className="text-muted-foreground text-xs" asChild>
+          <Button variant="ghost" size="sm" className="hidden sm:inline-flex text-muted-foreground text-xs" asChild>
             <a href="https://github.com/EiffelHack/ai-agent-browser" target="_blank" rel="noopener">GitHub</a>
           </Button>
           <ApiKeySettings />
@@ -106,7 +106,7 @@ const Index = () => {
             <Badge variant="outline" className="text-xs font-normal">
               Open Source &middot; MCP Server &middot; REST API
             </Badge>
-            <h1 className="text-5xl md:text-7xl font-bold tracking-tight leading-[1.05]">
+            <h1 className="text-4xl sm:text-5xl md:text-7xl font-bold tracking-tight leading-[1.1] sm:leading-[1.05]">
               Deep Research
               <br />
               <span className="text-gradient">for AI Agents</span>
@@ -131,14 +131,14 @@ const Index = () => {
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-                className="w-full h-14 pl-12 pr-36 rounded-xl bg-secondary border border-border text-foreground focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent/50 transition-all text-base"
+                className="w-full h-14 pl-12 pr-16 sm:pr-36 rounded-xl bg-secondary border border-border text-foreground focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent/50 transition-all text-base"
               />
               <Button
                 onClick={() => handleSearch()}
                 disabled={!query.trim()}
-                className="absolute right-2 top-1/2 -translate-y-1/2 bg-accent text-accent-foreground hover:bg-accent/90 rounded-lg px-4 h-10 text-sm font-semibold gap-2"
+                className="absolute right-2 top-1/2 -translate-y-1/2 bg-accent text-accent-foreground hover:bg-accent/90 rounded-lg px-3 sm:px-4 h-10 text-sm font-semibold gap-2"
               >
-                Search
+                <span className="hidden sm:inline">Search</span>
                 <ArrowRight className="w-4 h-4" />
               </Button>
             </div>

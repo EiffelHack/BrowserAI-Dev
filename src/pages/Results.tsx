@@ -45,7 +45,7 @@ const Results = () => {
   return (
     <div className="min-h-screen">
       {/* Header */}
-      <nav className="flex items-center justify-between px-8 py-5 border-b border-border">
+      <nav className="flex items-center justify-between px-4 sm:px-8 py-5 border-b border-border">
         <div className="flex items-center gap-4">
           <Button variant="ghost" size="icon" onClick={() => navigate("/")}>
             <ArrowLeft className="w-4 h-4" />
@@ -78,7 +78,7 @@ const Results = () => {
               </Button>
             </>
           )}
-          <p className="text-sm text-muted-foreground truncate max-w-md font-mono ml-2">
+          <p className="text-sm text-muted-foreground truncate hidden sm:block max-w-md font-mono ml-2">
             "{query}"
           </p>
           {!authLoading && (user ? <UserMenu /> : <LoginModal />)}

@@ -3,10 +3,11 @@ import { motion } from "framer-motion";
 import {
   Zap, ArrowRight, GitBranch, Code2, Users, Lightbulb,
   Terminal, Globe, BookOpen, CheckCircle2, Rocket, Heart,
-  ExternalLink, Shield, Brain, Layers,
+  ExternalLink, Shield, Brain, Layers, Trophy, GitCommitHorizontal,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { useContributors } from "@/hooks/useContributors";
 
 const CONTRIBUTION_AREAS = [
   {
@@ -73,6 +74,7 @@ const GOOD_FIRST_ISSUES = [
 
 const Developers = () => {
   const navigate = useNavigate();
+  const { contributors, loading: contributorsLoading } = useContributors();
 
   return (
     <div className="min-h-screen">
@@ -80,7 +82,7 @@ const Developers = () => {
       <motion.nav
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="fixed top-0 left-0 right-0 flex items-center justify-between px-8 py-5 z-50 bg-background/80 backdrop-blur-sm border-b border-border/50"
+        className="fixed top-0 left-0 right-0 flex items-center justify-between px-4 sm:px-8 py-5 z-50 bg-background/80 backdrop-blur-sm border-b border-border/50"
       >
         <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate("/")}>
           <Zap className="w-5 h-5 text-accent" />
@@ -333,6 +335,69 @@ const Developers = () => {
                 </div>
               ))}
             </div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Contributors Leaderboard */}
+      <section className="py-24 px-6 border-t border-border">
+        <div className="max-w-4xl mx-auto">
+          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
+            <div className="flex items-center justify-center gap-2 mb-6">
+              <Trophy className="w-4 h-4 text-accent" />
+              <h2 className="text-sm font-semibold uppercase tracking-wider">Contributors</h2>
+            </div>
+            <h3 className="text-2xl md:text-3xl font-bold mb-4 text-center">Top Contributors</h3>
+            <p className="text-muted-foreground text-center max-w-xl mx-auto mb-10">
+              The people making AI more honest. Every merged PR earns your place here.
+            </p>
+
+            {contributorsLoading ? (
+              <div className="flex justify-center py-12">
+                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-accent" />
+              </div>
+            ) : contributors.length > 0 ? (
+              <div className="space-y-3">
+                {contributors.map((contributor, i) => (
+                  <motion.a
+                    key={contributor.login}
+                    href={contributor.html_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    initial={{ opacity: 0, x: -10 }}
+                    whileInView={{ opacity: 1, x: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: i * 0.05 }}
+                    className="flex items-center gap-4 p-4 rounded-xl bg-card border border-border hover:border-accent/30 transition-colors group"
+                  >
+                    <span className={`text-sm font-bold w-8 text-center ${
+                      i === 0 ? "text-amber-400" : i === 1 ? "text-gray-400" : i === 2 ? "text-amber-600" : "text-muted-foreground"
+                    }`}>
+                      #{i + 1}
+                    </span>
+                    <img
+                      src={contributor.avatar_url}
+                      alt={contributor.login}
+                      className="w-10 h-10 rounded-full border-2 border-border group-hover:border-accent/30 transition-colors"
+                    />
+                    <div className="flex-1 min-w-0">
+                      <span className="font-semibold text-sm group-hover:text-accent transition-colors">
+                        {contributor.login}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                      <GitCommitHorizontal className="w-3.5 h-3.5" />
+                      <span className="font-mono">{contributor.contributions}</span>
+                      <span className="hidden sm:inline">commits</span>
+                    </div>
+                  </motion.a>
+                ))}
+              </div>
+            ) : (
+              <p className="text-center text-sm text-muted-foreground py-8">
+                Be the first contributor! Fork the repo and submit a PR.
+              </p>
+            )}
           </motion.div>
         </div>
       </section>

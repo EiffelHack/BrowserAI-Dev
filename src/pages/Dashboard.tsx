@@ -31,7 +31,7 @@ const Dashboard = () => {
 
   return (
     <div className="min-h-screen">
-      <nav className="flex items-center justify-between px-8 py-5 border-b border-border">
+      <nav className="flex items-center justify-between px-4 sm:px-8 py-5 border-b border-border">
         <div className="flex items-center gap-4">
           <Button variant="ghost" size="icon" onClick={() => navigate("/")}>
             <ArrowLeft className="w-4 h-4" />
