@@ -88,11 +88,16 @@ const Developers = () => {
           <Zap className="w-5 h-5 text-accent" />
           <span className="font-semibold text-sm tracking-tight">BrowseAI.dev</span>
         </div>
-        <div className="flex items-center gap-2">
-          <Button variant="ghost" size="sm" className="text-muted-foreground text-xs hidden sm:inline-flex" onClick={() => navigate("/playground")}>
-            Playground
+        <div className="flex items-center gap-1 sm:gap-2">
+          <Button variant="ghost" size="sm" className="text-muted-foreground text-xs" onClick={() => navigate("/")}>
+            <Zap className="w-4 h-4 sm:hidden" />
+            <span className="hidden sm:inline">Home</span>
           </Button>
-          <Button variant="ghost" size="sm" className="text-muted-foreground text-xs" asChild>
+          <Button variant="ghost" size="sm" className="text-muted-foreground text-xs" onClick={() => navigate("/playground")}>
+            <Terminal className="w-4 h-4 sm:hidden" />
+            <span className="hidden sm:inline">Playground</span>
+          </Button>
+          <Button variant="ghost" size="sm" className="hidden sm:inline-flex text-muted-foreground text-xs" asChild>
             <a href="https://github.com/EiffelHack/ai-agent-browser" target="_blank" rel="noopener">GitHub</a>
           </Button>
         </div>
