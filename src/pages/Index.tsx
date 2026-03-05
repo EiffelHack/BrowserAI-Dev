@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   Search, ArrowRight, Zap, GitCompare, Terminal, Globe, Quote,
-  Shield, ShieldAlert, CheckCircle2, Copy, Check, ArrowDown, Target, Rocket,
+  Shield, ShieldAlert, CheckCircle2, Copy, Check, ArrowDown, Target, Rocket, Github,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -88,8 +88,11 @@ const Index = () => {
             <Rocket className="w-4 h-4 sm:hidden" />
             <span className="hidden sm:inline">Developers</span>
           </Button>
-          <Button variant="ghost" size="sm" className="hidden sm:inline-flex text-muted-foreground text-xs" asChild>
-            <a href="https://github.com/EiffelHack/ai-agent-browser" target="_blank" rel="noopener">GitHub</a>
+          <Button variant="ghost" size="sm" className="text-muted-foreground text-xs" asChild>
+            <a href="https://github.com/EiffelHack/ai-agent-browser" target="_blank" rel="noopener">
+              <Github className="w-4 h-4 sm:hidden" />
+              <span className="hidden sm:inline">GitHub</span>
+            </a>
           </Button>
           <ApiKeySettings />
           {!authLoading && (user ? <UserMenu /> : <LoginModal />)}

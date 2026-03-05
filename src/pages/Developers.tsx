@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import {
   Zap, ArrowRight, GitBranch, Code2, Users, Lightbulb,
   Terminal, Globe, BookOpen, CheckCircle2, Rocket, Heart,
-  ExternalLink, Shield, Brain, Layers, Trophy, GitCommitHorizontal,
+  ExternalLink, Shield, Brain, Layers, Trophy, GitCommitHorizontal, Github,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -97,8 +97,11 @@ const Developers = () => {
             <Terminal className="w-4 h-4 sm:hidden" />
             <span className="hidden sm:inline">Playground</span>
           </Button>
-          <Button variant="ghost" size="sm" className="hidden sm:inline-flex text-muted-foreground text-xs" asChild>
-            <a href="https://github.com/EiffelHack/ai-agent-browser" target="_blank" rel="noopener">GitHub</a>
+          <Button variant="ghost" size="sm" className="text-muted-foreground text-xs" asChild>
+            <a href="https://github.com/EiffelHack/ai-agent-browser" target="_blank" rel="noopener">
+              <Github className="w-4 h-4 sm:hidden" />
+              <span className="hidden sm:inline">GitHub</span>
+            </a>
           </Button>
         </div>
       </motion.nav>
