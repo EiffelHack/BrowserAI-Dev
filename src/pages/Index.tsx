@@ -109,16 +109,16 @@ const Index = () => {
         >
           <div className="space-y-4">
             <Badge variant="outline" className="text-xs font-normal">
-              Open Source &middot; MCP Server &middot; REST API
+              Open Source &middot; For Agents &amp; Humans &middot; MCP &amp; REST API
             </Badge>
             <h1 className="text-4xl sm:text-5xl md:text-7xl font-bold tracking-tight leading-[1.1] sm:leading-[1.05]">
-              Deep Research
+              Reliable Research
               <br />
               <span className="text-gradient">for AI Agents</span>
             </h1>
             <p className="text-lg md:text-xl text-muted-foreground max-w-xl mx-auto">
-              Turn any AI assistant into a research engine with real-time web search,
-              evidence extraction, and structured citations.
+              The browse &amp; research platform that gives AI agents real-time web search
+              with evidence-backed citations. Or just search it yourself.
             </p>
           </div>
 
@@ -187,6 +187,7 @@ const Index = () => {
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
               <span className="text-foreground font-semibold">$67.4 billion</span> — that's what AI hallucinations cost businesses in 2024.
               Every developer using AI agents has felt it: research that sounds right but isn't, citations that don't exist, decisions built on fiction.
+              Whether it's your agent or you doing the research — the results should be reliable.
             </p>
           </motion.div>
 
@@ -208,10 +209,10 @@ const Index = () => {
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-2xl mx-auto">
               {[
-                { phase: "Today", text: "Evidence-backed research with real-time web search and structured citations" },
+                { phase: "Today", text: "Reliable research for agents and humans — real-time web search with structured citations" },
                 { phase: "Next", text: "Multi-source verification — cross-reference claims, consensus scoring, contradiction detection" },
                 { phase: "Then", text: "Broader knowledge — academic papers, code search, real-time data feeds" },
-                { phase: "Vision", text: "The trust layer for every AI agent — open source, community-driven" },
+                { phase: "Vision", text: "The reliable research platform for every AI agent and developer — open source, community-driven" },
               ].map((item, i) => (
                 <div key={item.phase} className="flex items-start gap-3 p-4 rounded-xl bg-card border border-border">
                   <Badge variant="outline" className="shrink-0 mt-0.5 text-[10px] px-1.5">
@@ -231,7 +232,7 @@ const Index = () => {
           <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">How it works</h2>
             <p className="text-muted-foreground max-w-lg mx-auto">
-              Every answer goes through a 5-step pipeline. No hallucination. Every claim is backed by a real source.
+              Every answer — whether from your agent or your own search — goes through a 5-step verification pipeline. Every claim is backed by a real source.
             </p>
           </motion.div>
 
@@ -339,7 +340,7 @@ const Index = () => {
           <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">Install in 30 seconds</h2>
             <p className="text-muted-foreground max-w-lg mx-auto">
-              Works with Claude Desktop, Cursor, Windsurf, or any MCP-compatible AI assistant.
+              Plug into Claude Desktop, Cursor, Windsurf, or any MCP-compatible AI assistant. Or use the search bar above — no setup needed.
             </p>
           </motion.div>
 
@@ -431,7 +432,7 @@ const Index = () => {
           <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">5 Tools for Agents</h2>
             <p className="text-muted-foreground max-w-lg mx-auto">
-              Each tool returns structured JSON. No HTML parsing, no hallucination.
+              Each tool returns structured JSON with sources. No HTML parsing, no hallucination. Available via MCP and REST API.
             </p>
           </motion.div>
 
