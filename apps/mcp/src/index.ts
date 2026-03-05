@@ -7,7 +7,7 @@ import { Readability } from "@mozilla/readability";
 import { parseHTML } from "linkedom";
 
 // --- Constants (inlined for standalone npm package) ---
-const VERSION = "0.1.3";
+const VERSION = "0.1.4";
 const LLM_MODEL = "google/gemini-2.5-flash";
 const LLM_ENDPOINT = "https://openrouter.ai/api/v1/chat/completions";
 const TAVILY_ENDPOINT = "https://api.tavily.com/search";
@@ -15,7 +15,7 @@ const MAX_PAGE_CONTENT_LENGTH = 3000;
 
 // --- API mode (BrowseAI Dev API key) ---
 const BROWSE_API_KEY = process.env.BROWSE_API_KEY;
-const BROWSE_API_URL = process.env.BROWSE_API_URL || "https://ai-agent-browser.vercel.app/api";
+const BROWSE_API_URL = process.env.BROWSE_API_URL || "https://browseai.dev/api";
 const API_MODE = !!BROWSE_API_KEY;
 
 // --- CLI handling ---
