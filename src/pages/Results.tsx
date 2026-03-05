@@ -51,7 +51,7 @@ const Results = () => {
             <ArrowLeft className="w-4 h-4" />
           </Button>
           <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate("/")}>
-            <Zap className="w-4 h-4 text-accent" />
+            <img src="/logo.svg" alt="BrowseAI" className="w-4 h-4" />
             <span className="font-semibold text-sm">BrowseAI.dev</span>
           </div>
         </div>

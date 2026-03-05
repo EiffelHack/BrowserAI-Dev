@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40">
+  <!-- Top curve of B -->
+  <path d="M13 8 C22 8, 26 9, 26 14 C26 19, 22 20, 13 20"
+        stroke="#F97316" stroke-width="2.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- Bottom curve of B (slightly wider) -->
+  <path d="M13 20 C23 20, 28 21, 28 27 C28 33, 23 33, 13 33"
+        stroke="#F97316" stroke-width="2.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
