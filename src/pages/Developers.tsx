@@ -68,9 +68,15 @@ const ROADMAP_ITEMS = [
     done: false,
   },
   {
-    phase: "Vision",
-    title: "Reliable research infrastructure for every AI agent",
-    desc: "Open source, community-driven. The research layer agents trust.",
+    phase: "Next",
+    title: "Knowledge graph & entity extraction",
+    desc: "Map relationships between claims and entities. Build reusable, queryable knowledge from every search.",
+    done: false,
+  },
+  {
+    phase: "Later",
+    title: "Academic papers & broader sources",
+    desc: "Semantic Scholar, arXiv, code search, real-time data feeds. Research beyond the open web.",
     done: false,
   },
 ];
@@ -145,9 +151,10 @@ const Developers = () => {
                 View on GitHub
               </a>
             </Button>
-            <Button variant="outline" className="gap-2" onClick={() => navigate("/playground")}>
-              Try it live
-              <ArrowRight className="w-4 h-4" />
+            <Button variant="outline" className="gap-2" asChild>
+              <a href="https://discord.gg/b5SPaGk2" target="_blank" rel="noopener">
+                Join Discord
+              </a>
             </Button>
           </div>
         </motion.div>
@@ -595,6 +602,7 @@ print(result.answer, result.confidence)`}</pre>
           </div>
           <div className="flex items-center gap-6 text-xs text-muted-foreground">
             <a href="https://github.com/EiffelHack/BrowserAI-Dev" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">GitHub</a>
+            <a href="https://discord.gg/b5SPaGk2" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">Discord</a>
             <button onClick={() => navigate("/")} className="hover:text-foreground transition-colors">Home</button>
             <button onClick={() => navigate("/playground")} className="hover:text-foreground transition-colors">Playground</button>
           </div>

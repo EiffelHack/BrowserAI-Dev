@@ -209,10 +209,10 @@ const Index = () => {
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-2xl mx-auto">
               {[
-                { phase: "Today", text: "Reliable research infrastructure for AI agents — real-time web search with structured citations" },
-                { phase: "Next", text: "Multi-source verification — cross-reference claims, consensus scoring, contradiction detection" },
-                { phase: "Then", text: "Broader knowledge — academic papers, code search, real-time data feeds" },
-                { phase: "Vision", text: "The reliable research infrastructure for every AI agent — open source, community-driven" },
+                { phase: "Today", text: "Reliable research infrastructure — web search, evidence extraction, structured citations, Python SDK & MCP" },
+                { phase: "Next", text: "Multi-source verification — cross-reference claims across sources, consensus scoring, contradiction detection" },
+                { phase: "Then", text: "Knowledge graph & entity extraction — map relationships between claims, build reusable knowledge" },
+                { phase: "Later", text: "Academic papers & broader sources — Semantic Scholar, arXiv, code search, real-time data feeds" },
               ].map((item, i) => (
                 <div key={item.phase} className="flex items-start gap-3 p-4 rounded-xl bg-card border border-border">
                   <Badge variant="outline" className="shrink-0 mt-0.5 text-[10px] px-1.5">
@@ -545,7 +545,7 @@ print(result.answer, result.confidence)`}</pre>
           </p>
           <div className="flex items-center gap-6 text-xs text-muted-foreground">
             <a href="mailto:shreyassaw@gmail.com" className="hover:text-foreground transition-colors">shreyassaw@gmail.com</a>
-            <a href="https://discord.com/users/shreyassaw" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">Discord</a>
+            <a href="https://discord.gg/b5SPaGk2" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">Discord</a>
             <a href="https://www.linkedin.com/in/shreyas-sawant" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">LinkedIn</a>
             <button onClick={() => navigate("/playground")} className="hover:text-foreground transition-colors">Playground</button>
           </div>
