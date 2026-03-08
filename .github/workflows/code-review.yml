@@ -20,25 +20,12 @@ jobs:
       contents: read
       pull-requests: write
       issues: write
+      id-token: write
     steps:
       - uses: anthropics/claude-code-action@v1
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
-          model: claude-sonnet-4-20250514
-          direct_prompt: |
+          prompt: |
             Review this PR for BrowseAI Dev (TypeScript/React/Fastify monorepo).
             Focus on: security issues, bugs, breaking API changes, performance.
             Skip style nitpicks. Be concise.
-          timeout_minutes: 5
-
-  security-review:
-    name: Claude Security Review
-    if: github.event_name == 'pull_request'
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      pull-requests: write
-    steps:
-      - uses: anthropics/claude-code-security-review@v1
-        with:
-          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
