@@ -47,4 +47,11 @@ jobs:
             Check for: OWASP top 10 vulnerabilities, injection risks (XSS, SQL, command),
             exposed secrets or credentials, insecure API patterns, missing input validation,
             authentication/authorization issues, and unsafe dependency changes.
+
+            CRITICAL: Flag any changes to these sensitive files and clearly warn the reviewer:
+            - .github/CODEOWNERS (ownership/approval rules)
+            - .github/workflows/ (CI/CD pipelines, secrets access)
+            - package.json scripts (supply chain risk)
+            - .env or any file containing secrets/keys
+
             Only report actual security concerns. Be concise.
