@@ -136,7 +136,7 @@ const Developers = () => {
             <span className="hidden sm:inline">Recipes</span>
           </Button>
           <Button variant="ghost" size="sm" className="text-muted-foreground text-xs" asChild>
-            <a href="https://github.com/EiffelHack/BrowserAI-Dev" target="_blank" rel="noopener">
+            <a href="https://github.com/BrowseAI-HQ/BrowserAI-Dev" target="_blank" rel="noopener">
               <Github className="w-4 h-4 sm:hidden" />
               <span className="hidden sm:inline">GitHub</span>
             </a>
@@ -166,7 +166,7 @@ const Developers = () => {
           </p>
           <div className="flex flex-wrap justify-center gap-3">
             <Button className="gap-2" asChild>
-              <a href="https://github.com/EiffelHack/BrowserAI-Dev" target="_blank" rel="noopener">
+              <a href="https://github.com/BrowseAI-HQ/BrowserAI-Dev" target="_blank" rel="noopener">
                 <GitBranch className="w-4 h-4" />
                 View on GitHub
               </a>
@@ -619,13 +619,13 @@ print(result.answer, result.confidence)`}</pre>
             </p>
             <div className="flex flex-wrap justify-center gap-3">
               <Button className="gap-2" asChild>
-                <a href="https://github.com/EiffelHack/BrowserAI-Dev" target="_blank" rel="noopener">
+                <a href="https://github.com/BrowseAI-HQ/BrowserAI-Dev" target="_blank" rel="noopener">
                   <GitBranch className="w-4 h-4" />
                   Start Contributing
                 </a>
               </Button>
               <Button variant="outline" className="gap-2" asChild>
-                <a href="https://github.com/EiffelHack/BrowserAI-Dev/blob/main/CONTRIBUTING.md" target="_blank" rel="noopener">
+                <a href="https://github.com/BrowseAI-HQ/BrowserAI-Dev/blob/main/CONTRIBUTING.md" target="_blank" rel="noopener">
                   <BookOpen className="w-4 h-4" />
                   Read the Guide
                   <ExternalLink className="w-3 h-3" />
@@ -644,7 +644,7 @@ print(result.answer, result.confidence)`}</pre>
             <span className="text-sm font-semibold">BrowseAI Dev</span>
           </div>
           <div className="flex items-center gap-6 text-xs text-muted-foreground">
-            <a href="https://github.com/EiffelHack/BrowserAI-Dev" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">GitHub</a>
+            <a href="https://github.com/BrowseAI-HQ/BrowserAI-Dev" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">GitHub</a>
             <a href="https://discord.gg/b5SPaGk2" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">Discord</a>
             <button onClick={() => navigate("/")} className="hover:text-foreground transition-colors">Home</button>
             <button onClick={() => navigate("/playground")} className="hover:text-foreground transition-colors">Playground</button>

@@ -159,7 +159,7 @@ See the [examples/](examples/) directory for ready-to-run agent recipes:
 ## Community
 
 - [Discord](https://discord.gg/b5SPaGk2) — questions, feedback, showcase
-- [GitHub Issues](https://github.com/EiffelHack/BrowserAI-Dev/issues) — bugs, feature requests
+- [GitHub Issues](https://github.com/BrowseAI-HQ/BrowserAI-Dev/issues) — bugs, feature requests
 
 ## Contributing
 

@@ -5,7 +5,7 @@ Thanks for your interest in contributing! BrowseAI Dev is reliable research infr
 ## Quick Setup
 
 ```bash
-git clone https://github.com/EiffelHack/BrowserAI-Dev.git
+git clone https://github.com/BrowseAI-HQ/BrowserAI-Dev.git
 cd BrowserAI-Dev
 pnpm install
 cp .env.example .env

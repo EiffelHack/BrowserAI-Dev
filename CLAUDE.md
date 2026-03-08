@@ -76,7 +76,7 @@ API_KEY_ENCRYPTION_KEY — AES-256-GCM key for encrypting stored API keys
 ## Links
 
 - **Site:** https://browseai.dev
-- **GitHub:** https://github.com/EiffelHack/BrowserAI-Dev
+- **GitHub:** https://github.com/BrowseAI-HQ/BrowserAI-Dev
 - **Discord:** https://discord.gg/b5SPaGk2
 - **npm:** https://www.npmjs.com/package/browse-ai
 - **PyPI:** https://pypi.org/project/browseai/
