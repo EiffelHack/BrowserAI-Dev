@@ -56,6 +56,18 @@ const ROADMAP_ITEMS = [
     done: true,
   },
   {
+    phase: "Done",
+    title: "Python SDK & framework integrations",
+    desc: "pip install browseai — works with LangChain and CrewAI out of the box.",
+    done: true,
+  },
+  {
+    phase: "Done",
+    title: "Intelligent caching & source tracking",
+    desc: "Smart TTL for time-sensitive queries, automatic domain tracking for every search.",
+    done: true,
+  },
+  {
     phase: "Next",
     title: "Multi-source verification",
     desc: "Cross-reference claims across sources. Consensus scoring. Contradiction detection.",
