@@ -7,7 +7,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 
-const GITHUB_EXAMPLES = "https://github.com/EiffelHack/BrowserAI-Dev/blob/main/examples";
+const GITHUB_EXAMPLES = "https://github.com/BrowseAI-HQ/BrowserAI-Dev/blob/main/examples";
 
 const RECIPES = [
   {
@@ -62,7 +62,7 @@ const RECIPES = [
     cmd: "npx browse-ai setup",
     tags: ["MCP", "Claude Desktop", "Cursor", "npm"],
     icon: Terminal,
-    github: "https://github.com/EiffelHack/BrowserAI-Dev/tree/main/apps/mcp",
+    github: "https://github.com/BrowseAI-HQ/BrowserAI-Dev/tree/main/apps/mcp",
   },
 ];
 
@@ -99,7 +99,7 @@ const Recipes = () => {
             <span className="hidden sm:inline">Recipes</span>
           </Button>
           <Button variant="ghost" size="sm" className="text-muted-foreground text-xs" asChild>
-            <a href="https://github.com/EiffelHack/BrowserAI-Dev" target="_blank" rel="noopener">
+            <a href="https://github.com/BrowseAI-HQ/BrowserAI-Dev" target="_blank" rel="noopener">
               <Github className="w-4 h-4 sm:hidden" />
               <span className="hidden sm:inline">GitHub</span>
             </a>
@@ -223,7 +223,7 @@ const Recipes = () => {
                 Have an idea for a recipe? Open a PR or share it on Discord.
               </p>
               <Button variant="outline" size="sm" className="gap-1.5 mt-1" asChild>
-                <a href="https://github.com/EiffelHack/BrowserAI-Dev" target="_blank" rel="noopener">
+                <a href="https://github.com/BrowseAI-HQ/BrowserAI-Dev" target="_blank" rel="noopener">
                   Contribute <ArrowRight className="w-3 h-3" />
                 </a>
               </Button>
@@ -245,7 +245,7 @@ const Recipes = () => {
             <p className="text-sm font-medium text-foreground mb-4">Python SDK</p>
             <div className="space-y-4 mb-8">
               {[
-                { step: "1", label: "Clone the repo", cmd: "git clone https://github.com/EiffelHack/BrowserAI-Dev.git && cd BrowserAI-Dev" },
+                { step: "1", label: "Clone the repo", cmd: "git clone https://github.com/BrowseAI-HQ/BrowserAI-Dev.git && cd BrowserAI-Dev" },
                 { step: "2", label: "Install the SDK", cmd: "pip install browseai" },
                 { step: "3", label: "Run a recipe", cmd: 'python examples/research-agent.py "your question here"' },
               ].map((item) => (
@@ -303,7 +303,7 @@ const Recipes = () => {
             </p>
             <div className="flex flex-wrap justify-center gap-3">
               <Button className="gap-2" asChild>
-                <a href="https://github.com/EiffelHack/BrowserAI-Dev/tree/main/examples" target="_blank" rel="noopener">
+                <a href="https://github.com/BrowseAI-HQ/BrowserAI-Dev/tree/main/examples" target="_blank" rel="noopener">
                   <Code2 className="w-4 h-4" />
                   View on GitHub
                   <ExternalLink className="w-3 h-3" />
@@ -326,7 +326,7 @@ const Recipes = () => {
             <span className="text-sm font-semibold">BrowseAI Dev</span>
           </div>
           <div className="flex items-center gap-6 text-xs text-muted-foreground">
-            <a href="https://github.com/EiffelHack/BrowserAI-Dev" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">GitHub</a>
+            <a href="https://github.com/BrowseAI-HQ/BrowserAI-Dev" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">GitHub</a>
             <a href="https://discord.gg/b5SPaGk2" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">Discord</a>
             <button onClick={() => navigate("/")} className="hover:text-foreground transition-colors">Home</button>
             <button onClick={() => navigate("/developers")} className="hover:text-foreground transition-colors">Developers</button>

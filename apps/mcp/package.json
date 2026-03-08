@@ -29,6 +29,13 @@
     "fact-checking"
   ],
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/BrowseAI-HQ/BrowserAI-Dev",
+    "directory": "apps/mcp"
+  },
+  "homepage": "https://browseai.dev",
+  "bugs": "https://github.com/BrowseAI-HQ/BrowserAI-Dev/issues",
   "bin": {
     "browse-ai": "dist/index.js"
   },

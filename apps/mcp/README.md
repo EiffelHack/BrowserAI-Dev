@@ -122,7 +122,7 @@ Response:
 ## Community
 
 - [Discord](https://discord.gg/b5SPaGk2)
-- [GitHub](https://github.com/EiffelHack/BrowserAI-Dev)
+- [GitHub](https://github.com/BrowseAI-HQ/BrowserAI-Dev)
 
 ## License
 
