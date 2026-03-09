@@ -11,6 +11,7 @@ import Compare from "./pages/Compare";
 import Share from "./pages/Share";
 import Playground from "./pages/Playground";
 import Dashboard from "./pages/Dashboard";
+import Admin from "./pages/Admin";
 import Developers from "./pages/Developers";
 import Recipes from "./pages/Recipes";
 import Privacy from "./pages/Privacy";
@@ -35,6 +36,7 @@ const App = () => (
             <Route path="/share/:id" element={<Share />} />
             <Route path="/playground" element={<Playground />} />
             <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/admin" element={<Admin />} />
             <Route path="/developers" element={<Developers />} />
             <Route path="/recipes" element={<Recipes />} />
             <Route path="/privacy" element={<Privacy />} />

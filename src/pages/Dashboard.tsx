@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Zap, ArrowLeft, LayoutDashboard, Activity, History, Settings, Search, FileText, GitCompare, ExternalLink, Users, Mail, CheckCircle2, Sparkles } from "lucide-react";
+import { Zap, ArrowLeft, LayoutDashboard, Activity, History, Settings, Search, FileText, GitCompare, ExternalLink, CheckCircle2, Sparkles, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -11,15 +11,11 @@ import { ApiKeyManager } from "@/components/ApiKeyManager";
 import {
   fetchUserStats,
   fetchUserHistory,
-  fetchWaitlist,
   checkWaitlistStatus,
   joinWaitlist,
   type UserStats,
   type QueryHistoryItem,
-  type WaitlistEntry,
 } from "@/lib/api/apiKeys";
-
-const ADMIN_EMAIL = "shreyassaw@gmail.com";
 
 const TOOL_ICONS: Record<string, typeof Search> = {
   search: Search,
@@ -47,11 +43,9 @@ const Dashboard = () => {
   const [stats, setStats] = useState<UserStats | null>(null);
   const [history, setHistory] = useState<QueryHistoryItem[]>([]);
   const [loadingData, setLoadingData] = useState(true);
-  const [waitlist, setWaitlist] = useState<WaitlistEntry[]>([]);
-  const [waitlistTotal, setWaitlistTotal] = useState(0);
   const [onWaitlist, setOnWaitlist] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [joiningWaitlist, setJoiningWaitlist] = useState(false);
-  const isAdmin = user?.email === ADMIN_EMAIL;
 
   const loadData = useCallback(async () => {
     try {
@@ -65,20 +59,11 @@ const Dashboard = () => {
     }
   }, []);
 
-  const loadWaitlist = useCallback(async () => {
-    try {
-      const data = await fetchWaitlist();
-      setWaitlist(data.entries);
-      setWaitlistTotal(data.total);
-    } catch {
-      // Not admin or fetch failed
-    }
-  }, []);
-
   const checkWaitlist = useCallback(async () => {
     try {
       const data = await checkWaitlistStatus();
       setOnWaitlist(data.onWaitlist);
+      setIsAdmin(data.isAdmin);
     } catch {
       // Silently fail
     }
@@ -107,9 +92,8 @@ const Dashboard = () => {
     if (user) {
       loadData();
       checkWaitlist();
-      if (user.email === ADMIN_EMAIL) loadWaitlist();
     }
-  }, [user, loadData, checkWaitlist, loadWaitlist]);
+  }, [user, loadData, checkWaitlist]);
 
   if (loading) {
     return (
@@ -144,6 +128,17 @@ const Dashboard = () => {
             <LayoutDashboard className="w-5 h-5 text-accent" />
             <h1 className="text-2xl font-bold">Dashboard</h1>
             <Badge variant="outline" className="text-xs">Free</Badge>
+            {isAdmin && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="ml-auto text-xs gap-1.5"
+                onClick={() => navigate("/admin")}
+              >
+                <Shield className="w-3.5 h-3.5" />
+                Admin
+              </Button>
+            )}
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -230,36 +225,6 @@ const Dashboard = () => {
           )}
 
           <ApiKeyManager />
-
-          {isAdmin && (
-            <Card className="border-accent/30">
-              <CardHeader>
-                <CardTitle className="text-lg flex items-center gap-2">
-                  <Users className="w-4 h-4 text-accent" />
-                  Pro Waitlist
-                  <Badge variant="outline" className="text-xs ml-auto">{waitlistTotal} signups</Badge>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {waitlist.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">No signups yet.</p>
-                ) : (
-                  <div className="space-y-1">
-                    {waitlist.map((entry) => (
-                      <div key={entry.id} className="flex items-center gap-3 p-2.5 rounded-lg hover:bg-muted/30 transition-colors">
-                        <Mail className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
-                        <span className="text-sm truncate flex-1">{entry.email}</span>
-                        <Badge variant="outline" className="text-[10px] shrink-0">{entry.source}</Badge>
-                        <span className="text-[10px] text-muted-foreground shrink-0 w-16 text-right">
-                          {timeAgo(entry.created_at)}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          )}
 
           <Card className="border-amber-400/20">
             <CardHeader>

@@ -47,10 +47,11 @@ jobs:
                unauthenticated users.
             8. **Cross-package consistency** — changes to shared types must be reflected in API, MCP,
                and Python SDK.
-            9. **Admin access control** — the only admin email is shreyassaw@gmail.com (ADMIN_EMAIL constant).
-               Admin-only endpoints (GET /waitlist) must verify JWT via Supabase auth AND check email matches
-               ADMIN_EMAIL. Ensure no one can add themselves as admin, bypass the email check, or access
-               admin data (waitlist entries, user emails) without proper authorization.
+            9. **Admin access control** — admin users are stored in the `admins` table in Supabase (not
+               hardcoded). Admin-only endpoints (GET /waitlist) verify JWT via Supabase auth, then check
+               the user's email exists in the `admins` table. The `admins` table is RLS-protected and only
+               accessible via service role key. Ensure no endpoint allows users to add themselves as admin,
+               bypass the admin check, or access admin data without proper authorization.
             10. **Waitlist security** — POST /waitlist is public (email-only, no auth required).
                 GET /waitlist and GET /waitlist/status require valid JWT. The waitlist table has a unique
                 constraint on email to prevent duplicates. Ensure no endpoint leaks other users' emails
@@ -93,11 +94,11 @@ jobs:
                modify permissions, or alter publish pipelines
             8. **Access control** — changes to .github/CODEOWNERS that modify who can approve PRs,
                or any changes that weaken branch protection
-            9. **Admin privilege escalation** — the sole admin is shreyassaw@gmail.com, hardcoded as
-               ADMIN_EMAIL in apps/api/src/routes/waitlist.ts and src/pages/Dashboard.tsx. Flag any
-               changes that: add new admin emails, make ADMIN_EMAIL configurable via env vars (could be
-               overridden in deployment), remove the email check on admin endpoints, or add new admin-only
-               endpoints without proper JWT + email verification.
+            9. **Admin privilege escalation** — admin users are stored in the `admins` table in Supabase,
+               only accessible via service role key. The API checks admin status by querying this table
+               after JWT verification. Flag any changes that: insert into the admins table without
+               authorization, bypass the isAdmin() check on admin endpoints, expose the admins table
+               to client-side queries, or add new admin-only endpoints without proper JWT + admin verification.
             10. **Waitlist data leakage** — GET /waitlist returns all user emails and is admin-only.
                 GET /waitlist/status only returns a boolean for the authenticated user's own email.
                 Flag any changes that expose other users' emails to non-admin users, allow enumeration
@@ -111,7 +112,9 @@ jobs:
             - .github/workflows/*.yml → warn: "This modifies CI/CD pipelines with secrets access"
             - apps/api/src/lib/crypto.ts → warn: "This modifies API key encryption"
             - apps/api/src/lib/auth.ts → warn: "This modifies authentication logic"
-            - apps/api/src/routes/waitlist.ts → warn: "This modifies admin access control and waitlist endpoints"
+            - apps/api/src/routes/waitlist.ts → warn: "This modifies waitlist endpoints"
+            - apps/api/src/routes/admin.ts → warn: "This modifies admin access control and metrics"
+            - apps/api/src/lib/admin.ts → warn: "This modifies admin authentication helpers"
             - package.json scripts → warn: "Supply chain risk — review scripts carefully"
             - Any .env* file → warn: "Possible secrets exposure"
 
