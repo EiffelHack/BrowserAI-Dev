@@ -331,7 +331,7 @@ const Admin = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-1">
+                <div className="space-y-1 max-h-80 overflow-y-auto">
                   {metrics.users.map((u) => (
                     <div key={u.id} className="flex items-center gap-3 p-2.5 rounded-lg hover:bg-muted/30 transition-colors">
                       {u.avatar_url ? (
@@ -371,7 +371,7 @@ const Admin = () => {
               {waitlist.length === 0 ? (
                 <p className="text-sm text-muted-foreground">No signups yet.</p>
               ) : (
-                <div className="space-y-1">
+                <div className="space-y-1 max-h-80 overflow-y-auto">
                   {waitlist.map((entry) => (
                     <div key={entry.id} className="flex items-center gap-3 p-2.5 rounded-lg hover:bg-muted/30 transition-colors">
                       <Mail className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
