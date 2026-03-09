@@ -51,7 +51,7 @@ const Index = () => {
   const [waitlistMessage, setWaitlistMessage] = useState("");
   const navigate = useNavigate();
   const typedText = useTypewriter(TYPEWRITER_QUERIES);
-  const { user, loading: authLoading } = useAuth();
+  const { user, loading: authLoading, signInWithGoogle } = useAuth();
 
   const handleSearch = (q?: string) => {
     const searchQuery = q || query;
@@ -622,9 +622,9 @@ curl -X POST https://browseai.dev/api/browse/answer \\
                 variant="outline"
                 size="sm"
                 className="mt-4 w-full text-xs border-accent/30 text-accent hover:bg-accent/10"
-                onClick={() => navigate("/dashboard")}
+                onClick={() => user ? navigate("/dashboard") : signInWithGoogle()}
               >
-                Sign in — it&apos;s free
+                {user ? "Go to Dashboard" : "Sign in — it\u2019s free"}
               </Button>
             </motion.div>
 
