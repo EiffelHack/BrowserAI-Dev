@@ -97,6 +97,15 @@ export async function checkWaitlistStatus(): Promise<{ onWaitlist: boolean; isAd
 
 // Admin
 
+export interface AdminUser {
+  id: string;
+  email: string;
+  name: string | null;
+  avatar_url: string | null;
+  created_at: string;
+  last_sign_in_at: string | null;
+}
+
 export interface AdminMetrics {
   totalQueries: number;
   queriesToday: number;
@@ -106,6 +115,8 @@ export interface AdminMetrics {
   waitlistCount: number;
   admins: { id: string; email: string; created_at: string }[];
   clientBreakdown: { client: string; count: number }[];
+  users: AdminUser[];
+  totalUsers: number;
   packageStats: {
     npm: { weeklyDownloads: number; totalDownloads: number } | null;
     pypi: { weeklyDownloads: number; totalDownloads: number } | null;
