@@ -98,8 +98,14 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
     return;
   }
 
-  // Use server-side API key for the MCP endpoint
-  const apiKey = process.env.BROWSE_API_KEY || process.env.MCP_API_KEY || "";
+  // Users must bring their own API key via headers
+  const apiKey = (req.headers["x-api-key"] || req.headers["authorization"]?.replace("Bearer ", "") || "") as string;
+  if (!apiKey) {
+    res.setHeader("Content-Type", "application/json");
+    res.statusCode = 401;
+    res.end(JSON.stringify({ error: "API key required. Pass via X-API-Key header or Authorization: Bearer <key>. Get one at https://browseai.dev/dashboard" }));
+    return;
+  }
 
   // Stateless transport — no session persistence (works with serverless)
   const transport = new StreamableHTTPServerTransport({
