@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { LogIn } from "lucide-react";
+import { User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -27,7 +27,7 @@ export function LoginModal({ open: controlledOpen, onOpenChange }: LoginModalPro
       {controlledOpen === undefined && (
         <DialogTrigger asChild>
           <Button variant="ghost" size="sm" className="text-muted-foreground text-xs gap-1.5">
-            <LogIn className="w-4 h-4" />
+            <User className="w-4 h-4" />
             <span className="hidden sm:inline">Sign in</span>
           </Button>
         </DialogTrigger>
