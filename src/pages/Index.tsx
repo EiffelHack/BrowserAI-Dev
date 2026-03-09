@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   Search, ArrowRight, Zap, GitCompare, Terminal, Globe, Quote,
-  Shield, ShieldAlert, CheckCircle2, Copy, Check, ArrowDown, Target, Rocket, Github,
+  Shield, ShieldAlert, CheckCircle2, Copy, Check, ArrowDown, Target, Rocket, Github, Sparkles, Mail,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -46,6 +46,9 @@ const PIPELINE_STEPS = [
 const Index = () => {
   const [query, setQuery] = useState("");
   const [copied, setCopied] = useState<string | null>(null);
+  const [waitlistEmail, setWaitlistEmail] = useState("");
+  const [waitlistStatus, setWaitlistStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
+  const [waitlistMessage, setWaitlistMessage] = useState("");
   const navigate = useNavigate();
   const typedText = useTypewriter(TYPEWRITER_QUERIES);
   const { user, loading: authLoading } = useAuth();
@@ -54,6 +57,30 @@ const Index = () => {
     const searchQuery = q || query;
     if (!searchQuery.trim()) return;
     navigate(`/results?q=${encodeURIComponent(searchQuery.trim())}`);
+  };
+
+  const handleWaitlist = async () => {
+    if (!waitlistEmail.trim() || !/\S+@\S+\.\S+/.test(waitlistEmail)) return;
+    setWaitlistStatus("loading");
+    try {
+      const res = await fetch("/api/waitlist", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: waitlistEmail.trim() }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setWaitlistStatus("success");
+        setWaitlistMessage(data.message);
+        setWaitlistEmail("");
+      } else {
+        setWaitlistStatus("error");
+        setWaitlistMessage(data.error || "Something went wrong");
+      }
+    } catch {
+      setWaitlistStatus("error");
+      setWaitlistMessage("Network error. Try again.");
+    }
   };
 
   const handleCompare = () => {
@@ -544,6 +571,67 @@ curl -X POST https://browseai.dev/api/browse/answer \\
                 <span key={tech} className="px-4 py-2 rounded-full bg-secondary border border-border text-sm text-muted-foreground">
                   {tech}
                 </span>
+              ))}
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* ===== PRO WAITLIST ===== */}
+      <section className="py-24 px-6 border-t border-border">
+        <div className="max-w-3xl mx-auto">
+          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center space-y-6">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent/10 border border-accent/20">
+              <Sparkles className="w-3.5 h-3.5 text-accent" />
+              <span className="text-xs font-semibold text-accent">Coming Soon</span>
+            </div>
+            <h2 className="text-3xl md:text-4xl font-bold">BrowseAI Pro</h2>
+            <p className="text-muted-foreground max-w-lg mx-auto">
+              Managed API keys, deeper research (15+ sources), multi-model verification,
+              priority queue, team seats, and webhooks. Join the waitlist.
+            </p>
+
+            <div className="flex items-center gap-3 max-w-md mx-auto">
+              <div className="relative flex-1">
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <input
+                  type="email"
+                  placeholder="you@company.com"
+                  value={waitlistEmail}
+                  onChange={(e) => { setWaitlistEmail(e.target.value); setWaitlistStatus("idle"); }}
+                  onKeyDown={(e) => e.key === "Enter" && handleWaitlist()}
+                  className="w-full h-11 pl-10 pr-4 rounded-lg bg-secondary border border-border text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent/50 transition-all"
+                />
+              </div>
+              <Button
+                onClick={handleWaitlist}
+                disabled={waitlistStatus === "loading" || !waitlistEmail.trim()}
+                className="bg-accent text-accent-foreground hover:bg-accent/90 h-11 px-5 text-sm font-semibold"
+              >
+                {waitlistStatus === "loading" ? "Joining..." : "Join Waitlist"}
+              </Button>
+            </div>
+
+            {waitlistStatus === "success" && (
+              <p className="text-sm text-emerald-400 flex items-center justify-center gap-1.5">
+                <CheckCircle2 className="w-4 h-4" /> {waitlistMessage}
+              </p>
+            )}
+            {waitlistStatus === "error" && (
+              <p className="text-sm text-destructive">{waitlistMessage}</p>
+            )}
+
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-4">
+              {[
+                { label: "Managed Keys", desc: "No BYOK hassle" },
+                { label: "15+ Sources", desc: "Deeper evidence" },
+                { label: "Multi-Model", desc: "Cross-verified" },
+                { label: "Team Seats", desc: "Shared access" },
+              ].map((item) => (
+                <div key={item.label} className="p-3 rounded-lg bg-card border border-border text-center">
+                  <p className="text-sm font-semibold">{item.label}</p>
+                  <p className="text-xs text-muted-foreground">{item.desc}</p>
+                </div>
               ))}
             </div>
           </motion.div>
