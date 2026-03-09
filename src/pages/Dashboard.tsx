@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Zap, ArrowLeft, LayoutDashboard, Activity, History, Settings, Search, FileText, GitCompare, ExternalLink, CheckCircle2, Sparkles, Shield } from "lucide-react";
+import { ArrowLeft, LayoutDashboard, Activity, History, Settings, Search, FileText, GitCompare, ExternalLink, CheckCircle2, Sparkles, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -19,7 +19,7 @@ import {
 
 const TOOL_ICONS: Record<string, typeof Search> = {
   search: Search,
-  answer: Zap,
+  answer: Sparkles,
   extract: FileText,
   compare: GitCompare,
   open: ExternalLink,
@@ -202,7 +202,7 @@ const Dashboard = () => {
               <CardContent>
                 <div className="space-y-1 max-h-96 overflow-y-auto">
                   {history.map((item) => {
-                    const Icon = TOOL_ICONS[item.tool] || Zap;
+                    const Icon = TOOL_ICONS[item.tool] || Sparkles;
                     return (
                       <div
                         key={item.id}
