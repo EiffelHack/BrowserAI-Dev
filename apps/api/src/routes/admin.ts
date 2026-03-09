@@ -18,13 +18,14 @@ export function registerAdminRoutes(
     const admin = await requireAdmin(request, supabaseUrl, serviceRoleKey);
     if (!admin) return reply.status(403).send({ success: false, error: "Forbidden" });
 
-    // Fetch in parallel: analytics, waitlist count, admin list, client breakdown, package stats
-    const [analytics, waitlistData, adminList, clientBreakdown, packageStats] = await Promise.all([
+    // Fetch in parallel: analytics, waitlist count, admin list, client breakdown, package stats, users
+    const [analytics, waitlistData, adminList, clientBreakdown, packageStats, usersData] = await Promise.all([
       store.getAnalyticsSummary(),
       fetchWaitlistCount(supabaseUrl, serviceRoleKey),
       fetchAdminList(supabaseUrl, serviceRoleKey),
       fetchClientBreakdown(supabaseUrl, serviceRoleKey),
       fetchPackageStats(),
+      fetchUsers(supabaseUrl, serviceRoleKey),
     ]);
 
     return reply.send({
@@ -35,6 +36,8 @@ export function registerAdminRoutes(
         admins: adminList,
         clientBreakdown,
         packageStats,
+        users: usersData.users,
+        totalUsers: usersData.total,
       },
     });
   });
@@ -187,6 +190,29 @@ async function fetchPackageStats(): Promise<{
   ]);
 
   return { npm, pypi, github };
+}
+
+async function fetchUsers(supabaseUrl: string, serviceRoleKey: string) {
+  const res = await fetch(
+    `${supabaseUrl}/auth/v1/admin/users?per_page=100`,
+    {
+      headers: {
+        apikey: serviceRoleKey,
+        Authorization: `Bearer ${serviceRoleKey}`,
+      },
+    }
+  );
+  if (!res.ok) return { users: [], total: 0 };
+  const data = await res.json();
+  const users = (data.users || []).map((u: { id: string; email: string; user_metadata?: { full_name?: string; avatar_url?: string }; created_at: string; last_sign_in_at: string | null }) => ({
+    id: u.id,
+    email: u.email,
+    name: u.user_metadata?.full_name || null,
+    avatar_url: u.user_metadata?.avatar_url || null,
+    created_at: u.created_at,
+    last_sign_in_at: u.last_sign_in_at,
+  }));
+  return { users, total: users.length };
 }
 
 async function fetchClientBreakdown(supabaseUrl: string, serviceRoleKey: string) {

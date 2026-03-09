@@ -200,7 +200,7 @@ const Dashboard = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-1">
+                <div className="space-y-1 max-h-96 overflow-y-auto">
                   {history.map((item) => {
                     const Icon = TOOL_ICONS[item.tool] || Zap;
                     return (
