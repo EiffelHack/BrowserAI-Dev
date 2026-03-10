@@ -145,6 +145,42 @@ export function computeConfidence(
   return Math.round((0.10 + raw * 0.87) * 100) / 100;
 }
 
+/**
+ * Rephrase a query to get better search results on a second pass.
+ * Used by thorough mode when first-pass confidence is below threshold.
+ */
+export async function rephraseQuery(
+  originalQuery: string,
+  apiKey: string,
+): Promise<string> {
+  const res = await fetch(LLM_ENDPOINT, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      model: LLM_MODEL,
+      messages: [
+        {
+          role: "system",
+          content: "You rephrase search queries to find better results. Return ONLY the rephrased query, nothing else. Make it more specific or use alternative terms.",
+        },
+        {
+          role: "user",
+          content: `Rephrase this search query for better web results:\n"${originalQuery}"`,
+        },
+      ],
+      max_tokens: 100,
+    }),
+  });
+
+  if (!res.ok) return originalQuery;
+  const data = await res.json();
+  const rephrased = data.choices?.[0]?.message?.content?.trim();
+  return rephrased && rephrased.length > 5 ? rephrased.replace(/^["']|["']$/g, "") : originalQuery;
+}
+
 export async function extractKnowledge(
   query: string,
   pageContents: string,

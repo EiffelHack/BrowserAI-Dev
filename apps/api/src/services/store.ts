@@ -5,6 +5,13 @@ export interface SaveOptions {
   client?: string;
 }
 
+export type DomainStats = {
+  domain: string;
+  totalClaims: number;
+  verifiedClaims: number;
+  verificationRate: number;
+};
+
 export interface ResultStore {
   save(query: string, result: BrowseResult, userId?: string, tool?: string, options?: SaveOptions): Promise<string>;
   get(id: string): Promise<{ query: string; result: BrowseResult; created_at: string } | null>;
@@ -19,6 +26,8 @@ export interface ResultStore {
     avgResponseTimeMs: number | null;
     cacheHitRate: number | null;
   }>;
+  /** Compute per-domain verification stats from stored query results */
+  getDomainStats(limit?: number): Promise<DomainStats[]>;
 }
 
 export function createSupabaseStore(supabaseUrl: string, serviceRoleKey: string): ResultStore {
@@ -130,6 +139,55 @@ export function createSupabaseStore(supabaseUrl: string, serviceRoleKey: string)
         .slice(0, limit);
     },
 
+    async getDomainStats(limit = 5000): Promise<DomainStats[]> {
+      // Fetch recent results with claims and sources for domain-level verification stats
+      const res = await supabaseFetch(
+        `/browse_results?select=result&limit=${limit}&order=created_at.desc`
+      );
+      if (!res.ok) return [];
+      const rows: { result: BrowseResult }[] = await res.json();
+
+      // Aggregate: for each domain, count total claims and verified claims
+      const stats = new Map<string, { total: number; verified: number }>();
+
+      for (const row of rows) {
+        const result = row.result;
+        if (!result?.claims || !result?.sources) continue;
+
+        // Build source URL → domain map
+        const urlDomain = new Map<string, string>();
+        for (const s of result.sources) {
+          urlDomain.set(s.url, s.domain);
+        }
+
+        for (const claim of result.claims) {
+          // Get domains this claim is associated with
+          const domains = new Set<string>();
+          for (const url of claim.sources || []) {
+            const d = urlDomain.get(url);
+            if (d) domains.add(d.replace(/^www\./, ""));
+          }
+
+          for (const domain of domains) {
+            const entry = stats.get(domain) || { total: 0, verified: 0 };
+            entry.total++;
+            if ((claim as any).verified) entry.verified++;
+            stats.set(domain, entry);
+          }
+        }
+      }
+
+      return [...stats.entries()]
+        .filter(([, s]) => s.total >= 3) // Only domains with enough data
+        .map(([domain, s]) => ({
+          domain,
+          totalClaims: s.total,
+          verifiedClaims: s.verified,
+          verificationRate: s.total > 0 ? s.verified / s.total : 0,
+        }))
+        .sort((a, b) => b.totalClaims - a.totalClaims);
+    },
+
     async getAnalyticsSummary() {
       // Total queries
       const totalRes = await supabaseFetch("/browse_results?select=id", {
@@ -181,5 +239,6 @@ export function createNoopStore(): ResultStore {
     async getUserStats() { return { totalQueries: 0, thisMonth: 0 }; },
     async getTopSources() { return []; },
     async getAnalyticsSummary() { return { totalQueries: 0, queriesToday: 0, avgConfidence: null, avgResponseTimeMs: null, cacheHitRate: null }; },
+    async getDomainStats() { return []; },
   };
 }

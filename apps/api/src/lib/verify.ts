@@ -226,23 +226,76 @@ for (const d of T2) AUTHORITY[d] = 0.72;
 for (const d of T1) AUTHORITY[d] = 0.60;
 for (const d of T0) AUTHORITY[d] = 0.25;
 
+// ─── Dynamic Authority (Bayesian smoothing) ─────────────────────────
+
 /**
- * Get domain authority score (0–1).
- * Checks exact match, then suffix match (for .gov, .edu, etc.).
+ * In-memory cache for dynamic domain authority scores.
+ * Populated by admin recalculation endpoint, persists for process lifetime.
+ * Map: domain → { dynamicScore, sampleCount }
  */
-export function getDomainAuthority(domain: string): number {
+const dynamicAuthority = new Map<string, { dynamicScore: number; sampleCount: number }>();
+
+/**
+ * Bayesian prior weight — controls cold start behavior.
+ * With PRIOR_WEIGHT=15, a domain needs ~15 samples before dynamic
+ * data carries equal weight to the static tier score.
+ * This means: new domains keep their static score until we have enough
+ * evidence to adjust, smoothly transitioning to data-driven scores.
+ */
+const PRIOR_WEIGHT = 15;
+
+/** Update the dynamic authority cache (called by admin recalculation). */
+export function setDynamicAuthority(
+  stats: Array<{ domain: string; verificationRate: number; sampleCount: number }>
+) {
+  dynamicAuthority.clear();
+  for (const s of stats) {
+    dynamicAuthority.set(s.domain, {
+      dynamicScore: s.verificationRate,
+      sampleCount: s.sampleCount,
+    });
+  }
+}
+
+/** Get the static authority score for a domain (from tier list). */
+function getStaticAuthority(domain: string): number {
   const d = domain.toLowerCase().replace(/^www\./, "");
 
-  // Exact match
   if (AUTHORITY[d] !== undefined) return AUTHORITY[d];
 
-  // Suffix match (.gov, .edu, .ac.uk, etc.)
   for (const [suffix, score] of Object.entries(AUTHORITY)) {
     if (suffix.startsWith(".") && d.endsWith(suffix)) return score;
   }
 
-  // Unknown domain — neutral
   return 0.5;
+}
+
+/**
+ * Get domain authority score (0–1) with Bayesian cold-start smoothing.
+ *
+ * Formula: blended = (static * PRIOR_WEIGHT + dynamic * sampleCount) / (PRIOR_WEIGHT + sampleCount)
+ *
+ * - Cold start (0 samples): returns static score exactly
+ * - Low data (5 samples): ~75% static, ~25% dynamic
+ * - Medium data (15 samples): ~50% static, ~50% dynamic
+ * - High data (50+ samples): ~23% static, ~77% dynamic
+ *
+ * This self-improving: every query contributes data, making future scores more accurate.
+ */
+export function getDomainAuthority(domain: string): number {
+  const d = domain.toLowerCase().replace(/^www\./, "");
+  const staticScore = getStaticAuthority(d);
+
+  const dynamic = dynamicAuthority.get(d);
+  if (!dynamic || dynamic.sampleCount < 3) {
+    return staticScore; // Not enough data — use static
+  }
+
+  // Bayesian smoothing
+  const blended = (staticScore * PRIOR_WEIGHT + dynamic.dynamicScore * dynamic.sampleCount)
+    / (PRIOR_WEIGHT + dynamic.sampleCount);
+
+  return Math.round(blended * 100) / 100;
 }
 
 // ─── Consensus Scoring (Phase 2) ────────────────────────────────────

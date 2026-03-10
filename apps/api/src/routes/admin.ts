@@ -2,6 +2,7 @@ import type { FastifyInstance } from "fastify";
 import { z } from "zod";
 import { requireAdmin } from "../lib/admin.js";
 import type { ResultStore } from "../services/store.js";
+import { setDynamicAuthority } from "../lib/verify.js";
 
 const AddAdminSchema = z.object({
   email: z.string().email(),
@@ -79,6 +80,33 @@ export function registerAdminRoutes(
       return reply.status(500).send({ success: false, error: "Failed to add admin" });
     }
     return reply.send({ success: true, message: "Admin added" });
+  });
+
+  // Recalculate dynamic domain authority from stored query results
+  app.post("/admin/recalculate-authority", async (request, reply) => {
+    const admin = await requireAdmin(request, supabaseUrl, serviceRoleKey);
+    if (!admin) return reply.status(403).send({ success: false, error: "Forbidden" });
+
+    const domainStats = await store.getDomainStats(5000);
+    const dynamicStats = domainStats.map(s => ({
+      domain: s.domain,
+      verificationRate: s.verificationRate,
+      sampleCount: s.totalClaims,
+    }));
+
+    setDynamicAuthority(dynamicStats);
+
+    return reply.send({
+      success: true,
+      result: {
+        domainsUpdated: dynamicStats.length,
+        topDomains: dynamicStats.slice(0, 10).map(d => ({
+          domain: d.domain,
+          score: d.verificationRate,
+          samples: d.sampleCount,
+        })),
+      },
+    });
   });
 
   // Remove admin (cannot remove yourself)

@@ -46,4 +46,5 @@ export const ExtractRequestSchema = z.object({
 
 export const AnswerRequestSchema = z.object({
   query: z.string().min(1).max(500),
+  depth: z.enum(["fast", "thorough"]).optional().default("fast"),
 });

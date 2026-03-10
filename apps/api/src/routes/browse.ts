@@ -247,7 +247,7 @@ export function registerBrowseRoutes(
       const { env: reqEnv, isOwnKeys, userId } = await getRequestEnv(request, env, apiKeyService, cache);
       const limitError = await checkDemoLimit(request, cache, isOwnKeys);
       if (limitError) return reply.status(429).send({ success: false, error: limitError });
-      const result = await answerQuery(parsed.data.query, reqEnv, cache);
+      const result = await answerQuery(parsed.data.query, reqEnv, cache, parsed.data.depth);
       const client = detectClient(request);
       const shareId = await store.save(parsed.data.query, result, userId || undefined, "answer", { client });
       return { success: true, result: { ...result, shareId } };
