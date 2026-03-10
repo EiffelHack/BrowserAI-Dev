@@ -16,8 +16,16 @@ import type { ResultStore } from "../services/store.js";
 import type { ApiKeyService } from "../services/apiKeys.js";
 import type { Env } from "../config/env.js";
 
+import type { ZodError } from "zod";
+
 const DEMO_LIMIT = 5;
 const DEMO_WINDOW_SECONDS = 3600;
+
+/** Convert Zod error to a human-readable string */
+function zodMessage(err: ZodError): string {
+  const issues = err.issues.map(i => i.message).join("; ");
+  return issues || "Invalid request";
+}
 
 /** Extract a bai_xxx key from X-API-Key header or Authorization: Bearer bai_xxx */
 function extractBrowseApiKey(request: FastifyRequest): string | null {
@@ -140,6 +148,9 @@ function errorResponse(e: any, fallbackMsg: string): { status: number; error: st
   if (isKeyError(e)) return { status: 401, error: e.message };
   if (e.message?.includes("Rate limit")) return { status: 429, error: "Rate limit exceeded. Please try again later." };
   if (e.message?.includes("credits")) return { status: 402, error: "Insufficient credits. Top up your OpenRouter account." };
+  if (e.message?.includes("No search results")) return { status: 404, error: "No results found. Try rephrasing your question." };
+  if (e.message?.includes("Tavily")) return { status: 502, error: "Search service error. Please try again." };
+  if (e.message?.includes("LLM") || e.message?.includes("parse")) return { status: 502, error: "AI processing error. Please try again." };
   return { status: 500, error: fallbackMsg };
 }
 
@@ -155,7 +166,7 @@ export function registerBrowseRoutes(
     if (!parsed.success)
       return reply
         .status(400)
-        .send({ success: false, error: parsed.error.message });
+        .send({ success: false, error: zodMessage(parsed.error) });
 
     try {
       const { env: reqEnv, isOwnKeys, userId } = await getRequestEnv(request, env, apiKeyService, cache);
@@ -230,7 +241,7 @@ export function registerBrowseRoutes(
     if (!parsed.success)
       return reply
         .status(400)
-        .send({ success: false, error: parsed.error.message });
+        .send({ success: false, error: zodMessage(parsed.error) });
 
     try {
       const { env: reqEnv, isOwnKeys, userId } = await getRequestEnv(request, env, apiKeyService, cache);
@@ -253,7 +264,7 @@ export function registerBrowseRoutes(
     if (!parsed.success)
       return reply
         .status(400)
-        .send({ success: false, error: parsed.error.message });
+        .send({ success: false, error: zodMessage(parsed.error) });
 
     try {
       const { env: reqEnv, isOwnKeys } = await getRequestEnv(request, env, apiKeyService, cache);

@@ -290,7 +290,10 @@ function computeConsensus(
     if (!pageText) continue;
     const { score } = verifyTextInSource(claimText, pageText);
     if (score >= 0.3) {
-      const domain = urlToDomain.get(url) || new URL(url).hostname;
+      let domain = urlToDomain.get(url);
+      if (!domain) {
+        try { domain = new URL(url).hostname; } catch { continue; }
+      }
       supportingDomains.add(domain.replace(/^www\./, ""));
     }
   }
