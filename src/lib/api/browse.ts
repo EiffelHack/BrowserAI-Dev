@@ -3,11 +3,23 @@ export type BrowseSource = {
   title: string;
   domain: string;
   quote: string;
+  verified?: boolean;
+  authority?: number;
 };
 
 export type BrowseClaim = {
   claim: string;
   sources: string[];
+  verified?: boolean;
+  verificationScore?: number;
+  consensusCount?: number;
+  consensusLevel?: "strong" | "moderate" | "weak" | "none";
+};
+
+export type Contradiction = {
+  claimA: string;
+  claimB: string;
+  topic: string;
 };
 
 export type BrowseResult = {
@@ -21,6 +33,7 @@ export type BrowseResult = {
     detail?: string;
   }[];
   shareId?: string;
+  contradictions?: Contradiction[];
 };
 
 export type CompareResult = {

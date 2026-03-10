@@ -3,11 +3,17 @@ export type BrowseSource = {
   title: string;
   domain: string;
   quote: string;
+  verified?: boolean;
+  authority?: number;
 };
 
 export type BrowseClaim = {
   claim: string;
   sources: string[];
+  verified?: boolean;
+  verificationScore?: number;
+  consensusCount?: number;
+  consensusLevel?: "strong" | "moderate" | "weak" | "none";
 };
 
 export type TraceStep = {
@@ -16,12 +22,19 @@ export type TraceStep = {
   detail?: string;
 };
 
+export type Contradiction = {
+  claimA: string;
+  claimB: string;
+  topic: string;
+};
+
 export type BrowseResult = {
   answer: string;
   claims: BrowseClaim[];
   sources: BrowseSource[];
   confidence: number;
   trace: TraceStep[];
+  contradictions?: Contradiction[];
 };
 
 export type SearchRequest = {
