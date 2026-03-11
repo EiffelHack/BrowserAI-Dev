@@ -147,11 +147,13 @@ export function registerSessionRoutes(
 
       if (isVague && recalled.length > 0) {
         // Build context from session name + top recalled claims
+        // Keep under 350 chars total to stay within Tavily's 400 char limit
         const topicHints = recalled
           .slice(0, 3)
           .map((r) => r.claim.split(/[.!?]/)[0]) // first sentence of each claim
-          .join("; ");
-        searchQuery = `${parsed.data.query} (context: ${session.name} — ${topicHints})`;
+          .join("; ")
+          .slice(0, 250);
+        searchQuery = `${parsed.data.query} (context: ${session.name} — ${topicHints})`.slice(0, 380);
       }
 
       // Phase 2: Run the answer pipeline with contextualized query

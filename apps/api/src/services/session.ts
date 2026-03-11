@@ -145,6 +145,14 @@ export function createSupabaseSessionStore(
 
       if (!res.ok) return [];
       const rows = await res.json();
+
+      // If keyword search found nothing, fall back to recent entries
+      // This handles vague queries like "How does this work?" where keywords
+      // don't match existing claims but session context is still needed
+      if (rows.length === 0) {
+        return this.getKnowledge(sessionId, limit);
+      }
+
       return rows.map(toKnowledgeEntry);
     },
 
@@ -214,9 +222,11 @@ export function createNoopSessionStore(): SessionStore {
       const keywords = extractKeywords(query);
       const entries = knowledge.get(sessionId) || [];
       if (keywords.length === 0) return entries.slice(0, limit);
-      return entries
+      const matched = entries
         .filter((e) => keywords.some((kw) => e.claim.toLowerCase().includes(kw)))
         .slice(0, limit);
+      // Fall back to recent entries if keyword search found nothing
+      return matched.length > 0 ? matched : entries.slice(0, limit);
     },
     async getKnowledge(sessionId, limit = 50) {
       return (knowledge.get(sessionId) || []).slice(0, limit);
