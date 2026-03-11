@@ -53,6 +53,7 @@ export type ExtractRequest = {
 
 export type AnswerRequest = {
   query: string;
+  depth?: "fast" | "thorough";
 };
 
 export type ApiResponse<T> =

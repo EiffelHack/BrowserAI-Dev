@@ -1,4 +1,5 @@
 import type { BrowseClaim, BrowseSource, Contradiction } from "@browse/shared";
+import type { DomainAuthorityRow } from "../services/store.js";
 
 // ─── Text Processing ────────────────────────────────────────────────
 
@@ -148,101 +149,119 @@ function verifyTextInSource(
 }
 
 // ─── Domain Authority ───────────────────────────────────────────────
+// Loaded from Supabase `domain_authority` table on startup.
+// Minimal TLD fallback for when DB is unavailable (local dev, noop store).
 
-const AUTHORITY: Record<string, number> = {};
+const AUTHORITY: Record<string, number> = {
+  ".gov": 0.95, ".edu": 0.95, ".mil": 0.95,
+  ".ac.uk": 0.95, ".gov.uk": 0.95,
+};
 
-// Tier 4: Institutional / scientific (0.95)
-const T4 = [
-  // TLDs
-  ".gov", ".edu", ".mil", ".ac.uk", ".gov.uk",
-  // Science & health
-  "who.int", "cdc.gov", "nih.gov", "nasa.gov", "fda.gov", "epa.gov",
-  "nature.com", "science.org", "sciencedirect.com", "springer.com",
-  "pubmed.ncbi.nlm.nih.gov", "ncbi.nlm.nih.gov", "scholar.google.com",
-  "thelancet.com", "bmj.com", "nejm.org", "cell.com",
-  "ieee.org", "acm.org", "arxiv.org",
-  // Standards bodies
-  "w3.org", "ietf.org", "iso.org",
-];
+const LOW_QUALITY_SET = new Set<string>();
 
-// Tier 3: Major news & reference (0.85)
-const T3 = [
-  // News
-  "reuters.com", "apnews.com", "bbc.com", "bbc.co.uk",
-  "nytimes.com", "washingtonpost.com", "theguardian.com",
-  "economist.com", "ft.com", "wsj.com", "npr.org", "pbs.org",
-  "aljazeera.com", "dw.com", "france24.com",
-  // Reference
-  "wikipedia.org", "britannica.com", "merriam-webster.com",
-  // Official docs
-  "developer.mozilla.org", "docs.python.org", "docs.microsoft.com",
-  "learn.microsoft.com", "cloud.google.com", "developer.apple.com",
-  "docs.aws.amazon.com", "docs.oracle.com", "docs.github.com",
-  "kubernetes.io", "reactjs.org", "vuejs.org", "angular.io",
-  "typescriptlang.org", "rust-lang.org", "go.dev", "python.org",
-];
-
-// Tier 2: Established tech & business (0.72)
-const T2 = [
-  // Tech journalism
-  "techcrunch.com", "arstechnica.com", "wired.com", "theverge.com",
-  "engadget.com", "zdnet.com", "cnet.com", "tomshardware.com",
-  "anandtech.com", "venturebeat.com", "9to5mac.com", "9to5google.com",
-  "macrumors.com", "bleepingcomputer.com",
-  // Developer community
-  "stackoverflow.com", "stackexchange.com", "github.com",
-  "gitlab.com", "npmjs.com", "pypi.org", "crates.io",
-  "hackernews.ycombinator.com", "news.ycombinator.com",
-  // Business news
-  "bloomberg.com", "cnbc.com", "forbes.com", "fortune.com",
-  "businessinsider.com", "marketwatch.com",
-  // Major platforms
-  "openai.com", "anthropic.com", "huggingface.co", "ai.google",
-  "blog.google", "engineering.fb.com", "aws.amazon.com",
-  "azure.microsoft.com",
-];
-
-// Tier 1: Known decent sources (0.60)
-const T1 = [
-  "medium.com", "dev.to", "hashnode.dev", "substack.com",
-  "reddit.com", "quora.com", "linkedin.com",
-  "freecodecamp.org", "css-tricks.com", "smashingmagazine.com",
-  "digitalocean.com", "linode.com", "netlify.com", "vercel.com",
-  "producthunt.com", "crunchbase.com", "glassdoor.com",
-  "investopedia.com", "healthline.com", "webmd.com",
-  "imdb.com", "rottentomatoes.com", "goodreads.com",
-];
-
-// Tier 0: Known low-quality (0.25)
-const T0 = [
-  "tiktok.com", "pinterest.com",
-  // Content farms
-  "ehow.com", "answers.com", "ask.com",
-];
-
-for (const d of T4) AUTHORITY[d] = 0.95;
-for (const d of T3) AUTHORITY[d] = 0.85;
-for (const d of T2) AUTHORITY[d] = 0.72;
-for (const d of T1) AUTHORITY[d] = 0.60;
-for (const d of T0) AUTHORITY[d] = 0.25;
+/** Check if a URL belongs to a known low-quality domain (T0 tier). */
+export function isLowQualityDomain(url: string): boolean {
+  try {
+    const domain = new URL(url).hostname.replace(/^www\./, "");
+    if (LOW_QUALITY_SET.has(domain)) return true;
+    for (const d of LOW_QUALITY_SET) {
+      if (d.startsWith(".") && domain.endsWith(d)) return true;
+    }
+    return false;
+  } catch {
+    return false;
+  }
+}
 
 /**
- * Get domain authority score (0–1).
- * Checks exact match, then suffix match (for .gov, .edu, etc.).
+ * Initialize domain authority from database.
+ * Loads all rows from domain_authority table and populates in-memory maps.
+ * Falls back to minimal TLD defaults if DB is empty or unavailable.
  */
-export function getDomainAuthority(domain: string): number {
+export async function initDomainAuthority(
+  loader: { loadDomainAuthority(): Promise<DomainAuthorityRow[]> }
+): Promise<number> {
+  try {
+    const rows = await loader.loadDomainAuthority();
+    if (rows.length === 0) return 0;
+
+    // Clear and repopulate from DB
+    for (const key of Object.keys(AUTHORITY)) delete AUTHORITY[key];
+    LOW_QUALITY_SET.clear();
+
+    for (const row of rows) {
+      AUTHORITY[row.domain] = Number(row.static_score);
+      if (row.tier === 0) LOW_QUALITY_SET.add(row.domain);
+      if (row.dynamic_score != null && row.sample_count >= 3) {
+        dynamicAuthority.set(row.domain, {
+          dynamicScore: Number(row.dynamic_score),
+          sampleCount: row.sample_count,
+        });
+      }
+    }
+
+    return rows.length;
+  } catch (e) {
+    console.warn("Failed to load domain authority from DB, using defaults:", e);
+    return 0;
+  }
+}
+
+// ─── Dynamic Authority (Bayesian smoothing) ─────────────────────────
+
+const dynamicAuthority = new Map<string, { dynamicScore: number; sampleCount: number }>();
+
+/**
+ * Bayesian prior weight — controls cold start behavior.
+ * With PRIOR_WEIGHT=15, a domain needs ~15 samples before dynamic
+ * data carries equal weight to the static tier score.
+ */
+const PRIOR_WEIGHT = 15;
+
+/** Update the dynamic authority cache (called by admin recalculation). */
+export function setDynamicAuthority(
+  stats: Array<{ domain: string; verificationRate: number; sampleCount: number }>
+) {
+  dynamicAuthority.clear();
+  for (const s of stats) {
+    dynamicAuthority.set(s.domain, {
+      dynamicScore: s.verificationRate,
+      sampleCount: s.sampleCount,
+    });
+  }
+}
+
+/** Get the static authority score for a domain. */
+function getStaticAuthority(domain: string): number {
   const d = domain.toLowerCase().replace(/^www\./, "");
 
-  // Exact match
   if (AUTHORITY[d] !== undefined) return AUTHORITY[d];
 
-  // Suffix match (.gov, .edu, .ac.uk, etc.)
   for (const [suffix, score] of Object.entries(AUTHORITY)) {
     if (suffix.startsWith(".") && d.endsWith(suffix)) return score;
   }
 
-  // Unknown domain — neutral
   return 0.5;
+}
+
+/**
+ * Get domain authority score (0–1) with Bayesian cold-start smoothing.
+ *
+ * Formula: blended = (static * PRIOR_WEIGHT + dynamic * sampleCount) / (PRIOR_WEIGHT + sampleCount)
+ */
+export function getDomainAuthority(domain: string): number {
+  const d = domain.toLowerCase().replace(/^www\./, "");
+  const staticScore = getStaticAuthority(d);
+
+  const dynamic = dynamicAuthority.get(d);
+  if (!dynamic || dynamic.sampleCount < 3) {
+    return staticScore;
+  }
+
+  const blended = (staticScore * PRIOR_WEIGHT + dynamic.dynamicScore * dynamic.sampleCount)
+    / (PRIOR_WEIGHT + dynamic.sampleCount);
+
+  return Math.round(blended * 100) / 100;
 }
 
 // ─── Consensus Scoring (Phase 2) ────────────────────────────────────
@@ -290,7 +309,10 @@ function computeConsensus(
     if (!pageText) continue;
     const { score } = verifyTextInSource(claimText, pageText);
     if (score >= 0.3) {
-      const domain = urlToDomain.get(url) || new URL(url).hostname;
+      let domain = urlToDomain.get(url);
+      if (!domain) {
+        try { domain = new URL(url).hostname; } catch { continue; }
+      }
       supportingDomains.add(domain.replace(/^www\./, ""));
     }
   }
