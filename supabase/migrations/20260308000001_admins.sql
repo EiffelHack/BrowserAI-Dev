@@ -8,6 +8,7 @@ create table if not exists admins (
 alter table admins enable row level security;
 
 -- Only service role can read/manage admins — no client access
+drop policy if exists "Service role only" on admins;
 create policy "Service role only"
   on admins for all
   using (true)
