@@ -3,5 +3,13 @@
     "deploymentEnabled": {
       "shreyas": false
     }
+  },
+  "functions": {
+    "api/index.ts": {
+      "maxDuration": 60
+    },
+    "api/mcp.ts": {
+      "maxDuration": 60
+    }
   }
 }
