@@ -141,6 +141,32 @@ export async function removeAdmin(email: string): Promise<{ message: string }> {
   });
 }
 
+// Domain authority admin actions
+
+export interface ImportDomainResult {
+  parsed: number;
+  savedToDB: number;
+  loadedToMemory: number;
+  sampleDomains: { domain: string; rank: number; score: number }[];
+}
+
+export interface RecalculateResult {
+  domainsUpdated: number;
+  persistedToDB: boolean;
+  topDomains: { domain: string; score: number; samples: number }[];
+}
+
+export async function importDomainData(limit = 10000): Promise<ImportDomainResult> {
+  return authFetch("/admin/import-domain-data", {
+    method: "POST",
+    body: JSON.stringify({ limit }),
+  });
+}
+
+export async function recalculateAuthority(): Promise<RecalculateResult> {
+  return authFetch("/admin/recalculate-authority", { method: "POST" });
+}
+
 export async function joinWaitlist(email: string, source = "dashboard"): Promise<{ message: string }> {
   const API_BASE = import.meta.env.VITE_API_URL || "/api";
   const res = await fetch(`${API_BASE}/waitlist`, {
