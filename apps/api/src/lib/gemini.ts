@@ -112,6 +112,7 @@ export function computeConfidence(
   avgAuthority: number = 0.5,
   consensusScore: number = 0,
   contradictionCount: number = 0,
+  queryType?: QueryType,
 ): number {
   if (sources.length === 0) return 0.10;
   if (claims.length === 0) return 0.25;
@@ -159,6 +160,20 @@ export function computeConfidence(
   // Contradiction penalty: each contradiction reduces confidence
   if (contradictionCount > 0) {
     raw = Math.max(0, raw - contradictionCount * 0.05);
+  }
+
+  // Factual query boost: settled facts with consensus and no contradictions
+  // deserve higher confidence — low BM25 scores on paraphrased text shouldn't
+  // penalize answers that multiple sources agree on.
+  if (queryType === "factual" && contradictionCount === 0) {
+    // Multiple sources grounded with some verification → high confidence floor
+    if (sources.length >= 2 && groundingScore >= 0.5 && verificationRate >= 0.3) {
+      raw = Math.max(raw, 0.80);
+    }
+    // Even with minimal verification, consensus across sources is strong signal
+    if (consensusScore >= 0.5 && sources.length >= 3) {
+      raw = Math.max(raw, 0.75);
+    }
   }
 
   // Scale to 0.10–0.97 range and round to 2 decimals
@@ -395,6 +410,7 @@ export async function extractKnowledge(
         verification.avgAuthority,
         verification.consensusScore,
         verification.contradictions.length,
+        queryType,
       ),
       contradictions: verification.contradictions.length > 0
         ? verification.contradictions
