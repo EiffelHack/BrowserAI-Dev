@@ -231,6 +231,32 @@ export function setDynamicAuthority(
   }
 }
 
+/**
+ * Incrementally update a single domain's dynamic authority based on new verification data.
+ * Called inline after each query — lightweight, no DB read needed.
+ *
+ * Uses incremental mean: newAvg = oldAvg + (newValue - oldAvg) / newCount
+ */
+export function updateDomainScore(domain: string, verified: boolean): void {
+  const d = domain.toLowerCase().replace(/^www\./, "");
+  const existing = dynamicAuthority.get(d);
+  const value = verified ? 1.0 : 0.0;
+
+  if (existing) {
+    const newCount = existing.sampleCount + 1;
+    const newScore = existing.dynamicScore + (value - existing.dynamicScore) / newCount;
+    dynamicAuthority.set(d, { dynamicScore: newScore, sampleCount: newCount });
+  } else {
+    dynamicAuthority.set(d, { dynamicScore: value, sampleCount: 1 });
+  }
+}
+
+/** Get current accumulated dynamic stats for a domain (for DB persistence). */
+export function getDynamicStats(domain: string): { dynamicScore: number; sampleCount: number } | null {
+  const d = domain.toLowerCase().replace(/^www\./, "");
+  return dynamicAuthority.get(d) || null;
+}
+
 /** Get the static authority score for a domain. */
 function getStaticAuthority(domain: string): number {
   const d = domain.toLowerCase().replace(/^www\./, "");
@@ -402,7 +428,7 @@ export interface VerificationResult {
  * Phase 1 — BM25 sentence-level matching
  *   Each claim is scored against every sentence in its cited sources.
  *   Source quotes are verified against actual page text.
- *   Domain authority is scored across 150+ known domains in 5 tiers.
+ *   Domain authority is scored across 10,000+ domains in 5 tiers.
  *
  * Phase 2 — Consensus scoring + contradiction detection
  *   Cross-source verification: claims checked against ALL available pages,
