@@ -11,6 +11,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogDescription,
+  DialogFooter,
 } from "@/components/ui/dialog";
 import {
   createApiKey,
@@ -34,6 +35,9 @@ export function ApiKeyManager() {
   const [newKey, setNewKey] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [copiedSnippet, setCopiedSnippet] = useState(false);
+
+  // Delete confirmation dialog
+  const [deleteKeyId, setDeleteKeyId] = useState<string | null>(null);
 
   const fetchKeys = useCallback(async () => {
     try {
@@ -74,6 +78,16 @@ export function ApiKeyManager() {
   };
 
   const handleRevoke = async (id: string) => {
+    // Show confirmation dialog if this is the last key
+    if (activeKeys.length <= 1) {
+      setDeleteKeyId(id);
+      return;
+    }
+    await doRevoke(id);
+  };
+
+  const doRevoke = async (id: string) => {
+    setDeleteKeyId(null);
     try {
       await revokeApiKey(id);
       fetchKeys();
@@ -128,8 +142,8 @@ export function ApiKeyManager() {
           {/* Generate form */}
           <div className="space-y-3">
             <p className="text-sm text-muted-foreground">
-              Save your API keys and get a single BrowseAI Dev key for CLI, MCP,
-              and API access.
+              Save your API keys to get unlimited queries on the website, CLI, MCP,
+              and API. Your default key is used automatically when you're signed in.
             </p>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               <div className="space-y-1.5">
@@ -194,7 +208,7 @@ export function ApiKeyManager() {
               <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                 Your Keys
               </h4>
-              {activeKeys.map((key) => (
+              {activeKeys.map((key, index) => (
                 <div
                   key={key.id}
                   className="flex items-center justify-between p-3 rounded-lg bg-muted/30 border border-border"
@@ -206,6 +220,11 @@ export function ApiKeyManager() {
                     <span className="text-xs text-muted-foreground">
                       {key.label}
                     </span>
+                    {index === 0 && (
+                      <Badge className="text-[10px] bg-accent/10 text-accent border-accent/20">
+                        Default
+                      </Badge>
+                    )}
                     <Badge variant="outline" className="text-[10px]">
                       {new Date(key.created_at).toLocaleDateString()}
                     </Badge>
@@ -299,6 +318,35 @@ export function ApiKeyManager() {
               </Button>
             </div>
           </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete last key confirmation */}
+      <Dialog open={!!deleteKeyId} onOpenChange={() => setDeleteKeyId(null)}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <AlertTriangle className="w-4 h-4 text-orange-400" />
+              Remove last API key?
+            </DialogTitle>
+            <DialogDescription>
+              This is your only API key. Removing it will put you back on the
+              free demo tier (<strong>5 queries/hour</strong>). You can add new
+              keys anytime to get unlimited access again.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button variant="outline" size="sm" onClick={() => setDeleteKeyId(null)}>
+              Keep key
+            </Button>
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={() => deleteKeyId && doRevoke(deleteKeyId)}
+            >
+              Remove key
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </>
