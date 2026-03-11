@@ -278,7 +278,7 @@ Or append &depth=thorough to the results URL.`}</CodeBlock>
           {/* Domain Authority */}
           <Section id="domain-authority" title="Domain Authority" icon={Brain}>
             <p>
-              150+ domains are classified into 5 tiers of trustworthiness. Unknown domains get a neutral score (0.50).
+              10,000+ domains are classified into 5 tiers of trustworthiness, loaded from a database seeded with curated domains and Majestic Million rankings. Scores self-improve over time via Bayesian smoothing. Unknown domains get a neutral score (0.50).
             </p>
 
             <div className="overflow-x-auto">
