@@ -149,130 +149,15 @@ function verifyTextInSource(
 }
 
 // ─── Domain Authority ───────────────────────────────────────────────
+// Loaded from Supabase `domain_authority` table on startup.
+// Minimal TLD fallback for when DB is unavailable (local dev, noop store).
 
-const AUTHORITY: Record<string, number> = {};
+const AUTHORITY: Record<string, number> = {
+  ".gov": 0.95, ".edu": 0.95, ".mil": 0.95,
+  ".ac.uk": 0.95, ".gov.uk": 0.95,
+};
 
-// Tier 4: Institutional / scientific (0.95)
-const T4 = [
-  // TLDs
-  ".gov", ".edu", ".mil", ".ac.uk", ".gov.uk", ".gov.au", ".gc.ca", ".europa.eu",
-  // Science & health
-  "who.int", "cdc.gov", "nih.gov", "nasa.gov", "fda.gov", "epa.gov",
-  "nature.com", "science.org", "sciencedirect.com", "springer.com",
-  "pubmed.ncbi.nlm.nih.gov", "ncbi.nlm.nih.gov", "scholar.google.com",
-  "thelancet.com", "bmj.com", "nejm.org", "cell.com",
-  "ieee.org", "acm.org", "arxiv.org",
-  // Standards bodies
-  "w3.org", "ietf.org", "iso.org",
-  // Top universities
-  "mit.edu", "stanford.edu", "harvard.edu", "ox.ac.uk", "cam.ac.uk",
-  "caltech.edu", "berkeley.edu", "cmu.edu", "princeton.edu", "yale.edu",
-  "columbia.edu", "cornell.edu", "uchicago.edu", "eth.ch", "epfl.ch",
-  // International organizations
-  "un.org", "worldbank.org", "imf.org", "oecd.org", "wto.org",
-  // More science journals
-  "plos.org", "frontiersin.org", "wiley.com", "tandfonline.com",
-  "jstor.org", "ssrn.com", "researchgate.net",
-  // National academies & research
-  "nist.gov", "noaa.gov", "energy.gov", "nsf.gov",
-];
-
-// Tier 3: Major news & reference (0.85)
-const T3 = [
-  // News
-  "reuters.com", "apnews.com", "bbc.com", "bbc.co.uk",
-  "nytimes.com", "washingtonpost.com", "theguardian.com",
-  "economist.com", "ft.com", "wsj.com", "npr.org", "pbs.org",
-  "aljazeera.com", "dw.com", "france24.com",
-  // More international news
-  "abc.net.au", "cbc.ca", "scmp.com", "japantimes.co.jp",
-  "thehindu.com", "straitstimes.com", "irishtimes.com",
-  // Reference
-  "wikipedia.org", "britannica.com", "merriam-webster.com",
-  "wikimedia.org", "wikidata.org",
-  // Official docs
-  "developer.mozilla.org", "docs.python.org", "docs.microsoft.com",
-  "learn.microsoft.com", "cloud.google.com", "developer.apple.com",
-  "docs.aws.amazon.com", "docs.oracle.com", "docs.github.com",
-  "kubernetes.io", "reactjs.org", "vuejs.org", "angular.io",
-  "typescriptlang.org", "rust-lang.org", "go.dev", "python.org",
-  // More official docs
-  "docs.djangoproject.com", "ruby-lang.org", "docs.swift.org",
-  "kotlinlang.org", "elixir-lang.org", "haskell.org",
-];
-
-// Tier 2: Established tech & business (0.72)
-const T2 = [
-  // Tech journalism
-  "techcrunch.com", "arstechnica.com", "wired.com", "theverge.com",
-  "engadget.com", "zdnet.com", "cnet.com", "tomshardware.com",
-  "anandtech.com", "venturebeat.com", "9to5mac.com", "9to5google.com",
-  "macrumors.com", "bleepingcomputer.com",
-  // Developer community
-  "stackoverflow.com", "stackexchange.com", "github.com",
-  "gitlab.com", "npmjs.com", "pypi.org", "crates.io",
-  "hackernews.ycombinator.com", "news.ycombinator.com",
-  // Business news
-  "bloomberg.com", "cnbc.com", "forbes.com", "fortune.com",
-  "businessinsider.com", "marketwatch.com",
-  // Major platforms
-  "openai.com", "anthropic.com", "huggingface.co", "ai.google",
-  "blog.google", "engineering.fb.com", "aws.amazon.com",
-  "azure.microsoft.com",
-  // More tech
-  "infoq.com", "dzone.com", "thenewstack.io", "semianalysis.com",
-  "theregister.com", "protocol.com", "platformer.news",
-  // Health & medicine
-  "mayoclinic.org", "clevelandclinic.org", "hopkinsmedicine.org",
-  "medscape.com", "uptodate.com",
-  // Finance
-  "morningstar.com", "seekingalpha.com", "fool.com",
-  // Legal & policy
-  "law.cornell.edu", "findlaw.com", "scotusblog.com",
-];
-
-// Tier 1: Known decent sources (0.60)
-const T1 = [
-  "medium.com", "dev.to", "hashnode.dev", "substack.com",
-  "reddit.com", "quora.com", "linkedin.com",
-  "freecodecamp.org", "css-tricks.com", "smashingmagazine.com",
-  "digitalocean.com", "linode.com", "netlify.com", "vercel.com",
-  "producthunt.com", "crunchbase.com", "glassdoor.com",
-  "investopedia.com", "healthline.com", "webmd.com",
-  "imdb.com", "rottentomatoes.com", "goodreads.com",
-  // More community/educational
-  "baeldung.com", "tutorialspoint.com", "geeksforgeeks.org",
-  "javatpoint.com", "w3schools.com", "codecademy.com",
-  "coursera.org", "edx.org", "khanacademy.org",
-  "towardsdatascience.com", "analyticsvidhya.com",
-];
-
-// Tier 0: Known low-quality (0.25)
-const T0 = [
-  "tiktok.com", "pinterest.com",
-  // Content farms
-  "ehow.com", "answers.com", "ask.com",
-  "wikihow.com", "howstuffworks.com",
-  // SEO spam / clickbait
-  "buzzfeed.com", "boredpanda.com", "distractify.com",
-  "screenrant.com", "cbr.com", "gamerant.com",
-  // Low-quality aggregators
-  "articlesbase.com", "ezinearticles.com", "hubpages.com",
-  "squidoo.com", "helium.com", "suite101.com",
-  // Auto-generated / scraped
-  "copyblogger.com", "contentful.com",
-  // Unreliable health/science
-  "naturalnews.com", "mercola.com", "infowars.com",
-  "breitbart.com", "dailymail.co.uk",
-];
-
-for (const d of T4) AUTHORITY[d] = 0.95;
-for (const d of T3) AUTHORITY[d] = 0.85;
-for (const d of T2) AUTHORITY[d] = 0.72;
-for (const d of T1) AUTHORITY[d] = 0.60;
-for (const d of T0) AUTHORITY[d] = 0.25;
-
-const LOW_QUALITY_SET = new Set(T0);
+const LOW_QUALITY_SET = new Set<string>();
 
 /** Check if a URL belongs to a known low-quality domain (T0 tier). */
 export function isLowQualityDomain(url: string): boolean {
@@ -291,7 +176,7 @@ export function isLowQualityDomain(url: string): boolean {
 /**
  * Initialize domain authority from database.
  * Loads all rows from domain_authority table and populates in-memory maps.
- * Falls back to hardcoded defaults if DB is empty or unavailable.
+ * Falls back to minimal TLD defaults if DB is empty or unavailable.
  */
 export async function initDomainAuthority(
   loader: { loadDomainAuthority(): Promise<DomainAuthorityRow[]> }
@@ -324,19 +209,12 @@ export async function initDomainAuthority(
 
 // ─── Dynamic Authority (Bayesian smoothing) ─────────────────────────
 
-/**
- * In-memory cache for dynamic domain authority scores.
- * Populated by admin recalculation endpoint, persists for process lifetime.
- * Map: domain → { dynamicScore, sampleCount }
- */
 const dynamicAuthority = new Map<string, { dynamicScore: number; sampleCount: number }>();
 
 /**
  * Bayesian prior weight — controls cold start behavior.
  * With PRIOR_WEIGHT=15, a domain needs ~15 samples before dynamic
  * data carries equal weight to the static tier score.
- * This means: new domains keep their static score until we have enough
- * evidence to adjust, smoothly transitioning to data-driven scores.
  */
 const PRIOR_WEIGHT = 15;
 
@@ -353,7 +231,7 @@ export function setDynamicAuthority(
   }
 }
 
-/** Get the static authority score for a domain (from tier list). */
+/** Get the static authority score for a domain. */
 function getStaticAuthority(domain: string): number {
   const d = domain.toLowerCase().replace(/^www\./, "");
 
@@ -370,13 +248,6 @@ function getStaticAuthority(domain: string): number {
  * Get domain authority score (0–1) with Bayesian cold-start smoothing.
  *
  * Formula: blended = (static * PRIOR_WEIGHT + dynamic * sampleCount) / (PRIOR_WEIGHT + sampleCount)
- *
- * - Cold start (0 samples): returns static score exactly
- * - Low data (5 samples): ~75% static, ~25% dynamic
- * - Medium data (15 samples): ~50% static, ~50% dynamic
- * - High data (50+ samples): ~23% static, ~77% dynamic
- *
- * This self-improving: every query contributes data, making future scores more accurate.
  */
 export function getDomainAuthority(domain: string): number {
   const d = domain.toLowerCase().replace(/^www\./, "");
@@ -384,10 +255,9 @@ export function getDomainAuthority(domain: string): number {
 
   const dynamic = dynamicAuthority.get(d);
   if (!dynamic || dynamic.sampleCount < 3) {
-    return staticScore; // Not enough data — use static
+    return staticScore;
   }
 
-  // Bayesian smoothing
   const blended = (staticScore * PRIOR_WEIGHT + dynamic.dynamicScore * dynamic.sampleCount)
     / (PRIOR_WEIGHT + dynamic.sampleCount);
 
