@@ -11,6 +11,7 @@ import { extractFromPage } from "../services/extract.js";
 import { answerQuery } from "../services/answer.js";
 import { compareAnswers } from "../services/compare.js";
 import { getUserIdFromRequest } from "../lib/auth.js";
+import { updateDomainScore, getDynamicStats } from "../lib/verify.js";
 import type { CacheService } from "../services/cache.js";
 import type { ResultStore } from "../services/store.js";
 import type { ApiKeyService } from "../services/apiKeys.js";
@@ -250,6 +251,51 @@ export function registerBrowseRoutes(
       const result = await answerQuery(parsed.data.query, reqEnv, cache, parsed.data.depth);
       const client = detectClient(request);
       const shareId = await store.save(parsed.data.query, result, userId || undefined, "answer", { client });
+
+      // Self-improving: feed verification signals back into domain authority (fire-and-forget)
+      if (result.claims?.length && result.sources?.length) {
+        try {
+          // Update in-memory scores immediately
+          const domainUpdates = new Map<string, { verified: number; total: number }>();
+          const urlToDomain = new Map<string, string>();
+          for (const s of result.sources) {
+            urlToDomain.set(s.url, s.domain?.replace(/^www\./, "") || "");
+          }
+          for (const claim of result.claims) {
+            const isVerified = (claim as any).verified === true;
+            for (const url of claim.sources || []) {
+              const domain = urlToDomain.get(url);
+              if (!domain) continue;
+              const entry = domainUpdates.get(domain) || { verified: 0, total: 0 };
+              entry.total++;
+              if (isVerified) entry.verified++;
+              domainUpdates.set(domain, entry);
+            }
+          }
+          for (const [domain, stats] of domainUpdates) {
+            for (let i = 0; i < stats.total; i++) {
+              updateDomainScore(domain, i < stats.verified);
+            }
+          }
+
+          // Persist accumulated stats to DB in background (non-blocking)
+          const dbUpdates = [...domainUpdates.keys()]
+            .map((domain) => {
+              const accumulated = getDynamicStats(domain);
+              if (!accumulated) return null;
+              return {
+                domain,
+                dynamic_score: Math.round(accumulated.dynamicScore * 100) / 100,
+                sample_count: accumulated.sampleCount,
+              };
+            })
+            .filter((u): u is NonNullable<typeof u> => u !== null);
+          store.saveDomainAuthority(dbUpdates).catch(() => {});
+        } catch {
+          // Non-critical — don't fail the response
+        }
+      }
+
       return { success: true, result: { ...result, shareId } };
     } catch (e: any) {
       request.log.error(e);
