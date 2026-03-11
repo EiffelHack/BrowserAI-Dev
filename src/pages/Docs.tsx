@@ -266,6 +266,18 @@ Then: "How is entanglement used in computing?" — prior findings are recalled a
   }
 }`}</CodeBlock>
 
+            <div className="p-4 rounded-xl bg-amber-500/5 border border-amber-500/20">
+              <h4 className="text-sm font-semibold text-foreground mb-1">API key required</h4>
+              <p className="text-xs">
+                Sessions require a BrowseAI API key (<code className="bg-secondary px-1 rounded">bai_xxx</code>) for identity and ownership.
+                BYOK (Tavily + OpenRouter keys only) works for search/answer but cannot use sessions.
+                Get a free key at <a href="https://browseai.dev/dashboard" className="text-accent hover:underline">browseai.dev/dashboard</a>.
+                For MCP, set <code className="bg-secondary px-1 rounded">BROWSE_API_KEY</code> env var.
+                For Python SDK, pass <code className="bg-secondary px-1 rounded">api_key="bai_xxx"</code>.
+                For REST API, use <code className="bg-secondary px-1 rounded">Authorization: Bearer bai_xxx</code>.
+              </p>
+            </div>
+
             <h4 className="text-sm font-semibold text-foreground pt-2">Sharing & Forking</h4>
             <p>
               Sessions can be shared publicly and forked by other agents or humans.
@@ -527,8 +539,8 @@ knowledge = session.knowledge()`}</CodeBlock>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border/50">
-                  <tr><td className="py-2 pr-4">BYOK</td><td className="py-2 pr-4">Pass <code className="bg-secondary px-1 rounded">X-Tavily-Key</code> + <code className="bg-secondary px-1 rounded">X-OpenRouter-Key</code> headers</td><td className="py-2">Unlimited, free</td></tr>
-                  <tr><td className="py-2 pr-4">API Key</td><td className="py-2 pr-4"><code className="bg-secondary px-1 rounded">Authorization: Bearer bai_xxx</code></td><td className="py-2">Unlimited</td></tr>
+                  <tr><td className="py-2 pr-4">BYOK</td><td className="py-2 pr-4">Pass <code className="bg-secondary px-1 rounded">X-Tavily-Key</code> + <code className="bg-secondary px-1 rounded">X-OpenRouter-Key</code> headers</td><td className="py-2">Unlimited, free (no sessions)</td></tr>
+                  <tr><td className="py-2 pr-4">API Key</td><td className="py-2 pr-4"><code className="bg-secondary px-1 rounded">Authorization: Bearer bai_xxx</code></td><td className="py-2">Unlimited + sessions</td></tr>
                   <tr><td className="py-2 pr-4">Demo</td><td className="py-2 pr-4">No auth</td><td className="py-2">5 queries/hour per IP</td></tr>
                 </tbody>
               </table>

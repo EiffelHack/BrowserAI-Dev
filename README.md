@@ -70,6 +70,8 @@ All external API calls (Tavily search, OpenRouter LLM, Brave search, page fetchi
 
 Persistent research sessions that accumulate knowledge across multiple queries. Later queries automatically recall prior verified claims, building deeper understanding over time.
 
+> **Sessions require a BrowseAI API key (`bai_xxx`)** for identity and ownership. BYOK (Tavily + OpenRouter keys only) works for search/answer but cannot use sessions. Get a free key at [browseai.dev/dashboard](https://browseai.dev/dashboard). For MCP, set `BROWSE_API_KEY` env var. For Python SDK, pass `api_key="bai_xxx"`. For REST API, use `Authorization: Bearer bai_xxx`.
+
 ```python
 # Python SDK
 session = client.session("quantum-research")
@@ -169,12 +171,15 @@ Or manually add to your MCP config:
       "args": ["-y", "browse-ai"],
       "env": {
         "SERP_API_KEY": "your-search-key",
-        "OPENROUTER_API_KEY": "your-llm-key"
+        "OPENROUTER_API_KEY": "your-llm-key",
+        "BROWSE_API_KEY": "bai_xxx"
       }
     }
   }
 }
 ```
+
+> `BROWSE_API_KEY` is optional for search/answer but required for Research Memory (sessions).
 
 ### REST API
 
@@ -217,8 +222,8 @@ Three ways to authenticate:
 
 | Method | How | Limits |
 |--------|-----|--------|
-| **BYOK** (recommended) | Pass `X-Tavily-Key` and `X-OpenRouter-Key` headers | Unlimited, free |
-| **BrowseAI API Key** | Pass `Authorization: Bearer bai_xxx` | Unlimited (uses your stored keys) |
+| **BYOK** (recommended) | Pass `X-Tavily-Key` and `X-OpenRouter-Key` headers | Unlimited, free (search/answer only — no sessions) |
+| **BrowseAI API Key** | Pass `Authorization: Bearer bai_xxx` | Unlimited + sessions, sharing, forking |
 | **Demo** | No auth needed | 5 queries/hour per IP |
 
 Get a BrowseAI API key from the [dashboard](https://browseai.dev/dashboard) — it bundles your Tavily + OpenRouter keys into one key for CLI, MCP, and API use.
