@@ -55,6 +55,33 @@ async function getRequestEnv(
     }
   }
 
+  // Priority 3: Auto-resolve stored keys for signed-in users
+  if (apiKeyService && userId) {
+    const userCacheKey = `user_keys:${userId}`;
+    const cached = await cache.get(userCacheKey);
+
+    let resolved: { tavilyKey: string; openrouterKey: string } | null;
+    if (cached) {
+      resolved = JSON.parse(cached);
+    } else {
+      resolved = await apiKeyService.resolveByUserId(userId);
+      if (resolved) {
+        await cache.set(userCacheKey, JSON.stringify(resolved), 60);
+      }
+    }
+
+    if (resolved) {
+      return {
+        env: {
+          ...env,
+          SERP_API_KEY: resolved.tavilyKey,
+          OPENROUTER_API_KEY: resolved.openrouterKey,
+        },
+        userId,
+      };
+    }
+  }
+
   return { env, userId };
 }
 
@@ -256,6 +283,34 @@ export function registerSessionRoutes(
     } catch (e: any) {
       request.log.error(e);
       return reply.status(500).send({ success: false, error: "Failed to export knowledge" });
+    }
+  });
+
+  // Share a session — creates a public share link
+  app.post("/session/:id/share", async (request, reply) => {
+    const { id } = request.params as { id: string };
+    try {
+      const session = await sessionStore.getSession(id);
+      if (!session) return reply.status(404).send({ success: false, error: "Session not found" });
+
+      const shareId = await sessionStore.shareSession(id);
+      return { success: true, result: { shareId } };
+    } catch (e: any) {
+      request.log.error(e);
+      return reply.status(500).send({ success: false, error: "Failed to share session" });
+    }
+  });
+
+  // Public: view a shared session (no auth required)
+  app.get("/session/share/:shareId", async (request, reply) => {
+    const { shareId } = request.params as { shareId: string };
+    try {
+      const data = await sessionStore.getSharedSession(shareId);
+      if (!data) return reply.status(404).send({ success: false, error: "Shared session not found" });
+      return { success: true, result: data };
+    } catch (e: any) {
+      request.log.error(e);
+      return reply.status(500).send({ success: false, error: "Failed to load shared session" });
     }
   });
 }
