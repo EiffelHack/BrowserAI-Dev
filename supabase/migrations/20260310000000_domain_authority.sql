@@ -19,7 +19,9 @@ CREATE INDEX IF NOT EXISTS idx_domain_authority_rank ON domain_authority (global
 
 -- RLS
 ALTER TABLE domain_authority ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Anyone can read domain authority" ON domain_authority;
 CREATE POLICY "Anyone can read domain authority" ON domain_authority FOR SELECT USING (true);
+DROP POLICY IF EXISTS "Service role can manage domain authority" ON domain_authority;
 CREATE POLICY "Service role can manage domain authority" ON domain_authority FOR ALL USING (true);
 
 -- ═══════════════════════════════════════════════════════════════

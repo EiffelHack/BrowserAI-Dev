@@ -71,7 +71,13 @@ const ROADMAP_ITEMS = [
   {
     phase: "Done",
     title: "Multi-source verification",
-    desc: "BM25 claim matching, cross-source consensus scoring, contradiction detection, domain authority (150+ domains).",
+    desc: "BM25 claim matching, cross-source consensus scoring, contradiction detection, domain authority (10,000+ domains).",
+    done: true,
+  },
+  {
+    phase: "Done",
+    title: "Thorough mode & self-improving accuracy",
+    desc: "Auto-retry with rephrased queries when confidence < 60%. Dynamic domain authority with Bayesian cold-start smoothing — every query makes future results more accurate.",
     done: true,
   },
   {

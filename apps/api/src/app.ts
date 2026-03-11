@@ -48,7 +48,7 @@ export async function buildApp() {
       ? createApiKeyService(env.SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY, env.API_KEY_ENCRYPTION_KEY)
       : null;
 
-  // Load domain authority from DB (falls back to hardcoded defaults if unavailable)
+  // Load domain authority from DB into memory (falls back to minimal TLD defaults if unavailable)
   const domainCount = await initDomainAuthority(store);
   if (domainCount > 0) {
     console.log(`Loaded ${domainCount} domain authority entries from DB`);

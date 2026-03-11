@@ -264,7 +264,7 @@ const Index = () => {
               {[
                 { phase: "Today", text: "Reliable research infrastructure — web search, evidence extraction, structured citations, Python SDK & MCP" },
                 { phase: "Today", text: "Python SDK & framework integrations — pip install browseai, works with LangChain and CrewAI out of the box" },
-                { phase: "Done", text: "Multi-source verification — BM25 claim matching, cross-source consensus, contradiction detection, 150+ domain authority tiers" },
+                { phase: "Done", text: "Multi-source verification — BM25 claim matching, cross-source consensus, contradiction detection, 10,000+ domain authority tiers" },
                 { phase: "In Progress", text: "Knowledge graph & entity extraction — map relationships between claims, build reusable knowledge" },
                 { phase: "Later", text: "Academic papers & broader sources — Semantic Scholar, arXiv, code search, real-time data feeds" },
                 { phase: "Later", text: "Streaming API & response formats — low-latency streaming for voice agents, brief/detailed modes" },
@@ -379,7 +379,7 @@ const Index = () => {
               <ul className="space-y-3 text-sm">
                 <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-400 mt-0.5 shrink-0" /> Real URLs with quoted evidence</li>
                 <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-400 mt-0.5 shrink-0" /> BM25-verified claims against source text</li>
-                <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-400 mt-0.5 shrink-0" /> Domain authority scoring (150+ domains)</li>
+                <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-400 mt-0.5 shrink-0" /> Domain authority scoring (10,000+ domains)</li>
                 <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-400 mt-0.5 shrink-0" /> Evidence-based confidence (7-factor score)</li>
               </ul>
             </motion.div>

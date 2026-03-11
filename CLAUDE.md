@@ -34,7 +34,7 @@ npx pnpm --filter browse-ai build  # Build MCP only
 - **Search:** Tavily API for web search
 - **Verification pipeline:** BM25 sentence matching → cross-source consensus → contradiction detection (`apps/api/src/lib/verify.ts`)
 - **Confidence scores:** 7-factor evidence-based algorithm in `apps/api/src/lib/gemini.ts` — NOT LLM self-assessed. Factors: source count, domain diversity, claim grounding, citation depth, verification rate, domain authority, consensus score. Contradiction penalty applied.
-- **Domain authority:** Static 5-tier scoring (150+ domains) with Bayesian dynamic blending from real query verification data. Cold-start safe via prior weight smoothing.
+- **Domain authority:** 10,000+ domains in Supabase (260 curated + Majestic Million), 5-tier scoring with Bayesian dynamic blending from real query verification data. Cold-start safe via prior weight smoothing.
 - **Thorough mode:** `depth: "thorough"` auto-retries with rephrased query when first-pass confidence < 60%. Available across API, MCP, and Python SDK.
 - **Caching:** In-memory CacheService with smart TTL (time-sensitive queries get shorter TTL). Cache key includes depth param.
 - **Demo rate limit:** 5/hour per IP for unauthenticated users. BYOK headers (`X-Tavily-Key`, `X-OpenRouter-Key`) bypass it.
