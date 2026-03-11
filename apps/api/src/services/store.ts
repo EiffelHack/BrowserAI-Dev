@@ -42,6 +42,8 @@ export interface ResultStore {
   loadDomainAuthority(): Promise<DomainAuthorityRow[]>;
   /** Upsert domain authority rows (for imports and dynamic score updates) */
   saveDomainAuthority(entries: Partial<DomainAuthorityRow>[]): Promise<number>;
+  /** Atomically update domain scores using Postgres function (no race conditions) */
+  updateDomainScores(updates: Array<{ domain: string; verified_count: number; total_count: number }>): Promise<void>;
 }
 
 export function createSupabaseStore(supabaseUrl: string, serviceRoleKey: string): ResultStore {
@@ -196,6 +198,22 @@ export function createSupabaseStore(supabaseUrl: string, serviceRoleKey: string)
       return saved;
     },
 
+    async updateDomainScores(updates: Array<{ domain: string; verified_count: number; total_count: number }>): Promise<void> {
+      if (updates.length === 0) return;
+      const res = await fetch(`${supabaseUrl}/rest/v1/rpc/update_domain_scores`, {
+        method: "POST",
+        headers: {
+          apikey: serviceRoleKey,
+          Authorization: `Bearer ${serviceRoleKey}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ updates }),
+      });
+      if (!res.ok) {
+        console.warn("Failed to update domain scores:", res.status);
+      }
+    },
+
     async getDomainStats(limit = 5000): Promise<DomainStats[]> {
       // Fetch recent results with claims and sources for domain-level verification stats
       const res = await supabaseFetch(
@@ -299,5 +317,6 @@ export function createNoopStore(): ResultStore {
     async getDomainStats() { return []; },
     async loadDomainAuthority() { return []; },
     async saveDomainAuthority() { return 0; },
+    async updateDomainScores() {},
   };
 }

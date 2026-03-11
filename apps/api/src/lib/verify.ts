@@ -334,7 +334,7 @@ function computeConsensus(
   for (const [url, pageText] of pageContents) {
     if (!pageText) continue;
     const { score } = verifyTextInSource(claimText, pageText);
-    if (score >= 0.3) {
+    if (score >= 0.2) {
       let domain = urlToDomain.get(url);
       if (!domain) {
         try { domain = new URL(url).hostname; } catch { continue; }
@@ -486,7 +486,7 @@ export function verifyEvidence(
 
     return {
       ...claim,
-      verified: adjustedScore >= 0.3,
+      verified: adjustedScore >= 0.2,
       verificationScore: Math.round(adjustedScore * 100) / 100,
       consensusCount: consensus.count,
       consensusLevel: consensus.level,

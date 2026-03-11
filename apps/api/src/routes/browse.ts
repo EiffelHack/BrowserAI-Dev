@@ -11,7 +11,7 @@ import { extractFromPage } from "../services/extract.js";
 import { answerQuery } from "../services/answer.js";
 import { compareAnswers } from "../services/compare.js";
 import { getUserIdFromRequest } from "../lib/auth.js";
-import { updateDomainScore, getDynamicStats } from "../lib/verify.js";
+import { updateDomainScore } from "../lib/verify.js";
 import type { CacheService } from "../services/cache.js";
 import type { ResultStore } from "../services/store.js";
 import type { ApiKeyService } from "../services/apiKeys.js";
@@ -255,7 +255,7 @@ export function registerBrowseRoutes(
       // Self-improving: feed verification signals back into domain authority (fire-and-forget)
       if (result.claims?.length && result.sources?.length) {
         try {
-          // Update in-memory scores immediately
+          // Aggregate per-domain verification signals
           const domainUpdates = new Map<string, { verified: number; total: number }>();
           const urlToDomain = new Map<string, string>();
           for (const s of result.sources) {
@@ -272,25 +272,21 @@ export function registerBrowseRoutes(
               domainUpdates.set(domain, entry);
             }
           }
+
+          // Update in-memory scores immediately
           for (const [domain, stats] of domainUpdates) {
             for (let i = 0; i < stats.total; i++) {
               updateDomainScore(domain, i < stats.verified);
             }
           }
 
-          // Persist accumulated stats to DB in background (non-blocking)
-          const dbUpdates = [...domainUpdates.keys()]
-            .map((domain) => {
-              const accumulated = getDynamicStats(domain);
-              if (!accumulated) return null;
-              return {
-                domain,
-                dynamic_score: Math.round(accumulated.dynamicScore * 100) / 100,
-                sample_count: accumulated.sampleCount,
-              };
-            })
-            .filter((u): u is NonNullable<typeof u> => u !== null);
-          store.saveDomainAuthority(dbUpdates).catch(() => {});
+          // Persist atomically to DB (no race conditions, no lost samples)
+          const dbUpdates = [...domainUpdates.entries()].map(([domain, stats]) => ({
+            domain,
+            verified_count: stats.verified,
+            total_count: stats.total,
+          }));
+          store.updateDomainScores(dbUpdates).catch(() => {});
         } catch {
           // Non-critical — don't fail the response
         }
