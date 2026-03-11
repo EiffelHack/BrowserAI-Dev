@@ -147,15 +147,25 @@ export function computeConfidence(
   // 7. Consensus — cross-source agreement
   const consensusVal = consensusScore;
 
-  // Weighted combination
+  // Query-type-aware weights:
+  // Factual queries: consensus and source count matter more than BM25 text matching.
+  // For facts, "multiple sources agree" IS the verification — paraphrasing
+  // shouldn't penalize confidence when the answer is clearly correct.
+  // Opinion/comparison queries: verification rate stays high because claims
+  // are more nuanced and need careful textual evidence.
+  const isFactual = queryType === "factual";
+  const weights = isFactual
+    ? { source: 0.20, domain: 0.10, grounding: 0.10, depth: 0.05, verification: 0.10, authority: 0.20, consensus: 0.25 }
+    : { source: 0.15, domain: 0.10, grounding: 0.10, depth: 0.05, verification: 0.25, authority: 0.20, consensus: 0.15 };
+
   let raw =
-    sourceScore * 0.15 +
-    domainScore * 0.10 +
-    groundingScore * 0.10 +
-    depthScore * 0.05 +
-    verificationScoreVal * 0.25 +
-    authorityScore * 0.20 +
-    consensusVal * 0.15;
+    sourceScore * weights.source +
+    domainScore * weights.domain +
+    groundingScore * weights.grounding +
+    depthScore * weights.depth +
+    verificationScoreVal * weights.verification +
+    authorityScore * weights.authority +
+    consensusVal * weights.consensus;
 
   // Contradiction penalty: each contradiction reduces confidence
   if (contradictionCount > 0) {
