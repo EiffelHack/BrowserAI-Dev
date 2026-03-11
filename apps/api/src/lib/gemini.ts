@@ -162,17 +162,14 @@ export function computeConfidence(
     raw = Math.max(0, raw - contradictionCount * 0.05);
   }
 
-  // Factual query boost: settled facts with consensus and no contradictions
-  // deserve higher confidence — low BM25 scores on paraphrased text shouldn't
-  // penalize answers that multiple sources agree on.
+  // Factual query boost: settled facts are verifiable by definition.
+  // If multiple sources agree and there are zero contradictions, the answer
+  // is correct — low BM25 scores just mean paraphrasing, not uncertainty.
   if (queryType === "factual" && contradictionCount === 0) {
-    // Multiple sources grounded with some verification → high confidence floor
-    if (sources.length >= 2 && groundingScore >= 0.5 && verificationRate >= 0.3) {
-      raw = Math.max(raw, 0.80);
-    }
-    // Even with minimal verification, consensus across sources is strong signal
-    if (consensusScore >= 0.5 && sources.length >= 3) {
-      raw = Math.max(raw, 0.75);
+    if (sources.length >= 3 && groundingScore >= 0.5) {
+      raw = Math.max(raw, 0.92); // Strong: 3+ sources, well-grounded
+    } else if (sources.length >= 2 && groundingScore >= 0.5) {
+      raw = Math.max(raw, 0.88); // Good: 2+ sources, grounded
     }
   }
 
