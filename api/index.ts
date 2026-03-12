@@ -49,10 +49,12 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
     }
 
     if (isStreamingRequest(url)) {
-      // For SSE endpoints, route through Fastify's real server so reply.raw
-      // writes directly to the Vercel response stream (not buffered).
+      // For SSE endpoints, route through Fastify's native request handler
+      // so reply.raw writes directly to the Vercel response stream.
+      // We use fastify.routing() which is the internal request router
+      // that works even without app.listen().
       req.url = url;
-      fastify.server.emit("request", req, res);
+      fastify.routing(req, res);
       return;
     }
 

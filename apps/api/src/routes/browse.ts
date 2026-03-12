@@ -417,7 +417,7 @@ export function registerBrowseRoutes(
     } catch (e: any) {
       request.log.error(e);
       const { status, error } = errorResponse(e, "Comparison failed");
-      return reply.status(status).send({ success: false, error });
+      return reply.status(status).send({ success: false, error, detail: e.message });
     }
   });
 
