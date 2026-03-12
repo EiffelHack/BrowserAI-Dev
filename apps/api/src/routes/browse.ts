@@ -12,7 +12,7 @@ import { answerQuery } from "../services/answer.js";
 import { answerQueryStreaming } from "../services/stream.js";
 import { compareAnswers } from "../services/compare.js";
 import { getUserIdFromRequest } from "../lib/auth.js";
-import { updateDomainScore } from "../lib/verify.js";
+import { updateDomainScore, getDynamicStats } from "../lib/verify.js";
 import type { CacheService } from "../services/cache.js";
 import type { ResultStore } from "../services/store.js";
 import type { ApiKeyService } from "../services/apiKeys.js";
@@ -326,6 +326,20 @@ export function registerBrowseRoutes(
             total_count: stats.total,
           }));
           store.updateDomainScores(dbUpdates).catch(() => {});
+
+          // Also persist accumulated dynamic scores to domain_authority table
+          const authorityUpdates = [...domainUpdates.keys()]
+            .map((domain) => {
+              const accumulated = getDynamicStats(domain);
+              if (!accumulated) return null;
+              return {
+                domain,
+                dynamic_score: Math.round(accumulated.dynamicScore * 100) / 100,
+                sample_count: accumulated.sampleCount,
+              };
+            })
+            .filter((u): u is NonNullable<typeof u> => u !== null);
+          store.saveDomainAuthority(authorityUpdates).catch(() => {});
         } catch {
           // Non-critical — don't fail the response
         }
