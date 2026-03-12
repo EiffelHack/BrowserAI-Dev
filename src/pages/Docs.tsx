@@ -502,7 +502,6 @@ Minimum 3 samples before dynamic data is used at all`}</CodeBlock>
                   <tr><td className="py-2 pr-4 font-mono text-accent">GET /user/stats</td><td className="py-2">Your query stats (authenticated)</td></tr>
                   <tr><td className="py-2 pr-4 font-mono text-accent">GET /user/history</td><td className="py-2">Your query history (authenticated)</td></tr>
                   <tr><td className="py-2 pr-4 font-mono text-accent">POST /browse/feedback</td><td className="py-2">Submit feedback on a result (good/bad/wrong)</td></tr>
-                  <tr><td className="py-2 pr-4 font-mono text-accent">GET /browse/learning/stats</td><td className="py-2">Self-learning engine stats</td></tr>
                 </tbody>
               </table>
             </div>
