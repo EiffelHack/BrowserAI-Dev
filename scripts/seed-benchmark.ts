@@ -26,7 +26,7 @@ const TAVILY_KEY = process.env.SERP_API_KEY || process.env.TAVILY_KEY;
 const OPENROUTER_KEY = process.env.OPENROUTER_API_KEY;
 
 const CONCURRENCY = parseInt(process.env.CONCURRENCY || "1", 10);
-const QUERY_DELAY_MS = parseInt(process.env.DELAY_MS || "30000", 10); // delay between queries (30s default to avoid Tavily rate limits)
+const QUERY_DELAY_MS = parseInt(process.env.DELAY_MS || "60000", 10); // delay between queries (60s default to respect Tavily rate limits)
 const MAX_RETRIES = 3;
 
 // ── Benchmark queries ──────────────────────────────────────────────
@@ -321,16 +321,19 @@ async function fetchWithRetry<T>(
         return { success: false, error: `HTTP ${res.status}: ${text.slice(0, 100)}` };
       }
       if (data.success) return data;
-      // Rate limit — wait and retry
-      if (!data.success && attempt < retries && (data.error?.includes("Rate limit") || data.error?.includes("rate limit") || res.status === 429)) {
-        console.log(`    ⟳ Rate limited, retrying in ${10 * (attempt + 1)}s...`);
-        await sleep(10_000 * (attempt + 1));
+      // Any failure with fast response (<2s) is likely rate limiting — back off and retry
+      if (!data.success && attempt < retries) {
+        const backoff = 60_000 * (attempt + 1); // 60s, 120s, 180s
+        console.log(`    ⟳ Failed (${data.error?.slice(0, 50)}), backing off ${backoff / 1000}s before retry ${attempt + 1}/${retries}...`);
+        await sleep(backoff);
         continue;
       }
       return data;
     } catch (e: any) {
       if (attempt < retries) {
-        await sleep(5_000 * (attempt + 1));
+        const backoff = 60_000 * (attempt + 1);
+        console.log(`    ⟳ Network error, backing off ${backoff / 1000}s...`);
+        await sleep(backoff);
         continue;
       }
       return { success: false, error: e.message };

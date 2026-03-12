@@ -183,11 +183,11 @@ function isKeyError(e: any): boolean {
 
 function errorResponse(e: any, fallbackMsg: string): { status: number; error: string } {
   if (e.statusCode && e.message) return { status: e.statusCode, error: e.message };
-  if (isKeyError(e)) return { status: 401, error: e.message };
-  if (e.message?.includes("Rate limit")) return { status: 429, error: "Rate limit exceeded. Please try again later." };
-  if (e.message?.includes("credits")) return { status: 402, error: "Insufficient credits. Top up your OpenRouter account." };
+  if (isKeyError(e)) return { status: 401, error: "Invalid API key. Check your key in Settings." };
+  if (e.message?.includes("Rate limit") || e.message?.includes("429")) return { status: 429, error: "Rate limit exceeded. Please try again in a minute." };
+  if (e.message?.includes("credits") || e.message?.includes("insufficient") || e.message?.includes("402")) return { status: 402, error: "Insufficient API credits. Top up your Tavily or OpenRouter account." };
   if (e.message?.includes("No search results")) return { status: 404, error: "No results found. Try rephrasing your question." };
-  if (e.message?.includes("Tavily")) return { status: 502, error: "Search service error. Please try again." };
+  if (e.message?.includes("Tavily") || e.message?.includes("search failed")) return { status: 502, error: "Search service temporarily unavailable. Please try again." };
   if (e.message?.includes("LLM") || e.message?.includes("parse")) return { status: 502, error: "AI processing error. Please try again." };
   return { status: 500, error: fallbackMsg };
 }
