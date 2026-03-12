@@ -53,3 +53,4 @@ __pycache__/
 .vercel
 packages/python-sdk/browseai/__pycache__/
 .env*.local
+scripts/benchmark-results.json

@@ -109,11 +109,18 @@ export function createApiKeyService(
     },
 
     async revoke(userId, keyId) {
+      // Soft delete: mark revoked + wipe encrypted credentials (keep metadata for audit)
       const res = await supabaseFetch(
         `/user_api_keys?id=eq.${keyId}&user_id=eq.${userId}`,
         {
           method: "PATCH",
-          body: JSON.stringify({ revoked: true }),
+          body: JSON.stringify({
+            revoked: true,
+            tavily_key_encrypted: null,
+            tavily_key_iv: null,
+            openrouter_key_encrypted: null,
+            openrouter_key_iv: null,
+          }),
         }
       );
       return res.ok;
@@ -151,28 +158,41 @@ export function createApiKeyService(
     },
 
     async resolveByUserId(userId) {
-      // Get the most recently used (or most recently created) active key for this user
+      // Get all active keys ordered by most recently used, then most recently created
       const res = await supabaseFetch(
-        `/user_api_keys?user_id=eq.${userId}&revoked=eq.false&select=tavily_key_encrypted,tavily_key_iv,openrouter_key_encrypted,openrouter_key_iv&order=last_used_at.desc.nullslast,created_at.desc&limit=1`
+        `/user_api_keys?user_id=eq.${userId}&revoked=eq.false&select=api_key_hash,tavily_key_encrypted,tavily_key_iv,openrouter_key_encrypted,openrouter_key_iv&order=last_used_at.desc.nullslast,created_at.desc&limit=5`
       );
 
       if (!res.ok) return null;
       const rows = await res.json();
       if (!rows.length) return null;
 
-      const row = rows[0];
-      const tavilyKey = decryptValue(
-        row.tavily_key_encrypted,
-        row.tavily_key_iv,
-        encryptionKey
-      );
-      const openrouterKey = decryptValue(
-        row.openrouter_key_encrypted,
-        row.openrouter_key_iv,
-        encryptionKey
-      );
+      // Try each key in order — first one that decrypts successfully wins
+      for (const row of rows) {
+        try {
+          const tavilyKey = decryptValue(
+            row.tavily_key_encrypted,
+            row.tavily_key_iv,
+            encryptionKey
+          );
+          const openrouterKey = decryptValue(
+            row.openrouter_key_encrypted,
+            row.openrouter_key_iv,
+            encryptionKey
+          );
 
-      return { tavilyKey, openrouterKey };
+          if (tavilyKey && openrouterKey) {
+            // Update last_used_at for the key that worked
+            service.updateLastUsed(row.api_key_hash);
+            return { tavilyKey, openrouterKey };
+          }
+        } catch {
+          // Decryption failed for this key — try the next one
+          continue;
+        }
+      }
+
+      return null;
     },
 
     async countActive(userId) {
