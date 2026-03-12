@@ -24,7 +24,6 @@ const SharedSession = () => {
   const [forking, setForking] = useState(false);
   const [forked, setForked] = useState(false);
   const [loginOpen, setLoginOpen] = useState(false);
-  const pendingFork = useRef(false);
 
   useEffect(() => {
     if (!shareId) return;
@@ -37,10 +36,10 @@ const SharedSession = () => {
       .finally(() => setLoading(false));
   }, [shareId]);
 
-  // Auto-fork after user signs in (if they clicked fork before signing in)
+  // Auto-fork after user signs in (persists across OAuth redirect via sessionStorage)
   useEffect(() => {
-    if (user && pendingFork.current && !forked && !forking) {
-      pendingFork.current = false;
+    if (user && !forked && !forking && sessionStorage.getItem("pendingForkShareId") === shareId) {
+      sessionStorage.removeItem("pendingForkShareId");
       handleFork();
     }
   }, [user]);
@@ -48,9 +47,9 @@ const SharedSession = () => {
   const handleFork = async () => {
     if (!shareId || forking) return;
 
-    // If not signed in, open login modal and set pending fork
+    // If not signed in, persist intent in sessionStorage (survives OAuth redirect) and open login
     if (!user) {
-      pendingFork.current = true;
+      sessionStorage.setItem("pendingForkShareId", shareId);
       setLoginOpen(true);
       return;
     }

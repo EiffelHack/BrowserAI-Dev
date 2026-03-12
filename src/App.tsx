@@ -21,6 +21,7 @@ import Sessions from "./pages/Sessions";
 import SharedSession from "./pages/SharedSession";
 import NotFound from "./pages/NotFound";
 import { ScrollToTop } from "./components/ScrollToTop";
+import { PendingForkRedirect } from "./components/PendingForkRedirect";
 
 const queryClient = new QueryClient();
 
@@ -32,6 +33,7 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <ScrollToTop />
+          <PendingForkRedirect />
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/results" element={<Results />} />

@@ -43,12 +43,15 @@ Add to `~/Library/Application Support/Claude/claude_desktop_config.json`:
       "args": ["-y", "browse-ai"],
       "env": {
         "SERP_API_KEY": "tvly-your-key",
-        "OPENROUTER_API_KEY": "your-openrouter-key"
+        "OPENROUTER_API_KEY": "your-openrouter-key",
+        "BROWSE_API_KEY": "bai_xxx"
       }
     }
   }
 }
 ```
+
+> `BROWSE_API_KEY` is optional for search/answer but **required for Research Memory (sessions)**. Get one free at [browseai.dev/dashboard](https://browseai.dev/dashboard).
 
 ### Cursor / Windsurf
 
@@ -61,11 +64,14 @@ Add to your MCP settings:
     "args": ["-y", "browse-ai"],
     "env": {
       "SERP_API_KEY": "tvly-your-key",
-      "OPENROUTER_API_KEY": "your-openrouter-key"
+      "OPENROUTER_API_KEY": "your-openrouter-key",
+      "BROWSE_API_KEY": "bai_xxx"
     }
   }
 }
 ```
+
+> Add `BROWSE_API_KEY` to enable Research Memory (sessions). Get one free at [browseai.dev/dashboard](https://browseai.dev/dashboard).
 
 ### HTTP Transport
 
@@ -105,6 +111,8 @@ docker run -p 3100:3100 -e BROWSE_API_KEY=bai_xxx browse-ai
 | `browse_session_share` | Share a session publicly (returns share URL) |
 | `browse_session_knowledge` | Export all claims from a session |
 | `browse_session_fork` | Fork a shared session to continue the research |
+
+> **Note:** Session tools (`browse_session_*`) require a BrowseAI API key (`bai_xxx`) for identity and ownership. Set `BROWSE_API_KEY` in your env config. BYOK (Tavily + OpenRouter keys only) works for search/answer but cannot use sessions. Get a free API key at [browseai.dev/dashboard](https://browseai.dev/dashboard).
 
 ## Example
 
