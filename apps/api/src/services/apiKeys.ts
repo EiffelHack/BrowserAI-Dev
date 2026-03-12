@@ -109,35 +109,19 @@ export function createApiKeyService(
     },
 
     async revoke(userId, keyId) {
-      // First check the key exists and belongs to this user
-      console.log(`[revoke] checking key=${keyId} userId=${userId}`);
-      const check = await supabaseFetch(
-        `/user_api_keys?id=eq.${keyId}&user_id=eq.${userId}&select=id,revoked`
-      );
-      console.log(`[revoke] check.ok=${check.ok} check.status=${check.status}`);
-      if (!check.ok) return false;
-      const rows = await check.json();
-      console.log(`[revoke] rows=${JSON.stringify(rows)}`);
-      if (!rows.length) return false;
-
-      // Already revoked — idempotent success
-      if (rows[0].revoked) return true;
-
-      // Soft delete: mark revoked + wipe encrypted credentials (keep metadata for audit)
+      // Soft delete: mark revoked (DB has NOT NULL on encrypted columns, so we can't wipe them)
+      // The encrypted values are useless without the encryption key anyway
       const res = await supabaseFetch(
         `/user_api_keys?id=eq.${keyId}&user_id=eq.${userId}`,
         {
           method: "PATCH",
-          body: JSON.stringify({
-            revoked: true,
-            tavily_key_encrypted: null,
-            tavily_key_iv: null,
-            openrouter_key_encrypted: null,
-            openrouter_key_iv: null,
-          }),
+          body: JSON.stringify({ revoked: true }),
+          headers: { Prefer: "return=representation" },
         }
       );
-      return res.ok;
+      if (!res.ok) return false;
+      const rows = await res.json();
+      return rows.length > 0;
     },
 
     async resolve(apiKey) {
