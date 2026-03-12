@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
@@ -64,6 +64,19 @@ const Index = () => {
   const { user, loading: authLoading } = useAuth();
   const [loginOpen, setLoginOpen] = useState(false);
   const [depth, setDepth] = useState<"fast" | "thorough">("fast");
+  const [showAllTools, setShowAllTools] = useState(false);
+  const [showAllEndpoints, setShowAllEndpoints] = useState(false);
+  const [showAllRoadmap, setShowAllRoadmap] = useState(false);
+
+  const handleProWaitlist = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    if (user) {
+      navigate("/dashboard");
+    } else {
+      const el = document.getElementById("waitlist");
+      if (el) el.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [user, navigate]);
 
   const handleSearch = (q?: string) => {
     const searchQuery = q || query;
@@ -115,7 +128,7 @@ const Index = () => {
         animate={{ opacity: 1, y: 0 }}
         className="fixed top-0 left-0 right-0 flex items-center justify-between px-4 sm:px-8 py-5 z-50 bg-background/80 backdrop-blur-sm border-b border-border/50"
       >
-        <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate("/")}>
+        <div className="flex items-center gap-2 cursor-pointer" onClick={() => { window.scrollTo({ top: 0, behavior: "smooth" }); navigate("/"); }}>
           <img src="/logo.svg" alt="BrowseAI" className="w-5 h-5" />
           <span className="font-semibold text-sm tracking-tight hidden sm:inline">BrowseAI Dev</span>
         </div>
@@ -145,13 +158,13 @@ const Index = () => {
               <span className="ml-1">GitHub</span>
             </a>
           </Button>
-          <a
-            href="#waitlist"
+          <button
+            onClick={handleProWaitlist}
             className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-accent/10 border border-accent/20 text-accent text-xs font-semibold hover:bg-accent/20 transition-colors"
           >
             <Sparkles className="w-3 h-3" />
-            Pro Waitlist
-          </a>
+            {user ? "Dashboard" : "Pro Waitlist"}
+          </button>
 
           {/* Mobile hamburger menu */}
           <DropdownMenu>
@@ -175,10 +188,8 @@ const Index = () => {
                   <MessageCircle className="w-3.5 h-3.5" /> Join Discord
                 </a>
               </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <a href="#waitlist" className="flex items-center gap-2">
-                  <Sparkles className="w-3.5 h-3.5" /> Pro Waitlist
-                </a>
+              <DropdownMenuItem onClick={handleProWaitlist}>
+                <Sparkles className="w-3.5 h-3.5" /> {user ? "Dashboard" : "Pro Waitlist"}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -317,13 +328,13 @@ const Index = () => {
                 Sign in free
               </Button>
             )}
-            <a
-              href="#waitlist"
+            <button
+              onClick={handleProWaitlist}
               className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-accent/10 border border-accent/20 text-sm font-medium text-accent hover:bg-accent/20 transition-all w-full sm:w-auto justify-center"
             >
               <Sparkles className="w-4 h-4" />
-              Join Pro Waitlist
-            </a>
+              {user ? "Go to Dashboard" : "Join Pro Waitlist"}
+            </button>
           </motion.div>
         </div>
       </section>
@@ -359,8 +370,8 @@ const Index = () => {
               <Rocket className="w-4 h-4 text-accent" />
               <h3 className="text-sm font-semibold uppercase tracking-wider">Where we're going</h3>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-2xl mx-auto">
-              {[
+            {(() => {
+              const roadmapItems = [
                 { phase: "Shipped", text: "Reliable research infrastructure — web search, evidence extraction, structured citations, Python SDK & MCP" },
                 { phase: "Shipped", text: "Python SDK & framework integrations — pip install browseai, works with LangChain and CrewAI out of the box" },
                 { phase: "Shipped", text: "Multi-source verification — BM25 claim matching, cross-source consensus, contradiction detection, 10,000+ domain authority tiers" },
@@ -372,19 +383,37 @@ const Index = () => {
                 { phase: "Coming Soon", text: "Knowledge graph & entity extraction — map relationships between claims, build reusable knowledge" },
                 { phase: "Coming Soon", text: "Academic papers & broader sources — Semantic Scholar, arXiv, code search, real-time data feeds" },
                 { phase: "Coming Soon", text: "Multi-provider search — combine Tavily, Google, Bing for broader coverage and source diversity" },
-              ].map((item, i) => (
-                <div key={i} className="flex items-start gap-3 p-4 rounded-xl bg-card border border-border">
-                  <Badge variant="outline" className={`shrink-0 mt-0.5 text-[10px] px-1.5 ${
-                    item.phase === "Shipped" ? "text-emerald-400 border-emerald-400/30" :
-                    item.phase === "In Progress" ? "text-amber-400 border-amber-400/30" :
-                    "text-blue-400 border-blue-400/30"
-                  }`}>
-                    {item.phase}
-                  </Badge>
-                  <p className="text-sm text-muted-foreground leading-relaxed">{item.text}</p>
-                </div>
-              ))}
-            </div>
+              ];
+              const visible = showAllRoadmap ? roadmapItems : roadmapItems.slice(0, 4);
+              return (
+                <>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-2xl mx-auto">
+                    {visible.map((item, i) => (
+                      <div key={i} className="flex items-start gap-3 p-4 rounded-xl bg-card border border-border">
+                        <Badge variant="outline" className={`shrink-0 mt-0.5 text-[10px] px-1.5 ${
+                          item.phase === "Shipped" ? "text-emerald-400 border-emerald-400/30" :
+                          item.phase === "In Progress" ? "text-amber-400 border-amber-400/30" :
+                          "text-blue-400 border-blue-400/30"
+                        }`}>
+                          {item.phase}
+                        </Badge>
+                        <p className="text-sm text-muted-foreground leading-relaxed">{item.text}</p>
+                      </div>
+                    ))}
+                  </div>
+                  {roadmapItems.length > 4 && (
+                    <div className="text-center mt-4">
+                      <button
+                        onClick={() => setShowAllRoadmap(!showAllRoadmap)}
+                        className="text-xs text-accent hover:text-accent/80 font-medium transition-colors"
+                      >
+                        {showAllRoadmap ? "Show less" : `Show all ${roadmapItems.length} items`}
+                      </button>
+                    </div>
+                  )}
+                </>
+              );
+            })()}
           </motion.div>
         </div>
       </section>
@@ -639,7 +668,7 @@ curl -X POST https://browseai.dev/api/browse/answer \\
           </motion.div>
 
           <div className="space-y-3">
-            {TOOLS.map((tool, i) => (
+            {(showAllTools ? TOOLS : TOOLS.slice(0, 5)).map((tool, i) => (
               <motion.div
                 key={tool.name}
                 initial={{ opacity: 0, x: -10 }}
@@ -653,6 +682,16 @@ curl -X POST https://browseai.dev/api/browse/answer \\
               </motion.div>
             ))}
           </div>
+          {TOOLS.length > 5 && (
+            <div className="text-center mt-4">
+              <button
+                onClick={() => setShowAllTools(!showAllTools)}
+                className="text-xs text-accent hover:text-accent/80 font-medium transition-colors"
+              >
+                {showAllTools ? "Show less" : `Show all ${TOOLS.length} tools`}
+              </button>
+            </div>
+          )}
         </div>
       </section>
 
@@ -664,8 +703,8 @@ curl -X POST https://browseai.dev/api/browse/answer \\
             <p className="text-muted-foreground">Use from LangChain, CrewAI, AutoGen, or any HTTP client.</p>
           </motion.div>
 
-          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="space-y-3">
-            {[
+          {(() => {
+            const endpoints = [
               { method: "POST", path: "/browse/search", desc: "Search the web" },
               { method: "POST", path: "/browse/open", desc: "Fetch & parse a page" },
               { method: "POST", path: "/browse/extract", desc: "Extract claims from a page" },
@@ -685,16 +724,32 @@ curl -X POST https://browseai.dev/api/browse/answer \\
               { method: "GET", path: "/session/:id", desc: "Get session details" },
               { method: "GET", path: "/sessions", desc: "List your sessions" },
               { method: "DELETE", path: "/session/:id", desc: "Delete a session" },
-            ].map((ep) => (
-              <div key={ep.path} className="flex items-center gap-4 p-4 rounded-xl bg-card border border-border">
-                <Badge variant="outline" className={`text-xs font-mono ${ep.method === "GET" ? "text-blue-400 border-blue-400/30" : ep.method === "DELETE" ? "text-red-400 border-red-400/30" : "text-emerald-400 border-emerald-400/30"}`}>
-                  {ep.method}
-                </Badge>
-                <code className="text-sm font-mono text-foreground">{ep.path}</code>
-                <span className="text-sm text-muted-foreground ml-auto">{ep.desc}</span>
-              </div>
-            ))}
-          </motion.div>
+            ];
+            const visible = showAllEndpoints ? endpoints : endpoints.slice(0, 6);
+            return (
+              <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="space-y-3">
+                {visible.map((ep) => (
+                  <div key={ep.path} className="flex items-center gap-4 p-4 rounded-xl bg-card border border-border">
+                    <Badge variant="outline" className={`text-xs font-mono ${ep.method === "GET" ? "text-blue-400 border-blue-400/30" : ep.method === "DELETE" ? "text-red-400 border-red-400/30" : "text-emerald-400 border-emerald-400/30"}`}>
+                      {ep.method}
+                    </Badge>
+                    <code className="text-sm font-mono text-foreground">{ep.path}</code>
+                    <span className="text-sm text-muted-foreground ml-auto">{ep.desc}</span>
+                  </div>
+                ))}
+                {endpoints.length > 6 && (
+                  <div className="text-center mt-4">
+                    <button
+                      onClick={() => setShowAllEndpoints(!showAllEndpoints)}
+                      className="text-xs text-accent hover:text-accent/80 font-medium transition-colors"
+                    >
+                      {showAllEndpoints ? "Show less" : `Show all ${endpoints.length} endpoints`}
+                    </button>
+                  </div>
+                )}
+              </motion.div>
+            );
+          })()}
         </div>
       </section>
 
