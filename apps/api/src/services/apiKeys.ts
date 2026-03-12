@@ -109,13 +109,18 @@ export function createApiKeyService(
     },
 
     async revoke(userId, keyId) {
-      // Soft delete: mark revoked (DB has NOT NULL on encrypted columns, so we can't wipe them)
-      // The encrypted values are useless without the encryption key anyway
+      // Stripe-style: revoke + wipe credentials, keep metadata for audit
       const res = await supabaseFetch(
         `/user_api_keys?id=eq.${keyId}&user_id=eq.${userId}`,
         {
           method: "PATCH",
-          body: JSON.stringify({ revoked: true }),
+          body: JSON.stringify({
+            revoked: true,
+            tavily_key_encrypted: null,
+            tavily_key_iv: null,
+            openrouter_key_encrypted: null,
+            openrouter_key_iv: null,
+          }),
           headers: { Prefer: "return=representation" },
         }
       );
