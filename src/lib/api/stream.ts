@@ -114,6 +114,9 @@ export async function streamAnswer(
           if (currentEvent === "result") {
             finalResult = data as BrowseResult;
           }
+          if (currentEvent === "done" && data?.shareId && finalResult) {
+            finalResult.shareId = data.shareId;
+          }
           if (currentEvent === "error") {
             throw new Error(data.error || "Stream error");
           }
