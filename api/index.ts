@@ -49,10 +49,17 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
     }
 
     if (isStreamingRequest(url)) {
-      // For SSE endpoints, route through Fastify's real server so reply.raw
-      // writes directly to the Vercel response stream (not buffered).
+      // For SSE endpoints, route through Fastify's native request handler
+      // so reply.raw writes directly to the Vercel response stream.
       req.url = url;
-      fastify.server.emit("request", req, res);
+
+      // CRITICAL: We must wait for the response to finish before returning,
+      // otherwise Vercel terminates the serverless function immediately.
+      await new Promise<void>((resolve, reject) => {
+        res.on("close", resolve);
+        res.on("error", reject);
+        fastify.routing(req, res);
+      });
       return;
     }
 
