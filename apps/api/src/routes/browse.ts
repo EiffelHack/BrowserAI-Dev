@@ -366,12 +366,12 @@ export function registerBrowseRoutes(
 
       const result = await answerQueryStreaming(parsed.data.query, reqEnv, cache, emit);
 
-      // Save to store (fire-and-forget, same as non-streaming)
+      // Save to store and include shareId in done event
       const client = detectClient(request);
       const cacheHit = result.trace?.[0]?.step === "Cache Hit";
-      store.save(parsed.data.query, result, userId || undefined, "answer", { client, cacheHit });
+      const shareId = await store.save(parsed.data.query, result, userId || undefined, "answer", { client, cacheHit });
 
-      reply.raw.write("event: done\ndata: {}\n\n");
+      reply.raw.write(`event: done\ndata: ${JSON.stringify({ shareId })}\n\n`);
       reply.raw.end();
     } catch (e: any) {
       request.log.error(e);
