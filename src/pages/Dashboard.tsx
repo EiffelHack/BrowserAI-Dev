@@ -113,7 +113,7 @@ const Dashboard = () => {
             <ArrowLeft className="w-4 h-4" />
           </Button>
           <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate("/")}>
-            <img src="/logo.svg" alt="BrowseAI" className="w-4 h-4" />
+            <img src="/logo.svg" alt="BrowseAI Dev" className="w-4 h-4" />
             <span className="font-semibold text-sm">BrowseAI Dev</span>
           </div>
         </div>

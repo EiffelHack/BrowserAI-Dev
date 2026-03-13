@@ -36,7 +36,7 @@ writer = Agent(
 research_task = Task(
     description="Research the current state of AI agent frameworks in 2025. "
     "Find the top frameworks, their key features, and adoption trends. "
-    "Use BrowseAI to get evidence-backed results with confidence scores.",
+    "Use BrowseAI Dev to get evidence-backed results with confidence scores.",
     expected_output="Detailed research findings with sources and confidence scores",
     agent=researcher,
 )
