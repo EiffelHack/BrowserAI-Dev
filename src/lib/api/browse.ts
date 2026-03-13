@@ -121,6 +121,14 @@ export async function browseCompare(query: string): Promise<CompareResult> {
   return apiCall<CompareResult>("/browse/compare", { query });
 }
 
+export async function browseFeedback(resultId: string, rating: "good" | "bad" | "wrong", claimIndex?: number) {
+  return apiCall<{ message: string }>("/browse/feedback", {
+    resultId,
+    rating,
+    ...(claimIndex !== undefined && { claimIndex }),
+  });
+}
+
 export async function browseStats(): Promise<{ totalQueries: number }> {
   const res = await fetch(`${API_BASE}/browse/stats`, {
     headers: getUserKeyHeaders(),

@@ -4,13 +4,14 @@ import { motion } from "framer-motion";
 import {
   ArrowLeft, Play, Loader2, CheckCircle2, XCircle, AlertTriangle,
   Globe, Copy, Check, Code2, ChevronDown, ChevronUp, ExternalLink,
+  ThumbsUp, ThumbsDown, Brain, FileText,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import {
-  browseKnowledge, browseSearch, browseExtract, browseCompare,
-  type BrowseResult, type BrowseSource, type BrowseClaim, type CompareResult,
+  browseKnowledge, browseSearch, browseExtract, browseCompare, browseOpen, browseFeedback,
+  type BrowseSource, type BrowseClaim,
 } from "@/lib/api/browse";
 import { LoginModal } from "@/components/LoginModal";
 import { UserMenu } from "@/components/UserMenu";
@@ -18,29 +19,43 @@ import { useAuth } from "@/contexts/AuthContext";
 
 // ── Example queries per tab ─────────────────────────────────────────
 
+const TABS = ["answer", "search", "open", "extract", "compare"] as const;
+
 const EXAMPLES: Record<string, string[]> = {
-  search: [
-    "AI safety regulations 2024",
-    "CRISPR clinical trials results",
-    "quantum computing breakthroughs",
-  ],
-  extract: [
-    "https://en.wikipedia.org/wiki/Large_language_model",
-    "https://arxiv.org/abs/2303.08774",
-  ],
   answer: [
     "How do mRNA vaccines work?",
     "Is nuclear energy safe for climate?",
     "How does RAG improve LLM accuracy?",
   ],
+  search: [
+    "AI safety regulations 2024",
+    "CRISPR clinical trials results",
+    "quantum computing breakthroughs",
+  ],
+  open: [
+    "https://en.wikipedia.org/wiki/Transformer_(deep_learning_architecture)",
+    "https://openai.com/index/gpt-4-research/",
+  ],
+  extract: [
+    "https://en.wikipedia.org/wiki/Large_language_model",
+    "https://arxiv.org/abs/2303.08774",
+  ],
   compare: [
-    "What are the health effects of intermittent fasting?",
-    "Is remote work more productive than office work?",
+    "Health effects of intermittent fasting",
+    "Is remote work more productive?",
     "Should AI development be paused?",
   ],
 };
 
-// ── Confidence color helper ─────────────────────────────────────────
+const PLACEHOLDERS: Record<string, string> = {
+  answer: "Ask a research question…",
+  search: "Enter a search query…",
+  open: "Enter a URL to fetch and parse…",
+  extract: "Enter a URL to extract claims from…",
+  compare: "Compare raw LLM vs evidence-backed…",
+};
+
+// ── Helpers ──────────────────────────────────────────────────────────
 
 function confidenceBg(c: number): string {
   if (c >= 0.75) return "bg-green-400/10 border-green-400/30 text-green-400";
@@ -56,10 +71,11 @@ const Playground = () => {
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [response, setResponse] = useState<any>(null);
-  const [activeTab, setActiveTab] = useState("answer");
+  const [activeTab, setActiveTab] = useState<string>("answer");
   const [depth, setDepth] = useState<"fast" | "thorough">("fast");
   const [showRawJson, setShowRawJson] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [feedbackSent, setFeedbackSent] = useState<string | null>(null);
 
   const run = async (overrideInput?: string) => {
     const q = overrideInput || input;
@@ -67,10 +83,13 @@ const Playground = () => {
     setLoading(true);
     setResponse(null);
     setShowRawJson(false);
+    setFeedbackSent(null);
     try {
       let result;
       if (activeTab === "search") {
         result = await browseSearch(q, 5);
+      } else if (activeTab === "open") {
+        result = await browseOpen(q);
       } else if (activeTab === "extract") {
         result = await browseExtract(q);
       } else if (activeTab === "compare") {
@@ -97,15 +116,21 @@ const Playground = () => {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const placeholders: Record<string, string> = {
-    search: "Enter a search query…",
-    extract: "Enter a URL to extract from…",
-    answer: "Ask a research question…",
-    compare: "Ask a question to compare raw vs evidence-backed…",
+  const handleFeedback = async (rating: "good" | "bad" | "wrong") => {
+    const resultId = response?.shareId;
+    if (!resultId) return;
+    try {
+      await browseFeedback(resultId, rating);
+      setFeedbackSent(rating);
+    } catch {
+      // silently fail
+    }
   };
 
   const isAnswerResult = activeTab === "answer" && response && !response.error && response.answer;
   const isCompareResult = activeTab === "compare" && response && !response.error && response.evidence_backed;
+  const isOpenResult = activeTab === "open" && response && !response.error;
+  const hasShareId = response?.shareId;
 
   return (
     <div className="min-h-screen">
@@ -120,28 +145,37 @@ const Playground = () => {
           </div>
         </div>
         <div className="flex items-center gap-2">
+          <Button variant="ghost" size="sm" className="text-xs text-muted-foreground gap-1.5" onClick={() => navigate("/sessions")}>
+            <Brain className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">Sessions</span>
+          </Button>
+          <Button variant="ghost" size="sm" className="text-xs text-muted-foreground gap-1.5" onClick={() => navigate("/recipes")}>
+            <FileText className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">Recipes</span>
+          </Button>
           {!authLoading && (user ? <UserMenu /> : <LoginModal />)}
         </div>
       </nav>
 
       <div className="max-w-4xl mx-auto px-6 py-10 space-y-8">
         {/* Tabs + Input */}
-        <Tabs value={activeTab} onValueChange={(v) => { setActiveTab(v); setResponse(null); setShowRawJson(false); }}>
-          <TabsList className="bg-secondary">
-            <TabsTrigger value="answer" className="font-mono text-xs">browse.answer</TabsTrigger>
-            <TabsTrigger value="search" className="font-mono text-xs">browse.search</TabsTrigger>
-            <TabsTrigger value="extract" className="font-mono text-xs">browse.extract</TabsTrigger>
-            <TabsTrigger value="compare" className="font-mono text-xs">browse.compare</TabsTrigger>
+        <Tabs value={activeTab} onValueChange={(v) => { setActiveTab(v); setResponse(null); setShowRawJson(false); setFeedbackSent(null); }}>
+          <TabsList className="bg-secondary flex-wrap h-auto gap-1 p-1">
+            {TABS.map((tab) => (
+              <TabsTrigger key={tab} value={tab} className="font-mono text-xs">
+                browse.{tab}
+              </TabsTrigger>
+            ))}
           </TabsList>
 
-          {["answer", "search", "extract", "compare"].map((tab) => (
+          {TABS.map((tab) => (
             <TabsContent key={tab} value={tab}>
               <div className="flex gap-2 mt-4">
                 <input
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && run()}
-                  placeholder={placeholders[tab]}
+                  placeholder={PLACEHOLDERS[tab]}
                   className="flex-1 h-12 px-4 rounded-lg bg-secondary border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-accent/50 text-sm font-mono"
                 />
                 {tab === "answer" && (
@@ -158,18 +192,20 @@ const Playground = () => {
               </div>
 
               {/* Example pills */}
-              <div className="flex flex-wrap gap-2 mt-3">
-                <span className="text-xs text-muted-foreground py-1">Try:</span>
-                {EXAMPLES[tab]?.map((ex) => (
-                  <button
-                    key={ex}
-                    onClick={() => handleExample(ex)}
-                    className="px-3 py-1 rounded-full border border-border text-xs text-muted-foreground hover:text-foreground hover:border-accent/40 transition-all truncate max-w-[280px]"
-                  >
-                    {ex}
-                  </button>
-                ))}
-              </div>
+              {EXAMPLES[tab]?.length > 0 && (
+                <div className="flex flex-wrap gap-2 mt-3">
+                  <span className="text-xs text-muted-foreground py-1">Try:</span>
+                  {EXAMPLES[tab].map((ex) => (
+                    <button
+                      key={ex}
+                      onClick={() => handleExample(ex)}
+                      className="px-3 py-1 rounded-full border border-border text-xs text-muted-foreground hover:text-foreground hover:border-accent/40 transition-all truncate max-w-[280px]"
+                    >
+                      {ex}
+                    </button>
+                  ))}
+                </div>
+              )}
             </TabsContent>
           ))}
         </Tabs>
@@ -196,7 +232,7 @@ const Playground = () => {
         {/* ── Answer result (rich rendering) ── */}
         {isAnswerResult && (
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
-            {/* Header: confidence + trace */}
+            {/* Header: confidence + trace + feedback */}
             <div className="flex items-center gap-3 flex-wrap">
               <Badge className={`${confidenceBg(response.confidence)} text-sm px-3 py-1`}>
                 {(response.confidence * 100).toFixed(0)}% confidence
@@ -206,9 +242,26 @@ const Playground = () => {
                 {response.contradictions?.length > 0 && ` · ${response.contradictions.length} contradictions`}
               </span>
               {response.trace && (
-                <span className="text-xs text-muted-foreground ml-auto">
-                  {response.trace.reduce((s: number, t: any) => s + t.duration_ms, 0)}ms total
+                <span className="text-xs text-muted-foreground">
+                  {response.trace.reduce((s: number, t: any) => s + t.duration_ms, 0)}ms
                 </span>
+              )}
+              {/* Feedback buttons */}
+              {hasShareId && (
+                <div className="flex items-center gap-1 ml-auto">
+                  {feedbackSent ? (
+                    <span className="text-xs text-accent">Feedback sent</span>
+                  ) : (
+                    <>
+                      <button onClick={() => handleFeedback("good")} className="p-1.5 rounded hover:bg-green-400/10 text-muted-foreground hover:text-green-400 transition-colors" title="Good result">
+                        <ThumbsUp className="w-3.5 h-3.5" />
+                      </button>
+                      <button onClick={() => handleFeedback("bad")} className="p-1.5 rounded hover:bg-red-400/10 text-muted-foreground hover:text-red-400 transition-colors" title="Bad result">
+                        <ThumbsDown className="w-3.5 h-3.5" />
+                      </button>
+                    </>
+                  )}
+                </div>
               )}
             </div>
 
@@ -316,6 +369,29 @@ const Playground = () => {
           </motion.div>
         )}
 
+        {/* ── Open result (page content) ── */}
+        {isOpenResult && (
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-3">
+            {response.title && (
+              <h3 className="text-sm font-semibold">{response.title}</h3>
+            )}
+            {response.url && (
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                <Globe className="w-3 h-3" />
+                <a href={response.url} target="_blank" rel="noopener noreferrer" className="hover:text-accent transition-colors">{response.url}</a>
+              </div>
+            )}
+            {response.text && (
+              <div className="p-4 rounded-xl bg-card border border-border text-sm leading-relaxed max-h-[500px] overflow-y-auto whitespace-pre-wrap">
+                {response.text.slice(0, 5000)}{response.text.length > 5000 && "…"}
+              </div>
+            )}
+            {response.wordCount != null && (
+              <span className="text-xs text-muted-foreground">{response.wordCount.toLocaleString()} words extracted</span>
+            )}
+          </motion.div>
+        )}
+
         {/* ── Compare result ── */}
         {isCompareResult && (
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
@@ -358,7 +434,7 @@ const Playground = () => {
           </motion.div>
         )}
 
-        {/* ── Fallback: raw JSON for search/extract or toggle ── */}
+        {/* ── Raw JSON toggle ── */}
         {response && !response.error && (
           <div className="space-y-2">
             <button
@@ -370,7 +446,7 @@ const Playground = () => {
               {showRawJson ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
             </button>
 
-            {(showRawJson || (!isAnswerResult && !isCompareResult)) && (
+            {(showRawJson || (!isAnswerResult && !isCompareResult && !isOpenResult)) && (
               <div className="relative">
                 <button
                   onClick={copyJson}
@@ -384,6 +460,34 @@ const Playground = () => {
               </div>
             )}
           </div>
+        )}
+
+        {/* ── Empty state: feature overview ── */}
+        {!response && !loading && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-4">
+              {[
+                { tab: "answer", label: "Full Pipeline", desc: "Search → extract → verify → cite with confidence score" },
+                { tab: "search", label: "Web Search", desc: "Search the web and get ranked results" },
+                { tab: "open", label: "Page Parser", desc: "Fetch any URL and get clean parsed text" },
+                { tab: "extract", label: "Claim Extraction", desc: "Extract structured claims from any page" },
+                { tab: "compare", label: "Raw vs Evidence", desc: "Side-by-side: raw LLM vs evidence-backed answer" },
+                { tab: "sessions", label: "Research Sessions", desc: "Multi-query sessions with persistent memory", link: "/sessions" },
+              ].map((item) => (
+                <button
+                  key={item.tab}
+                  onClick={() => item.link ? navigate(item.link) : setActiveTab(item.tab)}
+                  className="p-4 rounded-xl bg-card border border-border hover:border-accent/40 transition-colors text-left group"
+                >
+                  <p className="text-sm font-medium group-hover:text-accent transition-colors">
+                    {item.label}
+                    {item.link && <ExternalLink className="w-3 h-3 inline ml-1.5 opacity-50" />}
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-1">{item.desc}</p>
+                </button>
+              ))}
+            </div>
+          </motion.div>
         )}
       </div>
     </div>
