@@ -81,7 +81,7 @@ const Docs = () => {
             <ArrowLeft className="w-4 h-4" />
           </Button>
           <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate("/")}>
-            <img src="/logo.svg" alt="BrowseAI" className="w-5 h-5" />
+            <img src="/logo.svg" alt="BrowseAI Dev" className="w-5 h-5" />
             <span className="font-semibold text-sm tracking-tight">Docs</span>
           </div>
         </div>
@@ -125,9 +125,9 @@ const Docs = () => {
           {/* Hero */}
           <div>
             <Badge variant="outline" className="text-xs font-normal mb-4">Documentation</Badge>
-            <h1 className="text-3xl sm:text-4xl font-bold tracking-tight mb-4">How BrowseAI Works</h1>
+            <h1 className="text-3xl sm:text-4xl font-bold tracking-tight mb-4">How BrowseAI Dev Works</h1>
             <p className="text-muted-foreground max-w-2xl leading-relaxed">
-              BrowseAI gives AI agents reliable web research with evidence-backed citations.
+              BrowseAI Dev gives AI agents reliable web research with evidence-backed citations.
               This page explains every feature — how it works, when to use it, and how to integrate it.
             </p>
           </div>
@@ -155,7 +155,7 @@ const Docs = () => {
           {/* Thorough Mode */}
           <Section id="thorough-mode" title="Thorough Mode" icon={Zap}>
             <p>
-              By default, BrowseAI runs in <strong className="text-foreground">fast mode</strong> — a single search-fetch-extract pass.
+              By default, BrowseAI Dev runs in <strong className="text-foreground">fast mode</strong> — a single search-fetch-extract pass.
               For important queries where accuracy matters more than speed, use <strong className="text-foreground">thorough mode</strong>.
             </p>
 
@@ -455,7 +455,7 @@ PRIOR_WEIGHT = 15  (static scores dominate until ~15+ samples)
 Minimum 3 samples before dynamic data is used at all`}</CodeBlock>
             <p>
               This means static tier scores are trusted initially. As evidence accumulates for a domain,
-              its real verification rate gradually takes over. The more your agents use BrowseAI, the more
+              its real verification rate gradually takes over. The more your agents use BrowseAI Dev, the more
               accurate future results become.
             </p>
           </Section>
@@ -582,7 +582,7 @@ knowledge = session.knowledge()`}</CodeBlock>
           {/* Hosted vs Self-Hosted */}
           <Section id="hosted-vs-self" title="Hosted vs Self-Hosted" icon={Cloud}>
             <p>
-              BrowseAI is MIT-licensed and can be self-hosted. But the hosted service at{" "}
+              BrowseAI Dev is MIT-licensed and can be self-hosted. But the hosted service at{" "}
               <a href="https://browseai.dev" className="text-accent hover:underline">browseai.dev</a>{" "}
               provides advantages that can't be replicated by running your own instance:
             </p>
@@ -744,8 +744,8 @@ knowledge = session.knowledge()`}</CodeBlock>
                 a: "Fast mode runs one search-fetch-extract pass. Thorough mode does the same, then checks confidence — if below 60%, it rephrases your query and runs a second pass, merging sources from both. Thorough mode takes ~2x longer but produces higher-confidence results on complex queries.",
               },
               {
-                q: "How does BrowseAI differ from Perplexity?",
-                a: "Perplexity is a consumer search engine for humans. BrowseAI is research infrastructure for AI agents. It returns structured JSON (claims, sources, confidence, trace) that agents can programmatically evaluate — not a chat response. Available as MCP server, REST API, and Python SDK.",
+                q: "How does BrowseAI Dev differ from Perplexity?",
+                a: "Perplexity is a consumer search engine for humans. BrowseAI Dev is research infrastructure for AI agents. It returns structured JSON (claims, sources, confidence, trace) that agents can programmatically evaluate — not a chat response. Available as MCP server, REST API, and Python SDK.",
               },
               {
                 q: "Is the confidence score the LLM's self-assessment?",
@@ -756,7 +756,7 @@ knowledge = session.knowledge()`}</CodeBlock>
                 a: "Domain authority scores start from static tiers (gov/edu = high, content farms = low). Over time, real verification data from queries is blended in using Bayesian smoothing. Domains that consistently produce verified claims get higher scores; unreliable ones get lower scores. The system gets smarter with use.",
               },
               {
-                q: "Can I self-host BrowseAI?",
+                q: "Can I self-host BrowseAI Dev?",
                 a: "Yes — the code is MIT licensed. However, self-hosted instances miss the key advantages of the hosted service: the self-improving data flywheel (domain authority scores that get smarter from aggregated verification data across all users), shared cache (popular queries are instant), automatic updates, and upcoming Pro features (multi-model verification, priority queue). Self-hosted instances start with static domain scores and never improve beyond your own query volume.",
               },
               {
@@ -789,7 +789,7 @@ knowledge = session.knowledge()`}</CodeBlock>
       <footer className="py-12 px-6 border-t border-border">
         <div className="max-w-4xl mx-auto flex flex-col items-center gap-4">
           <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate("/")}>
-            <img src="/logo.svg" alt="BrowseAI" className="w-4 h-4" />
+            <img src="/logo.svg" alt="BrowseAI Dev" className="w-4 h-4" />
             <span className="text-sm font-semibold">BrowseAI Dev</span>
           </div>
           <div className="flex items-center gap-6 text-xs text-muted-foreground">

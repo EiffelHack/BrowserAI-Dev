@@ -95,7 +95,7 @@ const Recipes = () => {
         className="fixed top-0 left-0 right-0 flex items-center justify-between px-4 sm:px-8 py-5 z-50 bg-background/80 backdrop-blur-sm border-b border-border/50"
       >
         <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate("/")}>
-          <img src="/logo.svg" alt="BrowseAI" className="w-5 h-5" />
+          <img src="/logo.svg" alt="BrowseAI Dev" className="w-5 h-5" />
           <span className="font-semibold text-sm tracking-tight">BrowseAI Dev</span>
         </div>
         <div className="flex items-center gap-1 sm:gap-2">
@@ -339,7 +339,7 @@ const Recipes = () => {
       <footer className="py-12 px-6 border-t border-border">
         <div className="max-w-4xl mx-auto flex flex-col items-center gap-4">
           <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate("/")}>
-            <img src="/logo.svg" alt="BrowseAI" className="w-4 h-4" />
+            <img src="/logo.svg" alt="BrowseAI Dev" className="w-4 h-4" />
             <span className="text-sm font-semibold">BrowseAI Dev</span>
           </div>
           <div className="flex items-center gap-6 text-xs text-muted-foreground">

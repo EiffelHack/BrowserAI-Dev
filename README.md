@@ -5,10 +5,10 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Discord](https://img.shields.io/badge/Discord-Join-5865F2?logo=discord&logoColor=white)](https://discord.gg/ubAuT4YQsT)
 
-**Reliable research infrastructure for AI agents** — real-time web search, evidence extraction, and structured citations. Every claim is backed by a URL. Every answer has a confidence score.
+**Research infrastructure for AI agents** — real-time web search, evidence extraction, and structured citations. Every claim is backed by a URL. Every answer has a confidence score.
 
 ```
-Agent → BrowseAI → Internet → Verified answers + sources
+Agent → BrowseAI Dev → Internet → Verified answers + sources
 ```
 
 [Website](https://browseai.dev) · [Playground](https://browseai.dev/playground) · [API Docs](https://browseai.dev/developers) · [Discord](https://discord.gg/ubAuT4YQsT)
@@ -70,7 +70,7 @@ All external API calls (Tavily search, OpenRouter LLM, Brave search, page fetchi
 
 Persistent research sessions that accumulate knowledge across multiple queries. Later queries automatically recall prior verified claims, building deeper understanding over time.
 
-> **Sessions require a BrowseAI API key (`bai_xxx`)** for identity and ownership. BYOK (Tavily + OpenRouter keys only) works for search/answer but cannot use sessions. Get a free key at [browseai.dev/dashboard](https://browseai.dev/dashboard). For MCP, set `BROWSE_API_KEY` env var. For Python SDK, pass `api_key="bai_xxx"`. For REST API, use `Authorization: Bearer bai_xxx`.
+> **Sessions require a BrowseAI Dev API key (`bai_xxx`)** for identity and ownership. BYOK (Tavily + OpenRouter keys only) works for search/answer but cannot use sessions. Get a free key at [browseai.dev/dashboard](https://browseai.dev/dashboard). For MCP, set `BROWSE_API_KEY` env var. For Python SDK, pass `api_key="bai_xxx"`. For REST API, use `Authorization: Bearer bai_xxx`.
 
 ```python
 # Python SDK

@@ -172,7 +172,7 @@ const Sessions = () => {
       {/* Nav */}
       <nav className="fixed top-0 left-0 right-0 flex items-center justify-between px-4 sm:px-8 py-5 z-50 bg-background/80 backdrop-blur-sm border-b border-border/50">
         <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate("/")}>
-          <img src="/logo.svg" alt="BrowseAI" className="w-5 h-5" />
+          <img src="/logo.svg" alt="BrowseAI Dev" className="w-5 h-5" />
           <span className="font-semibold text-sm tracking-tight hidden sm:inline">BrowseAI Dev</span>
         </div>
         <div className="flex items-center gap-2">

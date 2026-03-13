@@ -21,10 +21,10 @@ pip install browseai
 ## How it works
 
 ```
-Agent → BrowseAI → Internet → Verified answers + sources
+Agent → BrowseAI Dev → Internet → Verified answers + sources
 ```
 
-BrowseAI is **reliable research infrastructure for AI agents** — every answer comes with real sources, confidence scores, and verified claims.
+BrowseAI Dev is **research infrastructure for AI agents** — every answer comes with real sources, confidence scores, and verified claims.
 
 ## Get API Key
 

@@ -12,7 +12,7 @@ const Privacy = () => {
           <ArrowLeft className="w-4 h-4" />
         </Button>
         <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate("/")}>
-          <img src="/logo.svg" alt="BrowseAI" className="w-4 h-4" />
+          <img src="/logo.svg" alt="BrowseAI Dev" className="w-4 h-4" />
           <span className="font-semibold text-sm">BrowseAI Dev</span>
         </div>
       </nav>
@@ -74,7 +74,7 @@ const Privacy = () => {
           <section className="space-y-3">
             <h2 className="text-lg font-semibold">Data Used to Improve Accuracy</h2>
             <p className="text-sm text-muted-foreground leading-relaxed">
-              BrowseAI uses aggregated, anonymized verification data from queries processed through the hosted service to improve the accuracy of future results. Specifically:
+              BrowseAI Dev uses aggregated, anonymized verification data from queries processed through the hosted service to improve the accuracy of future results. Specifically:
             </p>
             <ul className="list-disc pl-5 space-y-1 text-sm text-muted-foreground">
               <li><strong className="text-foreground">Domain authority scores</strong> — We track how often claims from specific domains are successfully verified. Over time, this data is used to adjust domain trustworthiness scores via Bayesian smoothing. Only domain-level aggregates are stored (e.g., "wikipedia.org has an 82% verification rate across 500 queries") — individual queries are not linked to these scores.</li>
@@ -82,7 +82,7 @@ const Privacy = () => {
               <li><strong className="text-foreground">No personal data in aggregates</strong> — Verification aggregates are computed at the domain level, not the query or user level. Your specific search queries are never used to train models or shared with other users.</li>
             </ul>
             <p className="text-sm text-muted-foreground leading-relaxed">
-              This data flywheel is a core part of how BrowseAI improves over time. By using the hosted service, you benefit from the collective verification data of all users — making every result more accurate. Self-hosted instances do not participate in this shared data pool and start with static domain scores only.
+              This data flywheel is a core part of how BrowseAI Dev improves over time. By using the hosted service, you benefit from the collective verification data of all users — making every result more accurate. Self-hosted instances do not participate in this shared data pool and start with static domain scores only.
             </p>
           </section>
 

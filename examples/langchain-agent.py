@@ -29,7 +29,7 @@ tools = [
 llm = ChatOpenAI(model="gpt-4o")
 
 prompt = ChatPromptTemplate.from_messages([
-    ("system", """You are a research assistant. Use BrowseAI tools to find
+    ("system", """You are a research assistant. Use BrowseAI Dev tools to find
     evidence-backed answers. Always cite your sources and mention the
     confidence score. Never make claims without evidence."""),
     ("human", "{input}"),
