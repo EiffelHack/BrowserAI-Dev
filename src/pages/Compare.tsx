@@ -73,12 +73,12 @@ const Compare = () => {
             {/* Stats bar */}
             <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-8 py-4">
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <ShieldAlert className="w-4 h-4 text-orange-400" />
+                <ShieldAlert className="w-3.5 h-3.5 text-orange-400" />
                 <span>Raw LLM: <strong className="text-foreground">0 sources</strong></span>
               </div>
               <span className="text-muted-foreground">vs</span>
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <Shield className="w-4 h-4 text-emerald-400" />
+                <Shield className="w-3.5 h-3.5 text-emerald-400" />
                 <span>BrowseAI Dev: <strong className="text-foreground">{result.evidence_backed.sources} sources, {result.evidence_backed.claims} claims</strong></span>
               </div>
             </div>
@@ -93,7 +93,7 @@ const Compare = () => {
                 className="space-y-4"
               >
                 <div className="flex items-center gap-2">
-                  <ShieldAlert className="w-4 h-4 text-orange-400" />
+                  <ShieldAlert className="w-5 h-5 text-orange-400" />
                   <h2 className="text-sm font-semibold uppercase tracking-wider text-orange-400">Raw LLM</h2>
                   <Badge className="ml-auto bg-orange-400/15 text-orange-400 border-orange-400/30 text-xs">
                     No sources
@@ -119,7 +119,7 @@ const Compare = () => {
                 className="space-y-4"
               >
                 <div className="flex items-center gap-2">
-                  <Shield className="w-4 h-4 text-emerald-400" />
+                  <Shield className="w-5 h-5 text-emerald-400" />
                   <h2 className="text-sm font-semibold uppercase tracking-wider text-emerald-400">BrowseAI Dev</h2>
                   <Badge className="ml-auto bg-emerald-400/15 text-emerald-400 border-emerald-400/30 text-xs">
                     {Math.round(result.evidence_backed.confidence * 100)}% confidence
@@ -175,7 +175,7 @@ const Compare = () => {
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <Bot className="w-4 h-4 text-accent" />
+                  <Bot className="w-5 h-5 text-accent" />
                   <h3 className="text-sm font-semibold uppercase tracking-wider">How the Agent Sees It</h3>
                 </div>
                 <Button

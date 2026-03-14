@@ -145,7 +145,7 @@ const Dashboard = () => {
             <Card>
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                  <Activity className="w-4 h-4" />
+                  <Activity className="w-5 h-5" />
                   Queries This Month
                 </CardTitle>
               </CardHeader>
@@ -162,7 +162,7 @@ const Dashboard = () => {
             <Card>
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                  <History className="w-4 h-4" />
+                  <History className="w-5 h-5" />
                   Recent Activity
                 </CardTitle>
               </CardHeader>
@@ -179,7 +179,7 @@ const Dashboard = () => {
             <Card>
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                  <Settings className="w-4 h-4" />
+                  <Settings className="w-5 h-5" />
                   Account
                 </CardTitle>
               </CardHeader>
@@ -195,7 +195,7 @@ const Dashboard = () => {
             <Card>
               <CardHeader>
                 <CardTitle className="text-lg flex items-center gap-2">
-                  <History className="w-4 h-4 text-accent" />
+                  <History className="w-5 h-5 text-accent" />
                   Query History
                 </CardTitle>
               </CardHeader>
@@ -230,7 +230,7 @@ const Dashboard = () => {
           <Card className="border-amber-400/20">
             <CardHeader>
               <CardTitle className="text-lg flex items-center gap-2">
-                <Sparkles className="w-4 h-4 text-amber-400" />
+                <Sparkles className="w-5 h-5 text-amber-400" />
                 BrowseAI Dev Pro
               </CardTitle>
             </CardHeader>
@@ -245,7 +245,7 @@ const Dashboard = () => {
               </ul>
               {onWaitlist ? (
                 <div className="flex items-center justify-center gap-2 py-2 text-sm text-emerald-400">
-                  <CheckCircle2 className="w-4 h-4" />
+                  <CheckCircle2 className="w-3.5 h-3.5" />
                   You're on the waitlist — we'll notify you when it's ready
                 </div>
               ) : (

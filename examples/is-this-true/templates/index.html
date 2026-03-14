@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Is This True? — BrowseAI</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: #0a0a0f;
+    color: #e0e0e8;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 2rem 1rem;
+  }
+
+  .container { width: 100%; max-width: 720px; }
+
+  h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    text-align: center;
+    margin-bottom: 0.25rem;
+    background: linear-gradient(135deg, #6ee7b7, #3b82f6);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .subtitle {
+    text-align: center;
+    color: #6b7280;
+    font-size: 0.9rem;
+    margin-bottom: 2rem;
+  }
+
+  .subtitle a { color: #3b82f6; text-decoration: none; }
+  .subtitle a:hover { text-decoration: underline; }
+
+  /* Form */
+  .search-form {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .search-form input[type="text"] {
+    flex: 1;
+    padding: 0.75rem 1rem;
+    border: 1px solid #1e1e2e;
+    border-radius: 8px;
+    background: #12121a;
+    color: #e0e0e8;
+    font-size: 1rem;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .search-form input[type="text"]:focus {
+    border-color: #3b82f6;
+  }
+
+  .search-form button {
+    padding: 0.75rem 1.25rem;
+    border: none;
+    border-radius: 8px;
+    background: #3b82f6;
+    color: #fff;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 0.2s;
+  }
+
+  .search-form button:hover { background: #2563eb; }
+  .search-form button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  .depth-toggle {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    justify-content: center;
+    margin-bottom: 1.5rem;
+    font-size: 0.85rem;
+    color: #6b7280;
+  }
+
+  .depth-toggle label { cursor: pointer; }
+
+  .depth-toggle input[type="checkbox"] {
+    accent-color: #3b82f6;
+    cursor: pointer;
+  }
+
+  /* Error */
+  .error-box {
+    background: #1a0a0a;
+    border: 1px solid #7f1d1d;
+    color: #fca5a5;
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+    font-size: 0.9rem;
+  }
+
+  /* Result */
+  .result-card {
+    background: #12121a;
+    border: 1px solid #1e1e2e;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  /* Confidence meter */
+  .confidence-section { margin-bottom: 1.5rem; }
+
+  .confidence-label {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 0.5rem;
+  }
+
+  .confidence-label span { font-size: 0.85rem; color: #9ca3af; }
+
+  .confidence-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+  }
+
+  .confidence-bar {
+    height: 8px;
+    background: #1e1e2e;
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  .confidence-fill {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.6s ease;
+  }
+
+  .conf-low { background: #ef4444; }
+  .conf-mid { background: #f59e0b; }
+  .conf-high { background: #10b981; }
+  .text-low { color: #ef4444; }
+  .text-mid { color: #f59e0b; }
+  .text-high { color: #10b981; }
+
+  /* Answer */
+  .answer-section { margin-bottom: 1.5rem; }
+  .answer-section h3 { font-size: 0.8rem; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.5rem; }
+  .answer-text { line-height: 1.6; font-size: 0.95rem; }
+
+  /* Section headers */
+  .section-header {
+    font-size: 0.8rem;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.25rem;
+    border-bottom: 1px solid #1e1e2e;
+  }
+
+  /* Claims */
+  .claims-list { list-style: none; margin-bottom: 1.5rem; }
+
+  .claim-item {
+    display: flex;
+    gap: 0.75rem;
+    align-items: flex-start;
+    padding: 0.6rem 0;
+    border-bottom: 1px solid #1a1a24;
+    font-size: 0.9rem;
+    line-height: 1.5;
+  }
+
+  .claim-item:last-child { border-bottom: none; }
+
+  .claim-badge {
+    flex-shrink: 0;
+    padding: 0.15rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    margin-top: 0.15rem;
+  }
+
+  .badge-verified { background: #052e16; color: #4ade80; }
+  .badge-unverified { background: #1c1917; color: #a8a29e; }
+
+  .claim-meta {
+    font-size: 0.75rem;
+    color: #6b7280;
+    margin-top: 0.25rem;
+  }
+
+  /* Sources */
+  .sources-list { list-style: none; margin-bottom: 1.5rem; }
+
+  .source-item {
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #1a1a24;
+  }
+
+  .source-item:last-child { border-bottom: none; }
+
+  .source-link {
+    color: #60a5fa;
+    text-decoration: none;
+    font-size: 0.9rem;
+    word-break: break-all;
+  }
+
+  .source-link:hover { text-decoration: underline; }
+
+  .source-domain {
+    font-size: 0.75rem;
+    color: #6b7280;
+    margin-top: 0.15rem;
+  }
+
+  .source-quote {
+    font-size: 0.8rem;
+    color: #9ca3af;
+    margin-top: 0.25rem;
+    font-style: italic;
+    border-left: 2px solid #1e1e2e;
+    padding-left: 0.5rem;
+  }
+
+  /* Contradictions */
+  .contradiction-item {
+    background: #1a0a0a;
+    border: 1px solid #2d1515;
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    margin-bottom: 0.5rem;
+    font-size: 0.85rem;
+  }
+
+  .contradiction-topic {
+    font-size: 0.7rem;
+    color: #f87171;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.35rem;
+    font-weight: 600;
+  }
+
+  .contradiction-claims {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    color: #d1d5db;
+  }
+
+  .contradiction-vs {
+    color: #6b7280;
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+
+  /* Trace / Pipeline */
+  .trace-list { list-style: none; margin-bottom: 1rem; }
+
+  .trace-step {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.4rem 0;
+    border-bottom: 1px solid #1a1a24;
+    font-size: 0.8rem;
+  }
+
+  .trace-step:last-child { border-bottom: none; }
+
+  .trace-name { color: #d1d5db; }
+
+  .trace-time {
+    color: #6b7280;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .trace-detail {
+    color: #6b7280;
+    font-size: 0.75rem;
+    margin-left: 0.5rem;
+  }
+
+  /* Share bar */
+  .share-bar {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid #1e1e2e;
+  }
+
+  .share-bar input {
+    flex: 1;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid #1e1e2e;
+    border-radius: 6px;
+    background: #0a0a0f;
+    color: #9ca3af;
+    font-size: 0.8rem;
+    outline: none;
+  }
+
+  .share-bar button {
+    padding: 0.5rem 0.75rem;
+    border: 1px solid #1e1e2e;
+    border-radius: 6px;
+    background: #1e1e2e;
+    color: #e0e0e8;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+
+  .share-bar button:hover { background: #2a2a3e; }
+
+  .footer {
+    margin-top: 2rem;
+    text-align: center;
+    font-size: 0.8rem;
+    color: #4b5563;
+  }
+
+  .footer a { color: #6b7280; text-decoration: none; }
+  .footer a:hover { color: #9ca3af; }
+
+  /* Loading state */
+  .loading-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(10, 10, 15, 0.85);
+    z-index: 100;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .loading-overlay.active { display: flex; }
+
+  .spinner {
+    width: 36px;
+    height: 36px;
+    border: 3px solid #1e1e2e;
+    border-top-color: #3b82f6;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .loading-text { color: #6b7280; font-size: 0.9rem; }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <h1>Is This True?</h1>
+  <p class="subtitle">Paste any claim. Get evidence. Powered by <a href="https://browseai.dev" target="_blank">BrowseAI</a>.</p>
+
+  <form class="search-form" action="/check" method="post" id="checkForm">
+    <input type="text" name="query" placeholder="e.g. The Great Wall of China is visible from space" value="{{ query or '' }}" required autocomplete="off" autofocus>
+    <button type="submit">Is this true?</button>
+  </form>
+
+  <div class="depth-toggle">
+    <input type="checkbox" id="depthToggle" name="depth_toggle">
+    <label for="depthToggle">Thorough mode (slower, higher confidence)</label>
+    <input type="hidden" name="depth" value="fast" form="checkForm" id="depthInput">
+  </div>
+
+  {% if error is defined and error %}
+  <div class="error-box">{{ error }}</div>
+  {% endif %}
+
+  {% if result %}
+  <div class="result-card">
+    <!-- Confidence -->
+    <div class="confidence-section">
+      <div class="confidence-label">
+        <span>Confidence</span>
+        {% set pct = (result.confidence * 100) | round | int %}
+        {% if pct >= 70 %}
+        <span class="confidence-value text-high">{{ pct }}%</span>
+        {% elif pct >= 40 %}
+        <span class="confidence-value text-mid">{{ pct }}%</span>
+        {% else %}
+        <span class="confidence-value text-low">{{ pct }}%</span>
+        {% endif %}
+      </div>
+      <div class="confidence-bar">
+        {% if pct >= 70 %}
+        <div class="confidence-fill conf-high" style="width: {{ pct }}%"></div>
+        {% elif pct >= 40 %}
+        <div class="confidence-fill conf-mid" style="width: {{ pct }}%"></div>
+        {% else %}
+        <div class="confidence-fill conf-low" style="width: {{ pct }}%"></div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Answer -->
+    <div class="answer-section">
+      <h3>Answer</h3>
+      <div class="answer-text">{{ result.answer }}</div>
+    </div>
+
+    <!-- Claims -->
+    {% if result.claims %}
+    <h3 class="section-header">Claims ({{ result.claims | length }})</h3>
+    <ul class="claims-list">
+      {% for c in result.claims %}
+      <li class="claim-item">
+        {% if c.verified %}
+        <span class="claim-badge badge-verified">Verified</span>
+        {% else %}
+        <span class="claim-badge badge-unverified">Unverified</span>
+        {% endif %}
+        <div>
+          {{ c.claim }}
+          {% if c.consensusLevel %}
+          <div class="claim-meta">Consensus: {{ c.consensusLevel }}{% if c.verificationScore is not none %} | Score: {{ (c.verificationScore * 100) | round | int }}%{% endif %}</div>
+          {% endif %}
+        </div>
+      </li>
+      {% endfor %}
+    </ul>
+    {% endif %}
+
+    <!-- Contradictions -->
+    {% if result.contradictions %}
+    <h3 class="section-header">Contradictions ({{ result.contradictions | length }})</h3>
+    {% for ct in result.contradictions %}
+    <div class="contradiction-item">
+      <div class="contradiction-topic">{{ ct.topic }}</div>
+      <div class="contradiction-claims">
+        <div>{{ ct.claimA }}</div>
+        <div class="contradiction-vs">vs.</div>
+        <div>{{ ct.claimB }}</div>
+      </div>
+    </div>
+    {% endfor %}
+    {% endif %}
+
+    <!-- Sources -->
+    {% if result.sources %}
+    <h3 class="section-header">Sources ({{ result.sources | length }})</h3>
+    <ul class="sources-list">
+      {% for s in result.sources %}
+      <li class="source-item">
+        <a class="source-link" href="{{ s.url }}" target="_blank" rel="noopener">{{ s.title }}</a>
+        <div class="source-domain">{{ s.domain }}</div>
+        {% if s.quote %}
+        <div class="source-quote">"{{ s.quote }}"</div>
+        {% endif %}
+      </li>
+      {% endfor %}
+    </ul>
+    {% endif %}
+
+    <!-- Trace -->
+    {% if result.trace %}
+    <h3 class="section-header">Verification Pipeline</h3>
+    <ul class="trace-list">
+      {% for t in result.trace %}
+      <li class="trace-step">
+        <span class="trace-name">{{ t.step }}{% if t.detail %}<span class="trace-detail">{{ t.detail }}</span>{% endif %}</span>
+        <span class="trace-time">{{ t.duration_ms }}ms</span>
+      </li>
+      {% endfor %}
+    </ul>
+    {% endif %}
+
+    <!-- Share -->
+    {% if result_id is defined and result_id %}
+    <div class="share-bar">
+      <input type="text" value="{{ request.url_for('view_result', result_id=result_id) }}" readonly id="shareUrl">
+      <button type="button" onclick="copyShare()">Copy link</button>
+    </div>
+    {% endif %}
+  </div>
+  {% endif %}
+
+  <div class="footer">
+    <a href="https://github.com/BrowseAI-HQ/BrowserAI-Dev" target="_blank">GitHub</a>
+    &middot;
+    <a href="https://browseai.dev" target="_blank">browseai.dev</a>
+    &middot;
+    <a href="https://discord.gg/ubAuT4YQsT" target="_blank">Discord</a>
+  </div>
+</div>
+
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="spinner"></div>
+  <div class="loading-text">Searching, verifying, and scoring...</div>
+</div>
+
+<script>
+  // Depth toggle
+  const depthToggle = document.getElementById('depthToggle');
+  const depthInput = document.getElementById('depthInput');
+  depthToggle.addEventListener('change', () => {
+    depthInput.value = depthToggle.checked ? 'thorough' : 'fast';
+  });
+
+  // Loading overlay
+  document.getElementById('checkForm').addEventListener('submit', () => {
+    document.getElementById('loadingOverlay').classList.add('active');
+  });
+
+  // Copy share link
+  function copyShare() {
+    const input = document.getElementById('shareUrl');
+    input.select();
+    navigator.clipboard.writeText(input.value);
+    const btn = input.nextElementSibling;
+    btn.textContent = 'Copied!';
+    setTimeout(() => { btn.textContent = 'Copy link'; }, 1500);
+  }
+</script>
+
+</body>
+</html>

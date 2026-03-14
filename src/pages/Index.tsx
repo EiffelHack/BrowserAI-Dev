@@ -182,7 +182,7 @@ const Index = () => {
             onClick={handleProWaitlist}
             className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-accent/10 border border-accent/20 text-accent text-xs font-semibold hover:bg-accent/20 transition-colors"
           >
-            <Sparkles className="w-3 h-3" />
+            <Sparkles className="w-3.5 h-3.5" />
             {user ? "Dashboard" : "Pro Waitlist"}
           </button>
 
@@ -323,7 +323,7 @@ const Index = () => {
               rel="noopener"
               className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-secondary border border-border text-sm font-medium hover:border-accent/40 hover:text-accent transition-all w-full sm:w-auto justify-center"
             >
-              <Star className="w-4 h-4" />
+              <Star className="w-3.5 h-3.5" />
               Star on GitHub
               <ExternalLink className="w-3 h-3 text-muted-foreground" />
             </a>
@@ -333,7 +333,7 @@ const Index = () => {
               rel="noopener"
               className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-[#5865F2]/10 border border-[#5865F2]/20 text-sm font-medium text-[#5865F2] hover:bg-[#5865F2]/20 transition-all w-full sm:w-auto justify-center"
             >
-              <MessageCircle className="w-4 h-4" />
+              <MessageCircle className="w-3.5 h-3.5" />
               Join Discord
               <ExternalLink className="w-3 h-3 opacity-60" />
             </a>
@@ -344,7 +344,7 @@ const Index = () => {
                 className="gap-2 px-5 py-2.5 h-auto text-sm border-accent/30 text-accent hover:bg-accent/10 w-full sm:w-auto justify-center"
                 onClick={() => setLoginOpen(true)}
               >
-                <LogIn className="w-4 h-4" />
+                <LogIn className="w-3.5 h-3.5" />
                 Sign in free
               </Button>
             )}
@@ -352,7 +352,7 @@ const Index = () => {
               onClick={handleProWaitlist}
               className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-accent/10 border border-accent/20 text-sm font-medium text-accent hover:bg-accent/20 transition-all w-full sm:w-auto justify-center"
             >
-              <Sparkles className="w-4 h-4" />
+              <Sparkles className="w-3.5 h-3.5" />
               {user ? "Go to Dashboard" : "Join Pro Waitlist"}
             </button>
           </motion.div>
@@ -387,7 +387,7 @@ const Index = () => {
           {/* Direction */}
           <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.3 }}>
             <div className="flex items-center justify-center gap-2 mb-6">
-              <Rocket className="w-4 h-4 text-accent" />
+              <Rocket className="w-5 h-5 text-accent" />
               <h3 className="text-sm font-semibold uppercase tracking-wider">Where we're going</h3>
             </div>
             {(() => {
@@ -481,7 +481,7 @@ const Index = () => {
             className="mt-16 p-6 rounded-xl bg-card border border-border"
           >
             <div className="flex items-center gap-2 mb-4">
-              <CheckCircle2 className="w-4 h-4 text-accent" />
+              <CheckCircle2 className="w-5 h-5 text-accent" />
               <span className="text-sm font-semibold text-muted-foreground">Example output</span>
             </div>
             <pre className="text-xs text-muted-foreground overflow-x-auto font-mono leading-relaxed">{`{
@@ -515,7 +515,7 @@ const Index = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <motion.div initial={{ opacity: 0, x: -20 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} className="p-6 rounded-xl bg-card border border-orange-400/20">
               <div className="flex items-center gap-2 mb-4">
-                <ShieldAlert className="w-4 h-4 text-orange-400" />
+                <ShieldAlert className="w-5 h-5 text-orange-400" />
                 <span className="text-sm font-semibold text-orange-400 uppercase tracking-wider">Raw LLM</span>
               </div>
               <ul className="space-y-3 text-sm text-muted-foreground">
@@ -528,14 +528,14 @@ const Index = () => {
 
             <motion.div initial={{ opacity: 0, x: 20 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} className="p-6 rounded-xl bg-card border border-emerald-400/20">
               <div className="flex items-center gap-2 mb-4">
-                <Shield className="w-4 h-4 text-emerald-400" />
+                <Shield className="w-5 h-5 text-emerald-400" />
                 <span className="text-sm font-semibold text-emerald-400 uppercase tracking-wider">BrowseAI Dev</span>
               </div>
               <ul className="space-y-3 text-sm">
-                <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-400 mt-0.5 shrink-0" /> Real URLs with quoted evidence</li>
-                <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-400 mt-0.5 shrink-0" /> BM25-verified claims against source text</li>
-                <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-400 mt-0.5 shrink-0" /> Domain authority scoring (10,000+ domains)</li>
-                <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-400 mt-0.5 shrink-0" /> Evidence-based confidence (7-factor score)</li>
+                <li className="flex items-start gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 mt-0.5 shrink-0" /> Real URLs with quoted evidence</li>
+                <li className="flex items-start gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 mt-0.5 shrink-0" /> BM25-verified claims against source text</li>
+                <li className="flex items-start gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 mt-0.5 shrink-0" /> Domain authority scoring (10,000+ domains)</li>
+                <li className="flex items-start gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 mt-0.5 shrink-0" /> Evidence-based confidence (7-factor score)</li>
               </ul>
             </motion.div>
           </div>
@@ -808,10 +808,10 @@ curl -X POST https://browseai.dev/api/browse/answer \\
             <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="p-6 rounded-xl bg-card border border-border">
               <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground mb-4">No Account</h3>
               <ul className="space-y-2.5 text-sm">
-                <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-400 mt-0.5 shrink-0" /> 5 free queries/hour</li>
-                <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-400 mt-0.5 shrink-0" /> All 5 tools + compare mode</li>
-                <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-400 mt-0.5 shrink-0" /> BYOK for unlimited access</li>
-                <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-400 mt-0.5 shrink-0" /> MCP + REST API + Python SDK</li>
+                <li className="flex items-start gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 mt-0.5 shrink-0" /> 5 free queries/hour</li>
+                <li className="flex items-start gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 mt-0.5 shrink-0" /> All 5 tools + compare mode</li>
+                <li className="flex items-start gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 mt-0.5 shrink-0" /> BYOK for unlimited access</li>
+                <li className="flex items-start gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 mt-0.5 shrink-0" /> MCP + REST API + Python SDK</li>
               </ul>
             </motion.div>
 
@@ -822,11 +822,11 @@ curl -X POST https://browseai.dev/api/browse/answer \\
                 <Badge variant="outline" className="text-[10px] text-accent border-accent/30">Recommended</Badge>
               </div>
               <ul className="space-y-2.5 text-sm">
-                <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-400 mt-0.5 shrink-0" /> Everything above, plus:</li>
-                <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-400 mt-0.5 shrink-0" /> Research Sessions — persistent memory across queries</li>
-                <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-400 mt-0.5 shrink-0" /> BrowseAI Dev API key (one key for everything)</li>
-                <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-400 mt-0.5 shrink-0" /> Query history &amp; dashboard</li>
-                <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-400 mt-0.5 shrink-0" /> Usage analytics</li>
+                <li className="flex items-start gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 mt-0.5 shrink-0" /> Everything above, plus:</li>
+                <li className="flex items-start gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 mt-0.5 shrink-0" /> Research Sessions — persistent memory across queries</li>
+                <li className="flex items-start gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 mt-0.5 shrink-0" /> BrowseAI Dev API key (one key for everything)</li>
+                <li className="flex items-start gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 mt-0.5 shrink-0" /> Query history &amp; dashboard</li>
+                <li className="flex items-start gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 mt-0.5 shrink-0" /> Usage analytics</li>
               </ul>
               <Button
                 variant="outline"
@@ -849,11 +849,11 @@ curl -X POST https://browseai.dev/api/browse/answer \\
               </div>
               <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground mb-4">Pro</h3>
               <ul className="space-y-2.5 text-sm text-muted-foreground">
-                <li className="flex items-start gap-2"><Sparkles className="w-4 h-4 text-accent mt-0.5 shrink-0" /> Managed keys — no BYOK needed</li>
-                <li className="flex items-start gap-2"><Sparkles className="w-4 h-4 text-accent mt-0.5 shrink-0" /> 15+ sources per query</li>
-                <li className="flex items-start gap-2"><Sparkles className="w-4 h-4 text-accent mt-0.5 shrink-0" /> Multi-model verification</li>
-                <li className="flex items-start gap-2"><Sparkles className="w-4 h-4 text-accent mt-0.5 shrink-0" /> Priority queue &amp; webhooks</li>
-                <li className="flex items-start gap-2"><Sparkles className="w-4 h-4 text-accent mt-0.5 shrink-0" /> Team seats &amp; shared access</li>
+                <li className="flex items-start gap-2"><Sparkles className="w-3.5 h-3.5 text-accent mt-0.5 shrink-0" /> Managed keys — no BYOK needed</li>
+                <li className="flex items-start gap-2"><Sparkles className="w-3.5 h-3.5 text-accent mt-0.5 shrink-0" /> 15+ sources per query</li>
+                <li className="flex items-start gap-2"><Sparkles className="w-3.5 h-3.5 text-accent mt-0.5 shrink-0" /> Multi-model verification</li>
+                <li className="flex items-start gap-2"><Sparkles className="w-3.5 h-3.5 text-accent mt-0.5 shrink-0" /> Priority queue &amp; webhooks</li>
+                <li className="flex items-start gap-2"><Sparkles className="w-3.5 h-3.5 text-accent mt-0.5 shrink-0" /> Team seats &amp; shared access</li>
               </ul>
             </motion.div>
           </div>
@@ -870,10 +870,10 @@ curl -X POST https://browseai.dev/api/browse/answer \\
               <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground mb-2">Enterprise</h3>
               <p className="text-xs text-muted-foreground mb-3">The adapter architecture is built. Gauging demand before we ship.</p>
               <div className="grid grid-cols-2 gap-2">
-                <div className="flex items-start gap-2 text-sm text-muted-foreground"><Sparkles className="w-4 h-4 text-blue-400 mt-0.5 shrink-0" /> Search adapters — Elasticsearch, Confluence, custom</div>
-                <div className="flex items-start gap-2 text-sm text-muted-foreground"><Sparkles className="w-4 h-4 text-blue-400 mt-0.5 shrink-0" /> Zero data retention mode</div>
-                <div className="flex items-start gap-2 text-sm text-muted-foreground"><Sparkles className="w-4 h-4 text-blue-400 mt-0.5 shrink-0" /> Full verification on your data</div>
-                <div className="flex items-start gap-2 text-sm text-muted-foreground"><Sparkles className="w-4 h-4 text-blue-400 mt-0.5 shrink-0" /> Your data never leaves your system</div>
+                <div className="flex items-start gap-2 text-sm text-muted-foreground"><Sparkles className="w-3.5 h-3.5 text-blue-400 mt-0.5 shrink-0" /> Search adapters — Elasticsearch, Confluence, custom</div>
+                <div className="flex items-start gap-2 text-sm text-muted-foreground"><Sparkles className="w-3.5 h-3.5 text-blue-400 mt-0.5 shrink-0" /> Zero data retention mode</div>
+                <div className="flex items-start gap-2 text-sm text-muted-foreground"><Sparkles className="w-3.5 h-3.5 text-blue-400 mt-0.5 shrink-0" /> Full verification on your data</div>
+                <div className="flex items-start gap-2 text-sm text-muted-foreground"><Sparkles className="w-3.5 h-3.5 text-blue-400 mt-0.5 shrink-0" /> Your data never leaves your system</div>
               </div>
             </motion.div>
           </div>
@@ -905,7 +905,7 @@ curl -X POST https://browseai.dev/api/browse/answer \\
             </div>
             {waitlistStatus === "success" && (
               <p className="text-sm text-emerald-400 flex items-center justify-center gap-1.5">
-                <CheckCircle2 className="w-4 h-4" /> {waitlistMessage}
+                <CheckCircle2 className="w-3.5 h-3.5" /> {waitlistMessage}
               </p>
             )}
             {waitlistStatus === "error" && (
@@ -936,7 +936,7 @@ curl -X POST https://browseai.dev/api/browse/answer \\
               rel="noopener"
               className="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-secondary border border-border text-sm font-semibold hover:border-accent/40 hover:text-accent transition-all w-full sm:w-auto justify-center"
             >
-              <Star className="w-4 h-4" />
+              <Star className="w-3.5 h-3.5" />
               Star on GitHub
             </a>
             <a
@@ -945,7 +945,7 @@ curl -X POST https://browseai.dev/api/browse/answer \\
               rel="noopener"
               className="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-[#5865F2]/10 border border-[#5865F2]/20 text-sm font-semibold text-[#5865F2] hover:bg-[#5865F2]/20 transition-all w-full sm:w-auto justify-center"
             >
-              <MessageCircle className="w-4 h-4" />
+              <MessageCircle className="w-3.5 h-3.5" />
               Join Discord
             </a>
           </motion.div>

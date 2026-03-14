@@ -285,9 +285,9 @@ const Playground = () => {
                   <div key={i} className="p-3 rounded-lg bg-card border border-border flex gap-3">
                     <div className="shrink-0 mt-0.5">
                       {claim.verified ? (
-                        <CheckCircle2 className="w-4 h-4 text-green-400" />
+                        <CheckCircle2 className="w-3.5 h-3.5 text-green-400" />
                       ) : (
-                        <XCircle className="w-4 h-4 text-muted-foreground" />
+                        <XCircle className="w-3.5 h-3.5 text-muted-foreground" />
                       )}
                     </div>
                     <div className="min-w-0 flex-1">

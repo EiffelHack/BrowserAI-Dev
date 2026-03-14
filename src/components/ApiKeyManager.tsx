@@ -128,7 +128,7 @@ export function ApiKeyManager() {
       <Card>
         <CardHeader>
           <CardTitle className="text-lg flex items-center gap-2">
-            <Key className="w-4 h-4 text-accent" />
+            <Key className="w-5 h-5 text-accent" />
             API Keys
           </CardTitle>
         </CardHeader>
@@ -150,7 +150,7 @@ export function ApiKeyManager() {
                 <Label htmlFor="tavily" className="text-xs flex items-center justify-between">
                   Tavily API Key
                   <a href="https://app.tavily.com" target="_blank" rel="noopener" className="text-[10px] text-muted-foreground hover:text-foreground flex items-center gap-1">
-                    Get free key <ExternalLink className="w-2.5 h-2.5" />
+                    Get free key <ExternalLink className="w-3 h-3" />
                   </a>
                 </Label>
                 <Input
@@ -167,7 +167,7 @@ export function ApiKeyManager() {
                 <Label htmlFor="openrouter" className="text-xs flex items-center justify-between">
                   OpenRouter API Key
                   <a href="https://openrouter.ai/keys" target="_blank" rel="noopener" className="text-[10px] text-muted-foreground hover:text-foreground flex items-center gap-1">
-                    Get free key <ExternalLink className="w-2.5 h-2.5" />
+                    Get free key <ExternalLink className="w-3 h-3" />
                   </a>
                 </Label>
                 <Input
@@ -284,7 +284,7 @@ export function ApiKeyManager() {
             </div>
 
             <div className="flex items-start gap-2 p-3 rounded-lg bg-orange-400/10 border border-orange-400/20">
-              <AlertTriangle className="w-4 h-4 text-orange-400 mt-0.5 shrink-0" />
+              <AlertTriangle className="w-3.5 h-3.5 text-orange-400 mt-0.5 shrink-0" />
               <p className="text-xs text-orange-400">
                 This key will only be shown once. Store it securely.
               </p>

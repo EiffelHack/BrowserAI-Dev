@@ -13,7 +13,7 @@ export function FinalAnswer({ answer, confidence }: { answer: string; confidence
       transition={{ duration: 0.5 }}
     >
       <div className="flex items-center gap-3 mb-4">
-        <Sparkles className="w-4 h-4 text-accent" />
+        <Sparkles className="w-5 h-5 text-accent" />
         <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Final Answer</h2>
         <div className="ml-auto flex items-center gap-2">
           {/* Confidence ring */}

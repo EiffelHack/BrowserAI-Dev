@@ -1,0 +1,3 @@
+discord.py>=2.3,<3
+browseai>=0.3.0
+python-dotenv>=1.0

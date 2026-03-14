@@ -94,7 +94,7 @@ const Share = () => {
                 className="bg-accent text-accent-foreground hover:bg-accent/90 gap-2"
               >
                 Try your own query
-                <ExternalLink className="w-4 h-4" />
+                <ExternalLink className="w-3.5 h-3.5" />
               </Button>
               <BrowseBadge />
             </motion.div>
