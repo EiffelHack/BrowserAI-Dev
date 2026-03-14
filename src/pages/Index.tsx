@@ -403,6 +403,7 @@ const Index = () => {
                 { phase: "Coming Soon", text: "Knowledge graph & entity extraction — map relationships between claims, build reusable knowledge" },
                 { phase: "Coming Soon", text: "Academic papers & broader sources — Semantic Scholar, arXiv, code search, real-time data feeds" },
                 { phase: "Coming Soon", text: "Multi-provider search — combine Tavily, Google, Bing for broader coverage and source diversity" },
+                { phase: "Coming Soon", text: "Enterprise search adapters — plug into Elasticsearch, Confluence, or any custom endpoint with zero data retention" },
               ];
               const visible = showAllRoadmap ? roadmapItems : roadmapItems.slice(0, 4);
               return (
@@ -802,7 +803,7 @@ curl -X POST https://browseai.dev/api/browse/answer \\
             </p>
           </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
             {/* No account */}
             <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="p-6 rounded-xl bg-card border border-border">
               <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground mb-4">No Account</h3>
@@ -854,6 +855,26 @@ curl -X POST https://browseai.dev/api/browse/answer \\
                 <li className="flex items-start gap-2"><Sparkles className="w-4 h-4 text-accent mt-0.5 shrink-0" /> Priority queue &amp; webhooks</li>
                 <li className="flex items-start gap-2"><Sparkles className="w-4 h-4 text-accent mt-0.5 shrink-0" /> Team seats &amp; shared access</li>
               </ul>
+            </motion.div>
+          </div>
+
+          {/* Enterprise — centered below */}
+          <div className="max-w-lg mx-auto mb-16">
+            <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.3 }} className="p-6 rounded-xl bg-card border border-blue-400/20 relative overflow-hidden">
+              <div className="absolute top-3 right-3">
+                <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-blue-400/10 border border-blue-400/20">
+                  <Sparkles className="w-3 h-3 text-blue-400" />
+                  <span className="text-[10px] font-semibold text-blue-400">Architecture Ready</span>
+                </div>
+              </div>
+              <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground mb-2">Enterprise</h3>
+              <p className="text-xs text-muted-foreground mb-3">The adapter architecture is built. Gauging demand before we ship.</p>
+              <div className="grid grid-cols-2 gap-2">
+                <div className="flex items-start gap-2 text-sm text-muted-foreground"><Sparkles className="w-4 h-4 text-blue-400 mt-0.5 shrink-0" /> Search adapters — Elasticsearch, Confluence, custom</div>
+                <div className="flex items-start gap-2 text-sm text-muted-foreground"><Sparkles className="w-4 h-4 text-blue-400 mt-0.5 shrink-0" /> Zero data retention mode</div>
+                <div className="flex items-start gap-2 text-sm text-muted-foreground"><Sparkles className="w-4 h-4 text-blue-400 mt-0.5 shrink-0" /> Full verification on your data</div>
+                <div className="flex items-start gap-2 text-sm text-muted-foreground"><Sparkles className="w-4 h-4 text-blue-400 mt-0.5 shrink-0" /> Your data never leaves your system</div>
+              </div>
             </motion.div>
           </div>
 

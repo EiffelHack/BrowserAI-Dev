@@ -44,10 +44,22 @@ export const ExtractRequestSchema = z.object({
   query: z.string().max(500).optional(),
 });
 
+// ── Search Provider schema (Enterprise) ──
+
+export const SearchProviderConfigSchema = z.object({
+  type: z.enum(["tavily", "brave", "elasticsearch", "confluence", "custom"]),
+  endpoint: z.string().url().optional(),
+  authHeader: z.string().max(2000).optional(),
+  index: z.string().max(200).optional(),
+  spaceKey: z.string().max(200).optional(),
+  dataRetention: z.enum(["normal", "none"]).optional().default("normal"),
+});
+
 export const AnswerRequestSchema = z.object({
   query: z.string().min(1).max(500),
   depth: z.enum(["fast", "thorough"]).optional().default("fast"),
   sessionId: z.string().max(36).optional(),
+  searchProvider: SearchProviderConfigSchema.optional(),
 });
 
 // ── Research Memory schemas ──

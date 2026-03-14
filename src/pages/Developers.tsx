@@ -111,6 +111,12 @@ const ROADMAP_ITEMS = [
     desc: "Semantic Scholar, arXiv, code search, real-time data feeds. Research beyond the open web.",
     done: false,
   },
+  {
+    phase: "Architecture Ready",
+    title: "Enterprise search adapters",
+    desc: "Plug BrowseAI Dev into your internal data — Elasticsearch, Confluence, or any custom endpoint. Same verification pipeline, zero data retention mode. Your data never leaves your system.",
+    done: false,
+  },
 ];
 
 const GOOD_FIRST_ISSUES = [

@@ -426,11 +426,24 @@ function registerTools(server: McpServer) {
 
   server.tool(
     "browse_answer",
-    "Full deep research pipeline: search the web, fetch pages, extract claims, build evidence graph, and generate a structured answer with citations and confidence score. Use depth='thorough' for auto-retry with rephrased queries when confidence is low.",
-    { query: z.string(), depth: z.enum(["fast", "thorough"]).optional().describe("Research depth: 'fast' (default) or 'thorough' (auto-retries with rephrased query if confidence < 60%)") },
-    async ({ query, depth }) => {
+    "Full deep research pipeline: search the web, fetch pages, extract claims, build evidence graph, and generate a structured answer with citations and confidence score. Use depth='thorough' for auto-retry with rephrased queries when confidence is low. Enterprise: use searchProvider to search internal data instead of the public web.",
+    {
+      query: z.string(),
+      depth: z.enum(["fast", "thorough"]).optional().describe("Research depth: 'fast' (default) or 'thorough' (auto-retries with rephrased query if confidence < 60%)"),
+      searchProvider: z.object({
+        type: z.enum(["tavily", "brave", "elasticsearch", "confluence", "custom"]).describe("Search backend type"),
+        endpoint: z.string().optional().describe("Endpoint URL (required for elasticsearch, confluence, custom)"),
+        authHeader: z.string().optional().describe("Auth header value (e.g. 'Bearer xxx')"),
+        index: z.string().optional().describe("Elasticsearch index name"),
+        spaceKey: z.string().optional().describe("Confluence space key"),
+        dataRetention: z.enum(["normal", "none"]).optional().describe("'none' skips all caching/storage (enterprise)"),
+      }).optional().describe("Enterprise: configure a custom search backend instead of public web search"),
+    },
+    async ({ query, depth, searchProvider }) => {
       if (API_MODE) {
-        const result = await apiCall("/browse/answer", { query, depth: depth || "fast" });
+        const body: Record<string, unknown> = { query, depth: depth || "fast" };
+        if (searchProvider) body.searchProvider = searchProvider;
+        const result = await apiCall("/browse/answer", body);
         return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
       }
       const result = await answerPipeline(query);
