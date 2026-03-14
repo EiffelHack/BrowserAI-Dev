@@ -1,0 +1,4 @@
+browseai>=0.3.0
+rich>=13.0
+beautifulsoup4>=4.12
+python-dotenv>=1.0

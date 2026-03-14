@@ -139,7 +139,7 @@ const SharedSession = () => {
                   {forking ? (
                     <Loader2 className="w-4 h-4 animate-spin" />
                   ) : (
-                    <GitFork className="w-4 h-4" />
+                    <GitFork className="w-3.5 h-3.5" />
                   )}
                   {forking ? "Forking..." : "Fork this Research"}
                 </Button>
@@ -155,7 +155,7 @@ const SharedSession = () => {
                   animate={{ opacity: 1, scale: 1 }}
                   className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-emerald-400/10 border border-emerald-400/20 text-emerald-400 text-sm"
                 >
-                  <CheckCircle2 className="w-4 h-4" />
+                  <CheckCircle2 className="w-3.5 h-3.5" />
                   Forked! Redirecting to your sessions...
                 </motion.div>
               )}
@@ -238,7 +238,7 @@ const SharedSession = () => {
                     className="bg-accent text-accent-foreground hover:bg-accent/90 gap-2"
                   >
                     Start Researching
-                    <ExternalLink className="w-4 h-4" />
+                    <ExternalLink className="w-3.5 h-3.5" />
                   </Button>
                 ) : (
                   <LoginModal />

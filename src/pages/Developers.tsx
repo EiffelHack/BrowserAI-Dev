@@ -199,7 +199,7 @@ const Developers = () => {
           <div className="flex flex-wrap justify-center gap-3">
             <Button className="gap-2" asChild>
               <a href="https://github.com/BrowseAI-HQ/BrowseAI-Dev" target="_blank" rel="noopener">
-                <GitBranch className="w-4 h-4" />
+                <GitBranch className="w-3.5 h-3.5" />
                 View on GitHub
               </a>
             </Button>
@@ -340,7 +340,7 @@ const Developers = () => {
         <div className="max-w-3xl mx-auto">
           <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
             <div className="flex items-center gap-2 mb-6">
-              <Heart className="w-4 h-4 text-accent" />
+              <Heart className="w-5 h-5 text-accent" />
               <h2 className="text-sm font-semibold uppercase tracking-wider">The Story</h2>
             </div>
             <div className="space-y-6 text-muted-foreground leading-relaxed">
@@ -388,7 +388,7 @@ const Developers = () => {
         <div className="max-w-3xl mx-auto">
           <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
             <div className="flex items-center gap-2 mb-6">
-              <Code2 className="w-4 h-4 text-accent" />
+              <Code2 className="w-5 h-5 text-accent" />
               <h2 className="text-sm font-semibold uppercase tracking-wider">How to Use It</h2>
             </div>
             <h3 className="text-2xl md:text-3xl font-bold mb-8">Four ways to get started</h3>
@@ -404,7 +404,7 @@ const Developers = () => {
                   No signup needed. Bring your own API keys for unlimited usage.
                 </p>
                 <Button variant="outline" size="sm" className="gap-1.5" onClick={() => navigate("/playground")}>
-                  Open Playground <ArrowRight className="w-3 h-3" />
+                  Open Playground <ArrowRight className="w-3.5 h-3.5" />
                 </Button>
               </div>
 
@@ -478,8 +478,89 @@ print(result.answer, result.confidence)`}</pre>
               Ready-to-run examples for research agents, LangChain, CrewAI, hallucination detection, and more.
             </p>
             <Button className="gap-2" onClick={() => navigate("/recipes")}>
-              Browse Recipes <ArrowRight className="w-4 h-4" />
+              Browse Recipes <ArrowRight className="w-3.5 h-3.5" />
             </Button>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Tutorials & Examples */}
+      <section className="py-24 px-6 border-t border-border">
+        <div className="max-w-4xl mx-auto">
+          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
+            <div className="flex items-center gap-2 mb-6">
+              <Lightbulb className="w-5 h-5 text-accent" />
+              <h2 className="text-sm font-semibold uppercase tracking-wider">Tutorials</h2>
+            </div>
+            <h3 className="text-2xl md:text-3xl font-bold mb-4">Build something real</h3>
+            <p className="text-muted-foreground mb-8 max-w-2xl">
+              Full project tutorials with working code. Each one shows a different way to use BrowseAI Dev.
+            </p>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {[
+                {
+                  title: "Fact-Checker Bot",
+                  desc: "Discord bot that verifies any claim with !verify and shows evidence vs hallucination with !compare.",
+                  tags: ["Discord", "Thorough Mode", "Compare"],
+                  link: "https://github.com/BrowseAI-HQ/BrowseAI-Dev/tree/main/examples/fact-checker-bot",
+                },
+                {
+                  title: "Is This True?",
+                  desc: "Minimal web app — paste any sentence, get a confidence score, sources, and contradictions. One input, one answer.",
+                  tags: ["FastAPI", "Web App", "Shareable"],
+                  link: "https://github.com/BrowseAI-HQ/BrowseAI-Dev/tree/main/examples/is-this-true",
+                },
+                {
+                  title: "Debate Settler",
+                  desc: "Two claims go in, evidence decides the winner. Side-by-side comparison with scoring breakdown.",
+                  tags: ["CLI", "Thorough Mode", "Contradictions"],
+                  link: "https://github.com/BrowseAI-HQ/BrowseAI-Dev/tree/main/examples/debate-settler",
+                },
+                {
+                  title: "Docs Verifier",
+                  desc: "Verify every factual claim in your README or docs. Flags outdated stats and wrong assertions. CI-friendly.",
+                  tags: ["CI/CD", "Extract", "Automation"],
+                  link: "https://github.com/BrowseAI-HQ/BrowseAI-Dev/tree/main/examples/docs-verifier",
+                },
+                {
+                  title: "Podcast Prep",
+                  desc: "Research brief builder — give it a guest and topic, get verified facts, contradictions, and suggested questions.",
+                  tags: ["Sessions", "Recall", "Async"],
+                  link: "https://github.com/BrowseAI-HQ/BrowseAI-Dev/tree/main/examples/podcast-prep",
+                },
+                {
+                  title: "More Coming Soon",
+                  desc: "Competitive intel agent, Wikipedia trust scorer, newsletter writer with citations, and more.",
+                  tags: ["Contribute", "Ideas Welcome"],
+                  link: "https://github.com/BrowseAI-HQ/BrowseAI-Dev/tree/main/examples",
+                },
+              ].map((tutorial, i) => (
+                <motion.a
+                  key={tutorial.title}
+                  href={tutorial.link}
+                  target="_blank"
+                  rel="noopener"
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: i * 0.08 }}
+                  className="p-5 rounded-xl bg-card border border-border hover:border-accent/40 transition-colors group"
+                >
+                  <span className="font-semibold text-sm group-hover:text-accent transition-colors block mb-2">
+                    {tutorial.title}
+                  </span>
+                  <p className="text-xs text-muted-foreground mb-3 leading-relaxed">{tutorial.desc}</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {tutorial.tags.map((tag) => (
+                      <span key={tag} className="text-[10px] px-2 py-0.5 rounded-full bg-secondary text-muted-foreground">
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                </motion.a>
+              ))}
+            </div>
           </motion.div>
         </div>
       </section>
@@ -489,7 +570,7 @@ print(result.answer, result.confidence)`}</pre>
         <div className="max-w-3xl mx-auto">
           <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
             <div className="flex items-center gap-2 mb-6">
-              <Rocket className="w-4 h-4 text-accent" />
+              <Rocket className="w-5 h-5 text-accent" />
               <h2 className="text-sm font-semibold uppercase tracking-wider">Roadmap</h2>
             </div>
             <h3 className="text-2xl md:text-3xl font-bold mb-8">Where we're headed</h3>
@@ -515,7 +596,7 @@ print(result.answer, result.confidence)`}</pre>
                     <div>
                       <div className="flex items-center gap-2">
                         <span className="font-semibold">{item.title}</span>
-                        {item.done && <CheckCircle2 className="w-4 h-4 text-accent" />}
+                        {item.done && <CheckCircle2 className="w-3.5 h-3.5 text-accent" />}
                       </div>
                       <p className="text-sm text-muted-foreground mt-1">{item.desc}</p>
                     </div>
@@ -532,7 +613,7 @@ print(result.answer, result.confidence)`}</pre>
         <div className="max-w-4xl mx-auto">
           <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-12">
             <div className="flex items-center justify-center gap-2 mb-6">
-              <Users className="w-4 h-4 text-accent" />
+              <Users className="w-5 h-5 text-accent" />
               <h2 className="text-sm font-semibold uppercase tracking-wider">Contribute</h2>
             </div>
             <h3 className="text-2xl md:text-3xl font-bold mb-4">Help us build this</h3>
@@ -552,7 +633,7 @@ print(result.answer, result.confidence)`}</pre>
                 className="p-5 rounded-xl bg-card border border-border"
               >
                 <div className="flex items-center gap-2 mb-3">
-                  <area.icon className="w-4 h-4 text-accent" />
+                  <area.icon className="w-5 h-5 text-accent" />
                   <span className="font-semibold">{area.title}</span>
                 </div>
                 <p className="text-sm text-muted-foreground mb-3">{area.desc}</p>
@@ -570,7 +651,7 @@ print(result.answer, result.confidence)`}</pre>
           {/* Good First Issues */}
           <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
             <div className="flex items-center gap-2 mb-4">
-              <Lightbulb className="w-4 h-4 text-accent" />
+              <Lightbulb className="w-5 h-5 text-accent" />
               <h4 className="font-semibold">Good first issues</h4>
             </div>
             <div className="space-y-2">
@@ -592,7 +673,7 @@ print(result.answer, result.confidence)`}</pre>
         <div className="max-w-3xl mx-auto">
           <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
             <div className="flex items-center gap-2 mb-6">
-              <Sparkles className="w-4 h-4 text-accent" />
+              <Sparkles className="w-5 h-5 text-accent" />
               <h2 className="text-sm font-semibold uppercase tracking-wider">Agent Skills</h2>
             </div>
             <h3 className="text-2xl md:text-3xl font-bold mb-4">Teach your agents to research</h3>
@@ -641,7 +722,7 @@ print(result.answer, result.confidence)`}</pre>
         <div className="max-w-3xl mx-auto">
           <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
             <div className="flex items-center gap-2 mb-6">
-              <BookOpen className="w-4 h-4 text-accent" />
+              <BookOpen className="w-5 h-5 text-accent" />
               <h2 className="text-sm font-semibold uppercase tracking-wider">Getting Started</h2>
             </div>
             <h3 className="text-2xl md:text-3xl font-bold mb-8">How to contribute</h3>
@@ -680,7 +761,7 @@ print(result.answer, result.confidence)`}</pre>
 
             <div className="mt-4 p-5 rounded-xl bg-card border border-border">
               <div className="flex items-center gap-2 mb-2">
-                <Shield className="w-4 h-4 text-accent" />
+                <Shield className="w-5 h-5 text-accent" />
                 <span className="font-semibold text-sm">CI/CD runs automatically</span>
               </div>
               <p className="text-sm text-muted-foreground">
@@ -705,13 +786,13 @@ print(result.answer, result.confidence)`}</pre>
             <div className="flex flex-wrap justify-center gap-3">
               <Button className="gap-2" asChild>
                 <a href="https://github.com/BrowseAI-HQ/BrowseAI-Dev" target="_blank" rel="noopener">
-                  <GitBranch className="w-4 h-4" />
+                  <GitBranch className="w-3.5 h-3.5" />
                   Start Contributing
                 </a>
               </Button>
               <Button variant="outline" className="gap-2" asChild>
                 <a href="https://github.com/BrowseAI-HQ/BrowseAI-Dev/blob/main/CONTRIBUTING.md" target="_blank" rel="noopener">
-                  <BookOpen className="w-4 h-4" />
+                  <BookOpen className="w-3.5 h-3.5" />
                   Read the Guide
                   <ExternalLink className="w-3 h-3" />
                 </a>

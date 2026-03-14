@@ -1,6 +1,6 @@
 # BrowseAI Dev Examples
 
-Agent recipes showing how to use BrowseAI Dev as the research layer for AI agents.
+Agent recipes and tutorials showing how to use BrowseAI Dev as the research layer for AI agents.
 
 ## Quick Start
 
@@ -8,7 +8,9 @@ Agent recipes showing how to use BrowseAI Dev as the research layer for AI agent
 pip install browseai
 ```
 
-## Examples
+## Agent Recipes
+
+Quick single-file examples to get started fast.
 
 | Example | Description |
 |---------|-------------|
@@ -17,14 +19,27 @@ pip install browseai
 | [hallucination-detector.py](hallucination-detector.py) | Compare raw LLM answers vs evidence-backed answers |
 | [langchain-agent.py](langchain-agent.py) | Drop BrowseAI Dev into a LangChain agent pipeline |
 | [crewai-research-team.py](crewai-research-team.py) | Multi-agent research team with CrewAI + BrowseAI Dev |
+| [research-session.py](research-session.py) | Multi-turn research with persistent knowledge across queries |
+
+## Tutorials
+
+Full project tutorials — each with its own README, working code, and setup instructions.
+
+| Tutorial | What You'll Build | Features Used |
+|----------|-------------------|---------------|
+| [fact-checker-bot/](fact-checker-bot/) | Discord bot that verifies any claim with `!verify` and `!compare` | Ask (thorough), Compare, AsyncBrowseAI |
+| [is-this-true/](is-this-true/) | Web app — paste any sentence, get a confidence score and sources | Ask, Streaming, FastAPI |
+| [debate-settler/](debate-settler/) | CLI tool — two claims battle it out, evidence decides the winner | Ask (thorough), Contradictions |
+| [docs-verifier/](docs-verifier/) | Verify every factual claim in your README or docs | Ask, Open, Extract |
+| [podcast-prep/](podcast-prep/) | Research brief builder for podcast interviews | Sessions, Recall, Knowledge Export |
 
 ## How it works
 
 ```
-Agent → BrowseAI Dev → Internet → Verified answers + sources
+Agent → BrowseAI Dev → Internet / Enterprise Data → Verified answers + sources
 ```
 
-BrowseAI Dev is **research infrastructure for AI agents** — every answer comes with real sources, confidence scores, and verified claims.
+BrowseAI Dev is **research infrastructure for AI agents** — every answer comes with real sources, confidence scores, and verified claims. Works with internet search out of the box, or plug in enterprise data sources (Elasticsearch, Confluence, custom endpoints).
 
 ## Get API Key
 

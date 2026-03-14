@@ -433,7 +433,7 @@ const Sessions = () => {
             {/* Knowledge base */}
             <div>
               <div className="flex items-center gap-2 mb-4">
-                <Brain className="w-4 h-4 text-accent" />
+                <Brain className="w-5 h-5 text-accent" />
                 <h2 className="text-sm font-semibold uppercase tracking-wider">Session Knowledge</h2>
                 <span className="text-xs text-muted-foreground">({knowledge.length} claims)</span>
               </div>

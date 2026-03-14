@@ -193,7 +193,7 @@ const Recipes = () => {
               >
                 <div className="flex items-center gap-3 mb-3">
                   <div className="p-2 rounded-lg bg-accent/10">
-                    <recipe.icon className="w-4 h-4 text-accent" />
+                    <recipe.icon className="w-5 h-5 text-accent" />
                   </div>
                   <div>
                     <span className="font-semibold">{recipe.title}</span>
@@ -241,7 +241,7 @@ const Recipes = () => {
               </p>
               <Button variant="outline" size="sm" className="gap-1.5 mt-1" asChild>
                 <a href="https://github.com/BrowseAI-HQ/BrowseAI-Dev" target="_blank" rel="noopener">
-                  Contribute <ArrowRight className="w-3 h-3" />
+                  Contribute <ArrowRight className="w-3.5 h-3.5" />
                 </a>
               </Button>
             </motion.div>
@@ -254,7 +254,7 @@ const Recipes = () => {
         <div className="max-w-3xl mx-auto">
           <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
             <div className="flex items-center gap-2 mb-6">
-              <BookOpen className="w-4 h-4 text-accent" />
+              <BookOpen className="w-5 h-5 text-accent" />
               <h2 className="text-sm font-semibold uppercase tracking-wider">Quick Start</h2>
             </div>
             <h3 className="text-2xl md:text-3xl font-bold mb-8">Get started</h3>
@@ -321,13 +321,13 @@ const Recipes = () => {
             <div className="flex flex-wrap justify-center gap-3">
               <Button className="gap-2" asChild>
                 <a href="https://github.com/BrowseAI-HQ/BrowseAI-Dev/tree/main/examples" target="_blank" rel="noopener">
-                  <Code2 className="w-4 h-4" />
+                  <Code2 className="w-3.5 h-3.5" />
                   View on GitHub
                   <ExternalLink className="w-3 h-3" />
                 </a>
               </Button>
               <Button variant="outline" className="gap-2" onClick={() => navigate("/playground")}>
-                <Terminal className="w-4 h-4" />
+                <Terminal className="w-3.5 h-3.5" />
                 Try Playground
               </Button>
             </div>
