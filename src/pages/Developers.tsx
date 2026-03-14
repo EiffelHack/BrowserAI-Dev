@@ -519,15 +519,33 @@ print(result.answer, result.confidence)`}</pre>
                 },
                 {
                   title: "Fact-Checker Bot",
-                  desc: "Discord bot that verifies any claim with evidence.",
+                  desc: "Discord bot that verifies any claim with !verify and shows evidence vs hallucination with !compare.",
                   tags: ["Discord", "Thorough Mode", "Compare"],
                   link: "https://github.com/BrowseAI-HQ/BrowseAI-Dev/tree/main/examples/fact-checker-bot",
                 },
                 {
-                  title: "Research Session",
-                  desc: "Multi-turn research that builds knowledge over time.",
-                  tags: ["Sessions", "Recall", "Multi-turn"],
-                  link: "https://github.com/BrowseAI-HQ/BrowseAI-Dev/tree/main/examples/research-session",
+                  title: "Is This True?",
+                  desc: "Minimal web app — paste any sentence, get a confidence score, sources, and contradictions. One input, one answer.",
+                  tags: ["FastAPI", "Web App", "Shareable"],
+                  link: "https://github.com/BrowseAI-HQ/BrowseAI-Dev/tree/main/examples/is-this-true",
+                },
+                {
+                  title: "Debate Settler",
+                  desc: "Two claims go in, evidence decides the winner. Side-by-side comparison with scoring breakdown.",
+                  tags: ["CLI", "Thorough Mode", "Contradictions"],
+                  link: "https://github.com/BrowseAI-HQ/BrowseAI-Dev/tree/main/examples/debate-settler",
+                },
+                {
+                  title: "Docs Verifier",
+                  desc: "Verify every factual claim in your README or docs. Flags outdated stats and wrong assertions. CI-friendly.",
+                  tags: ["CI/CD", "Extract", "Automation"],
+                  link: "https://github.com/BrowseAI-HQ/BrowseAI-Dev/tree/main/examples/docs-verifier",
+                },
+                {
+                  title: "Podcast Prep",
+                  desc: "Research brief builder — give it a guest and topic, get verified facts, contradictions, and suggested questions.",
+                  tags: ["Sessions", "Recall", "Async"],
+                  link: "https://github.com/BrowseAI-HQ/BrowseAI-Dev/tree/main/examples/podcast-prep",
                 },
                 {
                   title: "More Coming Soon",

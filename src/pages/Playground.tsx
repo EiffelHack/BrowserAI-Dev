@@ -84,12 +84,36 @@ const TUTORIAL_SCENARIOS = [
     tutorial: "fact-checker-bot",
   },
   {
-    name: "Compare Outputs",
+    name: "Is This True?",
+    desc: "Quick confidence check on any statement",
+    tab: "answer" as const,
+    depth: "fast" as const,
+    query: "Drinking 8 glasses of water a day is necessary for health",
+    tutorial: "is-this-true",
+  },
+  {
+    name: "Settle a Debate",
     desc: "Compare two opposing claims",
     tab: "compare" as const,
     depth: "fast" as const,
     query: "Is remote work more productive than office work?",
-    tutorial: "research-session",
+    tutorial: "debate-settler",
+  },
+  {
+    name: "Verify Docs",
+    desc: "Check if a claim in documentation is accurate",
+    tab: "answer" as const,
+    depth: "thorough" as const,
+    query: "Python is the most popular programming language in 2026",
+    tutorial: "docs-verifier",
+  },
+  {
+    name: "Research Brief",
+    desc: "Deep research with contradictions",
+    tab: "answer" as const,
+    depth: "thorough" as const,
+    query: "What are the health effects of intermittent fasting? Include any contradictions.",
+    tutorial: "podcast-prep",
   },
 ];
 
