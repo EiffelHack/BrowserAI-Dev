@@ -55,6 +55,24 @@ export type AnswerRequest = {
   query: string;
   depth?: "fast" | "thorough";
   sessionId?: string;
+  searchProvider?: SearchProviderConfig;
+};
+
+// ── Search Provider (Enterprise) ──
+
+export type SearchProviderConfig = {
+  /** Provider type: internet (tavily/brave) or enterprise (elasticsearch/confluence/custom) */
+  type: "tavily" | "brave" | "elasticsearch" | "confluence" | "custom";
+  /** Endpoint URL (for enterprise providers) */
+  endpoint?: string;
+  /** Auth header value (e.g. "Bearer xxx" or "Basic xxx") */
+  authHeader?: string;
+  /** Elasticsearch index name */
+  index?: string;
+  /** Confluence space key */
+  spaceKey?: string;
+  /** Data retention mode — "none" skips all caching and storage */
+  dataRetention?: "normal" | "none";
 };
 
 // ── Research Memory ──

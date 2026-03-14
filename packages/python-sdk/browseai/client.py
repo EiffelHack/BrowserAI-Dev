@@ -22,6 +22,7 @@ from .models import (
     KnowledgeEntry,
     PageResult,
     RecallResult,
+    SearchProviderConfig,
     SearchResult,
     Session,
     SessionAskResult,
@@ -152,15 +153,30 @@ class BrowseAI:
         data = self._post("/browse/extract", body)
         return BrowseResult(**data)
 
-    def ask(self, query: str, *, depth: str = "fast") -> BrowseResult:
+    def ask(
+        self,
+        query: str,
+        *,
+        depth: str = "fast",
+        search_provider: SearchProviderConfig | dict | None = None,
+    ) -> BrowseResult:
         """Full research pipeline: search, fetch, extract, and answer with citations.
 
         Args:
             query: The research question.
             depth: 'fast' (default) or 'thorough'. Thorough mode auto-retries
                    with a rephrased query when confidence is below 60%.
+            search_provider: Enterprise search provider config. Use to search
+                internal data (Elasticsearch, Confluence, custom endpoint)
+                instead of the public web.
         """
-        data = self._post("/browse/answer", {"query": query, "depth": depth})
+        body: dict[str, Any] = {"query": query, "depth": depth}
+        if search_provider is not None:
+            if isinstance(search_provider, SearchProviderConfig):
+                body["searchProvider"] = search_provider.model_dump(by_alias=True, exclude_none=True)
+            else:
+                body["searchProvider"] = search_provider
+        data = self._post("/browse/answer", body)
         return BrowseResult(**data)
 
     def compare(self, query: str) -> CompareResult:
@@ -353,14 +369,27 @@ class AsyncBrowseAI:
         data = await self._post("/browse/extract", body)
         return BrowseResult(**data)
 
-    async def ask(self, query: str, *, depth: str = "fast") -> BrowseResult:
+    async def ask(
+        self,
+        query: str,
+        *,
+        depth: str = "fast",
+        search_provider: SearchProviderConfig | dict | None = None,
+    ) -> BrowseResult:
         """Full research pipeline with optional thorough mode.
 
         Args:
             query: The research question.
             depth: 'fast' (default) or 'thorough'.
+            search_provider: Enterprise search provider config.
         """
-        data = await self._post("/browse/answer", {"query": query, "depth": depth})
+        body: dict[str, Any] = {"query": query, "depth": depth}
+        if search_provider is not None:
+            if isinstance(search_provider, SearchProviderConfig):
+                body["searchProvider"] = search_provider.model_dump(by_alias=True, exclude_none=True)
+            else:
+                body["searchProvider"] = search_provider
+        data = await self._post("/browse/answer", body)
         return BrowseResult(**data)
 
     async def compare(self, query: str) -> CompareResult:

@@ -49,6 +49,18 @@ class BrowseResult(BaseModel):
     model_config = {"populate_by_name": True}
 
 
+class SearchProviderConfig(BaseModel):
+    """Enterprise search provider configuration."""
+    type: str  # "tavily" | "brave" | "elasticsearch" | "confluence" | "custom"
+    endpoint: str | None = None
+    auth_header: str | None = Field(None, alias="authHeader")
+    index: str | None = None
+    space_key: str | None = Field(None, alias="spaceKey")
+    data_retention: str | None = Field("normal", alias="dataRetention")
+
+    model_config = {"populate_by_name": True}
+
+
 class SearchResult(BaseModel):
     url: str
     title: str

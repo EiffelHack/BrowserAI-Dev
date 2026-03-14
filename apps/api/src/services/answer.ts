@@ -17,6 +17,16 @@ import { MAX_PAGE_CONTENT_LENGTH } from "@browse/shared";
 import type { BrowseResult, TraceStep } from "@browse/shared";
 import type { CacheService } from "./cache.js";
 import type { Env } from "../config/env.js";
+import type { SearchProvider } from "../lib/searchProvider.js";
+
+export type AnswerOptions = {
+  /** Pluggable search provider. If set, overrides Tavily/Brave. */
+  searchProvider?: SearchProvider;
+  /** Secondary search provider (e.g. Brave for diversity). Ignored if searchProvider is set for enterprise. */
+  secondaryProvider?: SearchProvider;
+  /** Data retention mode — "none" skips caching and storage. */
+  dataRetention?: "normal" | "none";
+};
 
 const THOROUGH_CONFIDENCE_THRESHOLD = 0.6;
 const MAX_PER_DOMAIN = 2;
@@ -82,6 +92,20 @@ function mergeSearchResults(a: SearchResult[], b: SearchResult[]): SearchResult[
   return merged.sort((x, y) => y.score - x.score);
 }
 
+/** Execute a search using either the pluggable provider or the default Tavily path. */
+function doSearch(
+  query: string,
+  provider: SearchProvider | undefined,
+  serpApiKey: string,
+  cache: CacheService,
+  limit?: number,
+): Promise<{ results: SearchResult[]; cached: boolean }> {
+  if (provider) {
+    return provider.search(query, limit).then((results) => ({ results, cached: false }));
+  }
+  return search(query, serpApiKey, cache, limit);
+}
+
 /** Run a single search → fetch → extract pass. Returns result + raw page texts for merging. */
 async function singlePass(
   query: string,
@@ -92,11 +116,23 @@ async function singlePass(
   passLabel?: string,
   preAnalysis?: QueryAnalysis,
   sessionContext?: string,
+  options?: AnswerOptions,
 ) {
   const label = passLabel ? ` (${passLabel})` : "";
+  const useProvider = options?.searchProvider;
 
-  // Phase 1: Parallel — search + variant + analysis + brave (if available)
+  // Phase 1: Parallel — search + variant + analysis + secondary search (if available)
   const searchStart = Date.now();
+
+  // Build secondary search promise
+  const secondarySearch: Promise<SearchResult[]> =
+    options?.secondaryProvider
+      ? options.secondaryProvider.search(query).catch(() => [])
+      : (!useProvider && env.BRAVE_API_KEY)
+        ? braveSearch(query, env.BRAVE_API_KEY).then((results) =>
+            results.map((r) => ({ url: r.url, title: r.title, snippet: r.description, score: r.score }))
+          )
+        : Promise.resolve([]);
 
   const parallelTasks: [
     Promise<{ results: SearchResult[]; cached: boolean }>,
@@ -104,14 +140,10 @@ async function singlePass(
     Promise<QueryAnalysis>,
     Promise<SearchResult[]>,
   ] = [
-    search(query, env.SERP_API_KEY, cache),
+    doSearch(query, useProvider, env.SERP_API_KEY, cache),
     generateQueryVariant(query, env.OPENROUTER_API_KEY),
     preAnalysis ? Promise.resolve(preAnalysis) : analyzeQuery(query, env.OPENROUTER_API_KEY),
-    env.BRAVE_API_KEY
-      ? braveSearch(query, env.BRAVE_API_KEY).then((results) =>
-          results.map((r) => ({ url: r.url, title: r.title, snippet: r.description, score: r.score }))
-        )
-      : Promise.resolve([]),
+    secondarySearch,
   ];
 
   const [mainResults, variantQuery, analysis, braveResults] = await Promise.all(parallelTasks);
@@ -139,7 +171,7 @@ async function singlePass(
 
   // Merge variant results
   if (variantQuery && variantQuery !== query) {
-    const { results: variantResults } = await search(variantQuery, env.SERP_API_KEY, cache);
+    const { results: variantResults } = await doSearch(variantQuery, useProvider, env.SERP_API_KEY, cache);
     const before = allResults.length;
     allResults = mergeSearchResults(allResults, variantResults);
     const added = allResults.length - before;
@@ -149,7 +181,7 @@ async function singlePass(
   // Phase 2: Sub-query decomposition (for complex queries)
   if (analysis.subQueries && analysis.subQueries.length > 0) {
     const subResults = await Promise.all(
-      analysis.subQueries.map((sq) => search(sq, env.SERP_API_KEY, cache))
+      analysis.subQueries.map((sq) => doSearch(sq, useProvider, env.SERP_API_KEY, cache))
     );
     for (const sr of subResults) {
       const before = allResults.length;
@@ -169,10 +201,11 @@ async function singlePass(
   // Adaptive page count: learning engine overrides if enough data, else use defaults
   const pageCount = getAdaptivePageCount(analysis.type) || ADAPTIVE_PAGE_COUNT[analysis.type] || 8;
 
+  const providerLabel = useProvider ? ` via ${useProvider.name}` : "";
   trace.push({
     step: `Search Web${label}`,
     duration_ms: Date.now() - searchStart,
-    detail: `${rerankedResults.length} results (${allResults.length} raw → ${filtered.length} quality → diverse → reranked) [${analysis.type}]${searchDetail}`,
+    detail: `${rerankedResults.length} results (${allResults.length} raw → ${filtered.length} quality → diverse → reranked) [${analysis.type}]${searchDetail}${providerLabel}`,
   });
 
   if (rerankedResults.length === 0) {
@@ -282,10 +315,14 @@ export async function answerQuery(
   cache: CacheService,
   depth: "fast" | "thorough" = "fast",
   sessionContext?: string,
+  options?: AnswerOptions,
 ): Promise<BrowseResult> {
+  const noRetention = options?.dataRetention === "none";
+
   // Cache key includes depth so thorough results are cached separately
   // Session-contextualized queries skip cache since context varies
-  const cacheKey = sessionContext ? null : `answer:${depth}:${hashKey(query)}`;
+  // Zero data retention mode skips cache entirely
+  const cacheKey = (sessionContext || noRetention) ? null : `answer:${depth}:${hashKey(query)}`;
   if (cacheKey) {
     const cached = await cache.get(cacheKey);
     if (cached) {
@@ -299,7 +336,7 @@ export async function answerQuery(
   const trace: TraceStep[] = [];
 
   // First pass
-  const { knowledge, pageTexts, queryType } = await singlePass(query, env, cache, trace, undefined, undefined, undefined, sessionContext);
+  const { knowledge, pageTexts, queryType } = await singlePass(query, env, cache, trace, undefined, undefined, undefined, sessionContext, options);
 
   // Thorough mode: if confidence is low, rephrase and do a second pass
   if (depth === "thorough" && knowledge.confidence < THOROUGH_CONFIDENCE_THRESHOLD) {
@@ -313,7 +350,7 @@ export async function answerQuery(
 
     // Second pass with rephrased query, merging existing page texts
     const { knowledge: pass2 } = await singlePass(
-      rephrasedQuery, env, cache, trace, pageTexts, "pass 2"
+      rephrasedQuery, env, cache, trace, pageTexts, "pass 2", undefined, undefined, options
     );
 
     // Pick whichever pass produced higher confidence
@@ -325,7 +362,7 @@ export async function answerQuery(
     });
 
     const result = { ...best, trace };
-    if (cacheKey) await cache.set(cacheKey, JSON.stringify(result), getCacheTTL(query));
+    if (cacheKey && !noRetention) await cache.set(cacheKey, JSON.stringify(result), getCacheTTL(query));
 
     // Record learning signals (fire-and-forget)
     try {
@@ -347,7 +384,7 @@ export async function answerQuery(
   }
 
   const result = { ...knowledge, trace };
-  if (cacheKey) await cache.set(cacheKey, JSON.stringify(result), getCacheTTL(query));
+  if (cacheKey && !noRetention) await cache.set(cacheKey, JSON.stringify(result), getCacheTTL(query));
 
   // Record learning signals (fire-and-forget)
   try {

@@ -10,11 +10,13 @@ import { search } from "../services/search.js";
 import { openPage } from "../services/scrape.js";
 import { extractFromPage } from "../services/extract.js";
 import { answerQuery } from "../services/answer.js";
+import type { AnswerOptions } from "../services/answer.js";
 import { answerQueryStreaming } from "../services/stream.js";
 import { compareAnswers } from "../services/compare.js";
 import { getUserIdFromRequest } from "../lib/auth.js";
 import { updateDomainScore, getDynamicStats } from "../lib/verify.js";
 import { recordFeedback, applyFeedbackToType } from "../lib/learning.js";
+import { createSearchProvider } from "../lib/searchProvider.js";
 import type { CacheService } from "../services/cache.js";
 import type { ResultStore } from "../services/store.js";
 import type { ApiKeyService } from "../services/apiKeys.js";
@@ -305,13 +307,27 @@ export function registerBrowseRoutes(
       const { env: reqEnv, isOwnKeys, userId } = await getRequestEnv(request, env, apiKeyService, cache);
       const limitError = await checkDemoLimit(request, cache, isOwnKeys);
       if (limitError) return reply.status(429).send({ success: false, error: limitError });
-      const result = await answerQuery(parsed.data.query, reqEnv, cache, parsed.data.depth);
+      // Build answer options with optional search provider
+      const answerOpts: AnswerOptions = {};
+      if (parsed.data.searchProvider) {
+        const providerConfig = parsed.data.searchProvider;
+        answerOpts.searchProvider = createSearchProvider({
+          ...providerConfig,
+          // API keys for enterprise providers come from the provider config, not env
+          apiKey: providerConfig.authHeader,
+        });
+        answerOpts.dataRetention = providerConfig.dataRetention || "normal";
+      }
+
+      const result = await answerQuery(parsed.data.query, reqEnv, cache, parsed.data.depth, undefined, answerOpts);
       const client = detectClient(request);
+      const noRetention = answerOpts.dataRetention === "none";
       const cacheHit = result.trace?.[0]?.step === "Cache Hit";
-      const shareId = await store.save(parsed.data.query, result, userId || undefined, "answer", { client, cacheHit });
+      const shareId = noRetention ? undefined : await store.save(parsed.data.query, result, userId || undefined, "answer", { client, cacheHit });
 
       // Self-improving: feed verification signals back into domain authority (fire-and-forget)
-      if (result.claims?.length && result.sources?.length) {
+      // Skip in zero data retention mode
+      if (result.claims?.length && result.sources?.length && !noRetention) {
         try {
           // Aggregate per-domain verification signals
           const domainUpdates = new Map<string, { verified: number; total: number }>();
