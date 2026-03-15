@@ -28,21 +28,6 @@ export function isDepthBlocked(
   return false;
 }
 
-/**
- * Returns true if the user cannot search at the current depth.
- * Use this to disable search/ask buttons.
- */
-export function isDepthBlocked(
-  depth: Depth,
-  isLoggedIn: boolean,
-  quota?: { premiumActive: boolean } | null,
-): boolean {
-  if (depth !== "deep") return false;
-  if (!isLoggedIn) return true;
-  if (quota && !quota.premiumActive) return true;
-  return false;
-}
-
 export function DepthToggle({ depth, setDepth, quota, size = "md" }: DepthToggleProps) {
   const { user } = useAuth();
   const [hint, setHint] = useState<string | null>(null);
