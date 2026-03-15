@@ -377,6 +377,24 @@ const Playground = () => {
                 <span className="text-xs text-muted-foreground">Unlimited queries + premium verification</span>
               </div>
             )}
+            {(response.error.includes("expired") || response.error.includes("trial ended") || response.error.includes("credits")) && (
+              <div className="flex items-center gap-2">
+                <a href="https://app.tavily.com" target="_blank" rel="noopener noreferrer">
+                  <Button size="sm" variant="outline" className="text-xs border-yellow-500/30 text-yellow-400 hover:bg-yellow-500/10">
+                    Upgrade Tavily plan
+                  </Button>
+                </a>
+                <span className="text-xs text-muted-foreground">Your Tavily key needs a plan upgrade or credit top-up</span>
+              </div>
+            )}
+            {(response.error.includes("Invalid") && response.error.includes("key")) && (
+              <div className="flex items-center gap-2">
+                <Button size="sm" variant="outline" className="text-xs border-orange-500/30 text-orange-400 hover:bg-orange-500/10" onClick={() => navigate("/dashboard")}>
+                  Check keys in Settings
+                </Button>
+                <span className="text-xs text-muted-foreground">Your API key may be incorrect or revoked</span>
+              </div>
+            )}
           </motion.div>
         )}
 

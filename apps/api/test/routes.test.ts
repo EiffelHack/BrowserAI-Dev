@@ -1,7 +1,19 @@
-import { describe, it, expect, vi, beforeAll } from "vitest";
+import { describe, it, expect, vi, beforeAll, beforeEach } from "vitest";
 import Fastify from "fastify";
 import type { FastifyInstance } from "fastify";
 import { createHmac } from "crypto";
+
+// Mock Tavily key validation so API key creation tests don't hit real Tavily API
+vi.mock("../src/lib/tavily.js", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("../src/lib/tavily.js")>();
+  return {
+    ...actual,
+    validateTavilyKey: vi.fn(async (key: string) => {
+      if (key.startsWith("tvly-")) return { valid: true };
+      return { valid: false, error: "Invalid Tavily API key." };
+    }),
+  };
+});
 
 // Mock services for integration testing
 function createMockCache() {
@@ -245,6 +257,19 @@ describe("API key routes", () => {
     expect(res.statusCode).toBe(200);
     expect(res.json().success).toBe(true);
     expect(res.json().result.apiKey).toBe("bai_testkey123");
+  });
+
+  it("rejects invalid Tavily key at creation time", async () => {
+    const token = createTestJWT("user-100");
+    const res = await app.inject({
+      method: "POST",
+      url: "/api-keys",
+      headers: { authorization: `Bearer ${token}` },
+      payload: { tavily_key: "bad-key-no-prefix", openrouter_key: "sk-or-test" },
+    });
+    expect(res.statusCode).toBe(400);
+    expect(res.json().success).toBe(false);
+    expect(res.json().error).toContain("Invalid Tavily key");
   });
 
   it("returns 400 when missing required keys", async () => {

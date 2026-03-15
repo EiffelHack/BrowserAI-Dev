@@ -245,23 +245,29 @@ async function singlePass(
     if (added > 0) searchDetail += ` +${added} Brave`;
   }
 
-  // Merge variant results
+  // Merge variant results (non-fatal — don't crash if variant search fails)
   if (variantQuery && variantQuery !== query) {
-    const { results: variantResults } = await doSearch(variantQuery, useProvider, env.SERP_API_KEY, cache);
-    const before = allResults.length;
-    allResults = mergeSearchResults(allResults, variantResults);
-    const added = allResults.length - before;
-    if (added > 0) searchDetail += ` +${added} variant`;
+    try {
+      const { results: variantResults } = await doSearch(variantQuery, useProvider, env.SERP_API_KEY, cache);
+      const before = allResults.length;
+      allResults = mergeSearchResults(allResults, variantResults);
+      const added = allResults.length - before;
+      if (added > 0) searchDetail += ` +${added} variant`;
+    } catch {
+      // Variant search failed — continue with main results
+      searchDetail += " (variant failed)";
+    }
   }
 
   // Phase 2: Sub-query decomposition (for complex queries)
   if (analysis.subQueries && analysis.subQueries.length > 0) {
-    const subResults = await Promise.all(
+    const subResults = await Promise.allSettled(
       analysis.subQueries.map((sq) => doSearch(sq, useProvider, env.SERP_API_KEY, cache))
     );
     for (const sr of subResults) {
+      if (sr.status !== "fulfilled") continue; // Skip failed sub-queries
       const before = allResults.length;
-      allResults = mergeSearchResults(allResults, sr.results);
+      allResults = mergeSearchResults(allResults, sr.value.results);
       const added = allResults.length - before;
       if (added > 0) searchDetail += ` +${added} sub-q`;
     }

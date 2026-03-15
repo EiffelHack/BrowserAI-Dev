@@ -182,6 +182,9 @@ async function getRequestEnv(
   const openrouterKey = request.headers["x-openrouter-key"] as string | undefined;
 
   if (tavilyKey || openrouterKey) {
+    // BYOK only bypasses demo rate limit if a Tavily key is provided.
+    // OpenRouter-only BYOK still uses server Tavily key so it counts as demo.
+    const hasTavilyKey = !!tavilyKey && tavilyKey.length >= 10;
     return {
       env: {
         ...env,
@@ -191,7 +194,7 @@ async function getRequestEnv(
         HF_API_KEY: undefined,
         BRAVE_API_KEY: undefined,
       },
-      isOwnKeys: true,
+      isOwnKeys: hasTavilyKey,
       userId,
       hasBaiKey: false,
       premiumActive: false,
@@ -248,12 +251,17 @@ function isKeyError(e: any): boolean {
 
 function errorResponse(e: any, fallbackMsg: string): { status: number; error: string } {
   if (e.statusCode && e.message) return { status: e.statusCode, error: e.message };
-  if (isKeyError(e)) return { status: 401, error: "Invalid API key. Check your key in Settings." };
-  if (e.message?.includes("Rate limit") || e.message?.includes("429")) return { status: 429, error: "Rate limit exceeded. Please try again in a minute." };
-  if (e.message?.includes("credits") || e.message?.includes("insufficient") || e.message?.includes("402")) return { status: 402, error: "Insufficient API credits. Top up your Tavily or OpenRouter account." };
-  if (e.message?.includes("No search results")) return { status: 404, error: "No results found. Try rephrasing your question." };
-  if (e.message?.includes("Tavily") || e.message?.includes("search failed")) return { status: 502, error: "Search service temporarily unavailable. Please try again." };
-  if (e.message?.includes("LLM") || e.message?.includes("parse")) return { status: 502, error: "AI processing error. Please try again." };
+  const msg = e.message || "";
+  // Specific key error categories (expired vs invalid vs forbidden)
+  if (msg.includes("expired") || msg.includes("trial ended")) return { status: 402, error: msg };
+  if (msg.includes("credits exhausted") || msg.includes("Top up")) return { status: 402, error: msg };
+  if (msg.includes("forbidden") || msg.includes("revoked")) return { status: 403, error: msg };
+  if (isKeyError(e)) return { status: 401, error: msg || "Invalid API key. Check your key in Settings." };
+  if (msg.includes("Rate limit") || msg.includes("rate limit") || msg.includes("429")) return { status: 429, error: "Rate limit exceeded. Please try again in a minute." };
+  if (msg.includes("credits") || msg.includes("insufficient") || msg.includes("402")) return { status: 402, error: "Insufficient API credits. Top up your Tavily or OpenRouter account." };
+  if (msg.includes("No search results")) return { status: 404, error: "No results found. Try rephrasing your question." };
+  if (msg.includes("Tavily") || msg.includes("search failed")) return { status: 502, error: "Search service temporarily unavailable. Please try again." };
+  if (msg.includes("LLM") || msg.includes("parse")) return { status: 502, error: "AI processing error. Please try again." };
   return { status: 500, error: fallbackMsg };
 }
 
