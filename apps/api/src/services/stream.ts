@@ -208,7 +208,9 @@ export async function answerQueryStreaming(
   const llmStart = Date.now();
   emit("trace", { step: "Analyzing", duration_ms: 0, detail: "Extracting knowledge and verifying claims..." });
 
-  const knowledge = await extractKnowledge(query, pageContents, env.OPENROUTER_API_KEY, pageTexts, analysis.type);
+  const knowledge = await extractKnowledge(query, pageContents, env.OPENROUTER_API_KEY, pageTexts, analysis.type, undefined, {
+    hfApiKey: env.HF_API_KEY,
+  });
   const llmDuration = Date.now() - llmStart;
 
   const verifiedCount = knowledge.claims.filter((c: any) => c.verified === true).length;

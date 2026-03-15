@@ -50,7 +50,7 @@ const PIPELINE_STEPS = [
   { label: "Search", detail: "Web search" },
   { label: "Fetch", detail: "Page parsing" },
   { label: "Extract", detail: "Claim extraction" },
-  { label: "Verify", detail: "BM25 matching" },
+  { label: "Verify", detail: "BM25 + NLI" },
   { label: "Consensus", detail: "Cross-source" },
   { label: "Answer", detail: "Cited result" },
 ];
@@ -394,9 +394,9 @@ const Index = () => {
               const roadmapItems = [
                 { phase: "Shipped", text: "Reliable research infrastructure — web search, evidence extraction, structured citations, Python SDK & MCP" },
                 { phase: "Shipped", text: "Python SDK & framework integrations — pip install browseai, works with LangChain and CrewAI out of the box" },
-                { phase: "Shipped", text: "Multi-source verification — BM25 claim matching, cross-source consensus, contradiction detection, 10,000+ domain authority tiers" },
+                { phase: "Shipped", text: "Multi-source verification — hybrid BM25 + NLI semantic entailment, cross-source consensus, contradiction detection, 10,000+ domain authority tiers" },
                 { phase: "Shipped", text: "Thorough mode — auto-retries with rephrased queries when confidence is low, merges sources from both passes" },
-                { phase: "Shipped", text: "Self-learning pipeline — adaptive BM25 thresholds, consensus tuning, confidence weight optimization, and user feedback loop. Every query improves future accuracy" },
+                { phase: "Shipped", text: "Self-learning pipeline — adaptive thresholds, consensus tuning, confidence weight optimization, and user feedback loop. Every query improves future accuracy" },
                 { phase: "Shipped", text: "Streaming API & retry with backoff — real-time SSE streaming, automatic retry with exponential backoff on all external APIs" },
                 { phase: "Shipped", text: "Research Memory — persistent sessions that accumulate knowledge across queries, with automatic recall of prior findings" },
                 { phase: "Shipped", text: "Query Planning — intelligent decomposition of complex queries into focused sub-queries with intent labels for broader evidence coverage" },
@@ -533,7 +533,7 @@ const Index = () => {
               </div>
               <ul className="space-y-3 text-sm">
                 <li className="flex items-start gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 mt-0.5 shrink-0" /> Real URLs with quoted evidence</li>
-                <li className="flex items-start gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 mt-0.5 shrink-0" /> BM25-verified claims against source text</li>
+                <li className="flex items-start gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 mt-0.5 shrink-0" /> Hybrid BM25 + NLI verified claims against source text</li>
                 <li className="flex items-start gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 mt-0.5 shrink-0" /> Domain authority scoring (10,000+ domains)</li>
                 <li className="flex items-start gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 mt-0.5 shrink-0" /> Evidence-based confidence (7-factor score)</li>
               </ul>
