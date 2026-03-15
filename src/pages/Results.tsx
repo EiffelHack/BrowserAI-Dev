@@ -176,6 +176,11 @@ const Results = () => {
           </motion.div>
         )}
 
+        {/* Answer summary — always on top */}
+        {result && !loading && (
+          <FinalAnswer answer={result.answer} confidence={result.confidence} />
+        )}
+
         {/* Deep reasoning steps — show during streaming and after result */}
         {(() => {
           const steps = result?.reasoningSteps?.length ? result.reasoningSteps : reasoningSteps;
@@ -215,8 +220,6 @@ const Results = () => {
 
         {result && !loading && (
           <>
-            <FinalAnswer answer={result.answer} confidence={result.confidence} />
-
             <EvidenceGraph claims={result.claims} sources={result.sources} contradictions={result.contradictions} />
             <TracePipeline trace={result.trace} />
             <AgentJson result={result} />
