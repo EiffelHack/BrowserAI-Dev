@@ -284,7 +284,7 @@ const Index = () => {
           </div>
 
           <div className="flex flex-wrap justify-center gap-2">
-            <DepthToggle depth={depth} setDepth={setDepth} quota={null} />
+            <DepthToggle depth={depth} setDepth={setDepth} quota={null} size="pill" />
             <Button variant="outline" size="sm" className="text-xs gap-1.5" onClick={handleCompare} disabled={!query.trim()}>
               <GitCompare className="w-3.5 h-3.5" />
               Compare vs Raw LLM
