@@ -25,7 +25,8 @@ for source in result.sources:
 # Thorough mode — auto-retries if confidence < 60%
 thorough = client.ask("What is quantum computing?", depth="thorough")
 
-# Deep mode — multi-step reasoning with gap analysis (requires BAI key)
+# Deep mode — multi-step agentic research with iterative gap analysis (requires BAI key + sign-in)
+# Runs think→search→extract→evaluate cycles (up to 4 steps), 3x quota cost
 deep = client.ask("Compare CRISPR approaches", depth="deep")
 for step in deep.reasoning_steps or []:
     print(f"  Step {step.step}: {step.query} ({step.confidence:.0%})")
@@ -55,7 +56,7 @@ async with AsyncBrowseAI(api_key="bai_xxx") as client:
     result = await client.ask("What is quantum computing?")
     # Thorough mode works with async too
     thorough = await client.ask("What is quantum computing?", depth="thorough")
-    # Deep mode — multi-step agentic reasoning (requires BAI key)
+    # Deep mode — multi-step agentic research (requires BAI key + sign-in, 3x quota cost)
     deep = await client.ask("Complex research question", depth="deep")
 ```
 
@@ -141,11 +142,11 @@ Users with a BrowseAI Dev API key (`bai_xxx`) get enhanced verification:
 - **NLI semantic reranking** — evidence matched by meaning, not just keywords
 - **Multi-provider search** — parallel search across multiple sources for broader coverage
 - **Multi-pass consistency** — claims cross-checked across independent extraction passes (in thorough mode)
-- **Deep reasoning mode** — multi-step agentic research with iterative gap analysis (up to 3 steps)
+- **Deep reasoning mode** — premium multi-step agentic research with iterative think-search-extract-evaluate cycles, gap analysis, and cross-step claim merging (up to 4 steps, targets 0.85 confidence, 3x quota cost, 100 deep queries/day). Falls back to thorough when quota is exhausted
 - **Token streaming** — per-token answer delivery via SSE for real-time UI
 - **Research Sessions** — persistent memory across queries
 
-Free BAI key users get a generous daily quota (50 premium queries/day). When exceeded, queries gracefully fall back to BM25 keyword verification — still works, just basic matching. Quota resets every 24 hours. Check `client.last_quota` after any API call for current usage.
+Free BAI key users get a generous daily quota (100 premium queries/day, or ~33 deep queries/day at 3x cost each). When exceeded, queries gracefully fall back to BM25 keyword verification (deep falls back to thorough) — still works, just basic matching. Quota resets every 24 hours. Check `client.last_quota` after any API call for current usage.
 
 **No account needed** — BYOK works out of the box with no signup, no limits, and BM25 keyword verification. Sign in at [browseai.dev](https://browseai.dev) for a free BAI key to unlock premium features.
 
@@ -164,10 +165,21 @@ if result.contradictions:
 
 ## Enterprise Search Providers
 
-Use your own data sources instead of public web search:
+Use your own data sources instead of — or alongside — public web search. Supports `elasticsearch`, `confluence`, and `custom` endpoints with optional `data_retention="none"` for compliance.
 
 ```python
-# Elasticsearch
+from browseai.models import SearchProviderConfig
+
+# Using the typed model (snake_case fields)
+provider = SearchProviderConfig(
+    type="elasticsearch",
+    endpoint="https://es.company.com/kb/_search",
+    auth_header="Bearer token",
+    index="docs",
+)
+result = client.ask("What is our refund policy?", search_provider=provider)
+
+# Or pass a plain dict (camelCase keys, sent directly to API)
 result = client.ask("What is our refund policy?", search_provider={
     "type": "elasticsearch",
     "endpoint": "https://es.company.com/kb/_search",
@@ -183,13 +195,13 @@ result = client.ask("PCI compliance?", search_provider={
     "spaceKey": "ENG",
 })
 
-# Zero data retention (compliance mode)
-result = client.ask("Patient protocols", search_provider={
-    "type": "elasticsearch",
-    "endpoint": "https://es.hipaa.company.com/medical/_search",
-    "authHeader": "Bearer token",
-    "dataRetention": "none",
-})
+# Zero data retention (compliance mode — nothing stored, cached, or logged)
+result = client.ask("Patient protocols", search_provider=SearchProviderConfig(
+    type="elasticsearch",
+    endpoint="https://es.hipaa.company.com/medical/_search",
+    auth_header="Bearer token",
+    data_retention="none",
+))
 ```
 
 ## BYOK (Bring Your Own Keys)

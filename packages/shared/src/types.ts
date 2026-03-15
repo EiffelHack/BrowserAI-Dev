@@ -60,6 +60,8 @@ export type BrowseResult = {
   contradictions?: Contradiction[];
   /** Multi-step reasoning steps (deep mode only) */
   reasoningSteps?: ReasoningStep[];
+  shareId?: string;
+  effectiveDepth?: "fast" | "thorough" | "deep";
 };
 
 export type SearchRequest = {
