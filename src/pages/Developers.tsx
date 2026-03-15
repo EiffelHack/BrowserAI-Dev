@@ -166,10 +166,10 @@ const ROADMAP_ITEMS = [
     done: false,
   },
   {
-    phase: "Shipped",
+    phase: "Architecture Ready",
     title: "Enterprise search adapters",
     desc: "Plug BrowseAI Dev into your internal data — Elasticsearch, Confluence, or any custom endpoint. Same verification pipeline, zero data retention mode. Your data never leaves your system.",
-    done: true,
+    done: false,
   },
 ];
 
