@@ -71,6 +71,7 @@ class BrowseResult(BaseModel):
     contradictions: list[Contradiction] | None = None
     reasoning_steps: list[ReasoningStep] | None = Field(None, alias="reasoningSteps")
     share_id: str | None = Field(None, alias="shareId")
+    effective_depth: str | None = Field(None, alias="effectiveDepth")
 
     model_config = {"populate_by_name": True}
 

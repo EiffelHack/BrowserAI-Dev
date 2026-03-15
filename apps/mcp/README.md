@@ -18,7 +18,7 @@ Every answer includes:
 - **Source quotes** verified against actual page text via hybrid BM25 + NLI matching
 - **Atomic claim decomposition** — compound facts split and verified independently
 - **Execution trace** with timing
-- **3 depth modes** — `"fast"` (default), `"thorough"` (auto-retry with rephrased queries), `"deep"` (multi-step agentic reasoning with gap analysis — requires BAI key)
+- **3 depth modes** — `"fast"` (default), `"thorough"` (auto-retry with rephrased queries), `"deep"` (premium multi-step agentic research: iterative think-search-extract-evaluate cycles with gap analysis, up to 4 steps, targets 0.85 confidence — requires BAI key + sign-in, 3x quota cost, falls back to thorough when exhausted)
 
 ### Premium Features (with `BROWSE_API_KEY`)
 
@@ -27,10 +27,10 @@ Users with a BrowseAI Dev API key (`bai_xxx`) get enhanced verification:
 - **NLI semantic reranking** — evidence matched by meaning, not just keywords
 - **Multi-provider search** — parallel search across multiple sources for broader coverage
 - **Multi-pass consistency** — claims cross-checked across independent extraction passes
-- **Deep reasoning mode** — multi-step agentic research with iterative gap analysis
+- **Deep reasoning mode** — multi-step agentic research with iterative think-search-extract-evaluate cycles, gap analysis, and cross-step claim merging (up to 4 steps, 3x quota cost, 100 deep queries/day)
 - **Research Sessions** — persistent memory across queries
 
-Free BAI key users get a generous daily quota (50 premium queries/day). When exceeded, queries gracefully fall back to BM25 keyword verification — still works, just basic matching. Quota resets every 24 hours.
+Free BAI key users get a generous daily quota (100 premium queries/day, or ~33 deep queries/day at 3x cost each). When exceeded, queries gracefully fall back to BM25 keyword verification (deep falls back to thorough). Quota resets every 24 hours.
 
 **No account needed** — all tools work with BYOK (your own Tavily + OpenRouter keys) with no signup, no limits, and BM25 keyword verification. Sign in at [browseai.dev](https://browseai.dev) for a free BAI key to unlock premium features.
 
@@ -138,8 +138,10 @@ docker run -p 3100:3100 -e BROWSE_API_KEY=bai_xxx browse-ai
 **Higher accuracy:**
 > *"Use browse_answer with depth thorough to research quantum computing"*
 
-**Deep research (multi-step):**
+**Deep research (multi-step, requires BAI key):**
 > *"Use browse_answer with depth deep to compare CRISPR approaches for sickle cell disease"*
+>
+> Deep mode runs iterative think-search-extract-evaluate cycles: gap analysis identifies missing info, follow-up queries fill the gaps, and claims/sources are merged across steps with final re-verification. Targets 0.85 confidence across up to 4 steps. Falls back to thorough without a BAI key or when quota is exhausted.
 
 **Contradiction detection:**
 > *"Use browse_answer with depth thorough to check if coffee is good for health, and show me any contradictions"*

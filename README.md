@@ -50,7 +50,7 @@ Three depth levels control research thoroughness:
 |-------|----------|----------|
 | `fast` (default) | Single search → extract → verify pass | Quick lookups, real-time agents |
 | `thorough` | Auto-retries with rephrased query when confidence < 60%, multi-pass consistency checking | Important research, fact-checking |
-| `deep` | Multi-step agentic reasoning: iterative gap analysis, follow-up searches, knowledge merging across up to 3 steps | Complex research questions, comprehensive analysis |
+| `deep` | Premium multi-step agentic research: iterative think-search-extract-evaluate cycles (up to 4 total steps). Gap analysis identifies missing info, generates follow-up queries. Claims/sources merged across steps with final re-verification. Target confidence: 0.85. Requires BAI key + sign-in. Falls back to thorough when quota exhausted. | Complex research questions, comprehensive analysis |
 
 ```bash
 # Thorough mode
@@ -67,7 +67,9 @@ curl -X POST https://browseai.dev/api/browse/answer \
   -d '{"query": "Compare CRISPR approaches for sickle cell disease", "depth": "deep"}'
 ```
 
-Deep mode responses include `reasoningSteps` showing the multi-step research process (step number, query, gap analysis, claim count, confidence per step). Without a BAI key, deep mode gracefully falls back to thorough.
+Deep mode runs iterative think-search-extract-evaluate cycles: each step performs gap analysis to identify what's missing, generates targeted follow-up queries, and merges claims/sources across steps with a final re-verification pass. It targets a confidence threshold of 0.85 (`DEEP_CONFIDENCE_THRESHOLD`) and runs up to 3 follow-up steps (`MAX_FOLLOW_UP_STEPS`, 4 total including the initial pass). Uses NLI reranking, multi-provider search, and multi-pass consistency. Each deep query costs 3x quota (100 deep queries/day). When quota is exhausted, deep mode gracefully falls back to thorough. Without a BAI key, deep mode also falls back to thorough.
+
+Deep mode responses include `reasoningSteps` showing the multi-step research process (step number, query, gap analysis, claim count, confidence per step).
 
 ### Streaming API
 
@@ -283,14 +285,14 @@ Four ways to authenticate:
 | **BYOK** (MCP, SDK, API) | `X-Tavily-Key` + `X-OpenRouter-Key` headers | BM25 keyword verification | Unlimited, free (search/answer only — no sessions) |
 | **Demo** (website) | No auth needed | BM25 keyword verification | 5 queries/hour per IP |
 
-Sign in at [browseai.dev](https://browseai.dev) to create a free BAI key — it bundles your keys into one key and unlocks the premium verification pipeline (NLI semantic matching, multi-provider search, consistency checking) with a generous daily quota (50 premium queries/day). When the quota is reached, queries gracefully fall back to BM25 keyword verification — still works, just basic matching. Quota resets every 24 hours. Pro removes all limits. BYOK works for all packages (MCP, Python SDK, REST API) without an account.
+Sign in at [browseai.dev](https://browseai.dev) to create a free BAI key — it bundles your keys into one key and unlocks the premium verification pipeline (NLI semantic matching, multi-provider search, consistency checking) with a generous daily quota (100 premium queries/day, or ~33 deep queries/day at 3x cost each). When the quota is reached, queries gracefully fall back to BM25 keyword verification (or deep falls back to thorough) — still works, just basic matching. Quota resets every 24 hours. Pro removes all limits. BYOK works for all packages (MCP, Python SDK, REST API) without an account.
 
 API responses include quota info when using a BAI key:
 ```json
 {
   "success": true,
   "result": { ... },
-  "quota": { "used": 12, "limit": 50, "premiumActive": true }
+  "quota": { "used": 12, "limit": 100, "premiumActive": true }
 }
 ```
 
@@ -427,6 +429,8 @@ Every answer includes structured fields for programmatic trust decisions:
 {
   "answer": "Quantum computing uses qubits...",
   "confidence": 0.82,
+  "shareId": "abc123def456",
+  "effectiveDepth": "thorough",
   "claims": [
     {
       "claim": "Qubits can exist in superposition",
@@ -463,18 +467,22 @@ Every answer includes structured fields for programmatic trust decisions:
   "trace": [
     { "step": "Search Web", "duration_ms": 423, "detail": "5 results" },
     { "step": "Fetch Pages", "duration_ms": 1205, "detail": "4 pages" }
-  ]
+  ],
+  "quota": { "used": 12, "limit": 50, "premiumActive": true }
 }
 ```
 
 **Key fields:**
 - `confidence` — 7-factor evidence-based score (0-1), not LLM self-assessed
+- `shareId` — unique ID for sharing this result (use with `/browse/share/:id`)
+- `effectiveDepth` — actual depth used (`"fast"`, `"thorough"`, or `"deep"`) — may differ from requested depth due to fallback
 - `claims[].verified` — whether the claim was verified against source text
 - `claims[].consensusLevel` — `"strong"` (3+ sources), `"moderate"`, or `"weak"`
 - `claims[].nliScore` — NLI semantic entailment breakdown (when HF_API_KEY set)
 - `contradictions` — detected conflicts between claims (with NLI confidence)
 - `reasoningSteps` — deep mode only: multi-step research iterations with gap analysis
 - `trace` — execution timeline for debugging and monitoring
+- `quota` — premium quota usage (BAI key users only): `used`, `limit`, `premiumActive`
 
 ## Examples
 
