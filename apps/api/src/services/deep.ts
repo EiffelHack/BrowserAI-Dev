@@ -240,7 +240,7 @@ export async function answerQueryDeep(
   // Accumulated knowledge
   let allClaims = [...initial.claims];
   let allSources = [...initial.sources];
-  let allPageTexts = new Map(pageTexts);
+  const allPageTexts = new Map(pageTexts);
   let bestAnswer = initial.answer;
   let bestConfidence = initial.confidence;
 
