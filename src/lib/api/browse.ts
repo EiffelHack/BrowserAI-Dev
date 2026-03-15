@@ -97,8 +97,28 @@ async function apiCall<T>(
   return data.result;
 }
 
-export async function browseKnowledge(query: string, depth: "fast" | "thorough" | "deep" = "fast"): Promise<BrowseResult> {
-  return apiCall<BrowseResult>("/browse/answer", { query, depth });
+export type QuotaInfo = {
+  used: number;
+  limit: number;
+  premiumActive: boolean;
+};
+
+export async function browseKnowledge(
+  query: string,
+  depth: "fast" | "thorough" | "deep" = "fast",
+): Promise<BrowseResult & { quota?: QuotaInfo }> {
+  const authHeaders = await getAuthHeaders();
+  const res = await fetch(`${API_BASE}/browse/answer`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...authHeaders },
+    body: JSON.stringify({ query, depth }),
+  });
+  const data = await res.json();
+  if (!res.ok || !data.success) {
+    throw new Error(data.error || `API call failed: ${res.status}`);
+  }
+  (window as any).posthog?.capture("browse_query", { tool: "/browse/answer" });
+  return { ...data.result, ...(data.quota && { quota: data.quota }) };
 }
 
 export async function browseSearch(query: string, limit?: number) {
