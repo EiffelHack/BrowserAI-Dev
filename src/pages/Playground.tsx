@@ -12,7 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import {
   browseKnowledge, browseSearch, browseExtract, browseCompare, browseOpen, browseFeedback,
-  type BrowseSource, type BrowseClaim,
+  type BrowseSource, type BrowseClaim, type QuotaInfo,
 } from "@/lib/api/browse";
 import { LoginModal } from "@/components/LoginModal";
 import { UserMenu } from "@/components/UserMenu";
@@ -148,6 +148,7 @@ const Playground = () => {
   const [feedbackSent, setFeedbackSent] = useState<string | null>(null);
   const [showScenarios, setShowScenarios] = useState(false);
   const [loginOpen, setLoginOpen] = useState(false);
+  const [quota, setQuota] = useState<QuotaInfo | null>(null);
 
   const runScenario = (scenario: typeof TUTORIAL_SCENARIOS[number]) => {
     setActiveTab(scenario.tab);
@@ -180,6 +181,9 @@ const Playground = () => {
         result = await browseCompare(q);
       } else {
         result = await browseKnowledge(q, depth);
+        if (result.quota) {
+          setQuota(result.quota);
+        }
       }
       setResponse(result);
     } catch (e: any) {
@@ -416,6 +420,11 @@ const Playground = () => {
                 <span className="text-xs text-muted-foreground">
                   {response.trace.reduce((s: number, t: any) => s + t.duration_ms, 0)}ms
                 </span>
+              )}
+              {quota && (
+                <Badge variant="outline" className={`text-[10px] px-2 py-0.5 ${quota.premiumActive ? "text-emerald-400 border-emerald-500/30" : "text-amber-400 border-amber-500/30"}`}>
+                  {quota.premiumActive ? "Premium" : "Standard"} · {quota.used}/{quota.limit}
+                </Badge>
               )}
               {/* Feedback buttons */}
               {hasShareId && (
