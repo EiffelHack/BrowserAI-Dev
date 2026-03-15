@@ -312,9 +312,9 @@ export async function answerQueryDeep(
           allPageTexts.set(url, text);
         }
 
-        // Keep the better answer
+        // Update confidence tracking but keep the initial comprehensive answer
+        // Follow-up answers are narrower (gap-filling), not replacements
         if (followUp.confidence > bestConfidence) {
-          bestAnswer = followUp.answer;
           bestConfidence = followUp.confidence;
         }
 
