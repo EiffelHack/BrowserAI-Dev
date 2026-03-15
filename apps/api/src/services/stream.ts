@@ -136,20 +136,25 @@ export async function answerQueryStreaming(
   }
 
   if (variantQuery && variantQuery !== query) {
-    const { results: variantResults } = await search(variantQuery, env.SERP_API_KEY, cache);
-    const before = allResults.length;
-    allResults = mergeSearchResults(allResults, variantResults);
-    const added = allResults.length - before;
-    if (added > 0) searchDetail += ` +${added} variant`;
+    try {
+      const { results: variantResults } = await search(variantQuery, env.SERP_API_KEY, cache);
+      const before = allResults.length;
+      allResults = mergeSearchResults(allResults, variantResults);
+      const added = allResults.length - before;
+      if (added > 0) searchDetail += ` +${added} variant`;
+    } catch {
+      searchDetail += " (variant failed)";
+    }
   }
 
   if (analysis.subQueries && analysis.subQueries.length > 0) {
-    const subResults = await Promise.all(
+    const subResults = await Promise.allSettled(
       analysis.subQueries.map((sq) => search(sq, env.SERP_API_KEY, cache))
     );
     for (const sr of subResults) {
+      if (sr.status !== "fulfilled") continue;
       const before = allResults.length;
-      allResults = mergeSearchResults(allResults, sr.results);
+      allResults = mergeSearchResults(allResults, sr.value.results);
       const added = allResults.length - before;
       if (added > 0) searchDetail += ` +${added} sub-q`;
     }

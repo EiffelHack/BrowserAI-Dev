@@ -1,5 +1,6 @@
 import type { FastifyInstance, FastifyRequest } from "fastify";
 import { getUserIdFromRequest } from "../lib/auth.js";
+import { validateTavilyKey } from "../lib/tavily.js";
 import type { ApiKeyService } from "../services/apiKeys.js";
 
 async function requireAuth(request: FastifyRequest): Promise<string> {
@@ -27,6 +28,15 @@ export function registerApiKeyRoutes(
       return reply.status(400).send({
         success: false,
         error: "tavily_key and openrouter_key are required",
+      });
+    }
+
+    // Validate Tavily key before storing — fail fast on bad keys
+    const tavilyValidation = await validateTavilyKey(body.tavily_key);
+    if (!tavilyValidation.valid) {
+      return reply.status(400).send({
+        success: false,
+        error: `Invalid Tavily key: ${tavilyValidation.error}`,
       });
     }
 
