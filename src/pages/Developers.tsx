@@ -72,13 +72,13 @@ const ROADMAP_ITEMS = [
   {
     phase: "Shipped",
     title: "Multi-source verification",
-    desc: "BM25 claim matching, cross-source consensus scoring, contradiction detection, domain authority (10,000+ domains).",
+    desc: "Hybrid BM25 + NLI semantic entailment, cross-source consensus scoring, contradiction detection, domain authority (10,000+ domains).",
     done: true,
   },
   {
     phase: "Shipped",
     title: "Self-learning verification pipeline",
-    desc: "Adaptive BM25 thresholds, consensus tuning, confidence weight optimization, and user feedback loop. Every query and rating makes future results more accurate. Domain authority with Bayesian smoothing. Thorough mode auto-retries when confidence < 60%.",
+    desc: "Adaptive thresholds, consensus tuning, confidence weight optimization, and user feedback loop. Every query and rating makes future results more accurate. Domain authority with Bayesian smoothing. Thorough mode auto-retries when confidence < 60%.",
     done: true,
   },
   {

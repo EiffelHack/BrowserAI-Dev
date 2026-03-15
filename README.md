@@ -27,14 +27,16 @@ Every answer goes through a 6-step verification pipeline. No hallucination. Ever
 
 Confidence scores are **evidence-based** — not LLM self-assessed. After the LLM extracts claims and sources, a post-extraction verification engine checks every claim against the actual source page text:
 
-1. **BM25 sentence matching** — Each claim is scored against every sentence in its cited sources using [BM25](https://en.wikipedia.org/wiki/Okapi_BM25) (the ranking algorithm behind Elasticsearch and Lucene). This catches paraphrased claims that simple keyword overlap would miss.
+1. **Hybrid BM25 + NLI verification** — Each claim is first scored against every sentence in its cited sources using [BM25](https://en.wikipedia.org/wiki/Okapi_BM25) for lexical matching. When available, a [DeBERTa-v3 NLI model](https://huggingface.co/MoritzLaurer/DeBERTa-v3-base-mnli-fever-anli) then checks semantic entailment — catching paraphrased claims that lexical matching alone would miss. The hybrid score blends both signals (30% BM25, 70% NLI) with contradiction penalties and paraphrase boosts.
 2. **Domain authority scoring** — 10,000+ domains across 5 tiers (institutional `.gov`/`.edu` → major news → tech journalism → community → low-quality), stored in Supabase with Majestic Million bulk import. Scores self-improve over time using Bayesian cold-start smoothing — every query feeds back verification data to make future scores more accurate.
 3. **Source quote verification** — LLM-extracted quotes are verified against actual page text using hybrid matching (exact substring → BM25 fallback).
 4. **Cross-source consensus** — Each claim is verified against *all* available page texts (not just cited sources). Claims supported by 3+ independent domains get "strong consensus", boosting confidence. Single-source claims are flagged as "weak".
-5. **Contradiction detection** — Claim pairs are analyzed for semantic conflicts using topic overlap + negation asymmetry. Detected contradictions are surfaced in the response and penalize the confidence score.
+5. **Contradiction detection** — Claim pairs are analyzed for semantic conflicts using topic overlap + NLI contradiction classification. When NLI is available, contradictions are detected with model confidence scores; otherwise falls back to negation asymmetry heuristics. Detected contradictions are surfaced in the response and penalize the confidence score.
 6. **7-factor confidence formula** — Final score combines: verification rate (25%), domain authority (20%), source count (15%), consensus (15%), domain diversity (10%), claim grounding (10%), and citation depth (5%). Each detected contradiction subtracts 0.05 from the raw score.
 
-Claims include `verified`, `verificationScore`, `consensusCount`, and `consensusLevel` fields. Sources include `verified` and `authority`. Detected `contradictions` are returned at the top level. Agents can use these fields to make trust decisions programmatically.
+Claims include `verified`, `verificationScore`, `consensusCount`, `consensusLevel`, and optional `nliScore` fields. Sources include `verified` and `authority`. Detected `contradictions` (with optional `nliConfidence`) are returned at the top level. Agents can use these fields to make trust decisions programmatically.
+
+> **NLI graceful fallback:** When `HF_API_KEY` is not set, the system runs BM25-only verification — the same pipeline that shipped before NLI was added. No degradation, no errors. NLI is a transparent enhancement.
 
 ### Thorough Mode
 
@@ -352,6 +354,8 @@ See the [examples/](examples/) directory for ready-to-run agent recipes:
 | `KV_REST_API_TOKEN` | No | Vercel KV / Upstash Redis REST token |
 | `SUPABASE_URL` | No | Supabase project URL |
 | `SUPABASE_SERVICE_ROLE_KEY` | No | Supabase service role key |
+| `BRAVE_API_KEY` | No | Brave Search API key (adds source diversity) |
+| `HF_API_KEY` | No | HuggingFace API token (enables NLI semantic verification) |
 | `PORT` | No | API server port (default: 3001) |
 
 ## Tech Stack

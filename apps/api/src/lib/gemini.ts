@@ -401,6 +401,7 @@ export async function extractKnowledge(
     bm25Threshold?: number;
     consensusThreshold?: number;
     weights?: { source: number; domain: number; grounding: number; depth: number; verification: number; authority: number; consensus: number };
+    hfApiKey?: string;
   },
 ): Promise<Omit<BrowseResult, "trace">> {
   const systemPrompt = getExtractionPrompt(queryType);
@@ -462,9 +463,10 @@ export async function extractKnowledge(
 
   // Run post-extraction verification if page texts are available
   if (pageTexts && pageTexts.size > 0) {
-    const verification = verifyEvidence(claims, sources, pageTexts, {
+    const verification = await verifyEvidence(claims, sources, pageTexts, {
       bm25Threshold: adaptiveOptions?.bm25Threshold,
       consensusThreshold: adaptiveOptions?.consensusThreshold,
+      hfApiKey: adaptiveOptions?.hfApiKey,
     });
     return {
       answer: knowledge.answer,

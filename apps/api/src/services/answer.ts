@@ -247,6 +247,7 @@ async function singlePass(
     bm25Threshold: getAdaptiveBM25Threshold(analysis.type),
     consensusThreshold: getAdaptiveConsensusThreshold(analysis.type),
     weights: getAdaptiveWeights(analysis.type),
+    hfApiKey: env.HF_API_KEY,
   };
   const knowledge = await extractKnowledge(query, pageContents, env.OPENROUTER_API_KEY, pageTexts, analysis.type, sessionContext, adaptiveOptions);
   const llmDuration = Date.now() - llmStart;

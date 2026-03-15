@@ -7,6 +7,17 @@ export type BrowseSource = {
   authority?: number;
 };
 
+export type NLIScore = {
+  /** Probability that evidence supports this claim */
+  entailment: number;
+  /** Probability that evidence contradicts this claim */
+  contradiction: number;
+  /** Probability that evidence is unrelated */
+  neutral: number;
+  /** Winning label */
+  label: "entailment" | "neutral" | "contradiction";
+};
+
 export type BrowseClaim = {
   claim: string;
   sources: string[];
@@ -14,6 +25,8 @@ export type BrowseClaim = {
   verificationScore?: number;
   consensusCount?: number;
   consensusLevel?: "strong" | "moderate" | "weak" | "none";
+  /** NLI semantic entailment score (when available) */
+  nliScore?: NLIScore;
 };
 
 export type TraceStep = {
@@ -26,6 +39,8 @@ export type Contradiction = {
   claimA: string;
   claimB: string;
   topic: string;
+  /** NLI contradiction confidence (0-1) when available */
+  nliConfidence?: number;
 };
 
 export type BrowseResult = {

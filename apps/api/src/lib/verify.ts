@@ -1,6 +1,8 @@
-import type { BrowseClaim, BrowseSource, Contradiction } from "@browse/shared";
+import type { BrowseClaim, BrowseSource, Contradiction, NLIScore } from "@browse/shared";
 import type { DomainAuthorityRow } from "../services/store.js";
 import type { CacheService } from "../services/cache.js";
+import { checkEntailment, batchCheckEntailment, checkContradiction } from "./nli.js";
+import type { NLIResult } from "./nli.js";
 
 // ─── Text Processing ────────────────────────────────────────────────
 
@@ -828,29 +830,37 @@ export interface VerificationResult {
 /**
  * Full verification pipeline:
  *
- * Phase 1 — BM25 sentence-level matching
- *   Each claim is scored against every sentence in its cited sources.
- *   Source quotes are verified against actual page text.
- *   Domain authority is scored across 10,000+ domains in 5 tiers.
+ * Phase 1 — Hybrid BM25 + NLI verification
+ *   BM25 finds the best-matching sentence in each source (lexical matching).
+ *   NLI (DeBERTa-v3) determines whether the evidence semantically entails,
+ *   contradicts, or is neutral toward each claim. BM25 catches keyword matches;
+ *   NLI catches paraphrased claims and semantic relationships.
+ *   Falls back to BM25-only when NLI service is unavailable.
  *
- * Phase 2 — Consensus scoring + contradiction detection
+ * Phase 2 — Consensus scoring + NLI contradiction detection
  *   Cross-source verification: claims checked against ALL available pages,
  *   not just the ones the LLM cited. Independent domain agreement is counted.
- *   Claim pairs are analyzed for potential contradictions via negation detection.
+ *   Contradictions detected via NLI entailment model (with heuristic fallback).
  *
  * Phase 3 — Enhanced confidence integration
- *   Consensus score feeds into the 7-factor confidence formula.
+ *   Consensus score + NLI scores feed into the 7-factor confidence formula.
  *   Contradictions are surfaced to agents for trust decisions.
  */
-export function verifyEvidence(
+export async function verifyEvidence(
   claims: BrowseClaim[],
   sources: BrowseSource[],
   pageContents: Map<string, string>,
-  options?: { bm25Threshold?: number; consensusThreshold?: number },
-): VerificationResult {
+  options?: {
+    bm25Threshold?: number;
+    consensusThreshold?: number;
+    hfApiKey?: string;
+  },
+): Promise<VerificationResult> {
   const bm25Threshold = options?.bm25Threshold ?? 0.35;
   const consensusThreshold = options?.consensusThreshold ?? 0.20;
-  // Verify sources: check quotes against page text using BM25
+  const hfApiKey = options?.hfApiKey || "";
+
+  // ── Phase 1a: BM25 source quote verification ──
   const verifiedSources: VerifiedSource[] = sources.map((source) => {
     const pageText = pageContents.get(source.url) || "";
     const authority = getDomainAuthority(source.domain);
@@ -867,26 +877,95 @@ export function verifyEvidence(
     };
   });
 
-  // Verify claims with BM25 + consensus scoring
-  const verifiedClaims: VerifiedClaim[] = claims.map((claim) => {
-    // BM25 verification against cited sources
+  // ── Phase 1b: BM25 claim verification + best evidence extraction ──
+  const claimBestEvidence: Array<{ bm25Score: number; bestSentence: string | null }> = [];
+
+  for (const claim of claims) {
     let bestScore = 0;
+    let bestSentence: string | null = null;
+
     if (claim.sources && claim.sources.length > 0) {
       for (const url of claim.sources) {
         const pageText = pageContents.get(url) || "";
         if (!pageText) continue;
 
-        const { score } = verifyTextInSource(claim.claim, pageText, bm25Threshold);
-        bestScore = Math.max(bestScore, score);
+        const { score, matchedSentence } = verifyTextInSource(claim.claim, pageText, bm25Threshold);
+        if (score > bestScore) {
+          bestScore = score;
+          bestSentence = matchedSentence;
+        }
       }
     }
 
-    // Cross-source consensus (Phase 2)
+    claimBestEvidence.push({ bm25Score: bestScore, bestSentence });
+  }
+
+  // ── Phase 1c: NLI semantic entailment (when available) ──
+  // For each claim with a matched sentence, ask NLI: does this evidence
+  // actually ENTAIL the claim? This catches paraphrases BM25 misses.
+  let nliResults: Array<NLIResult | null> = claims.map(() => null);
+
+  if (hfApiKey) {
+    const nliPairs: Array<{ evidence: string; claim: string }> = [];
+    const nliIndices: number[] = [];
+
+    for (let i = 0; i < claims.length; i++) {
+      const evidence = claimBestEvidence[i].bestSentence;
+      if (evidence && evidence.length > 20) {
+        nliPairs.push({ evidence, claim: claims[i].claim });
+        nliIndices.push(i);
+      }
+    }
+
+    if (nliPairs.length > 0) {
+      const batchResults = await batchCheckEntailment(nliPairs, hfApiKey);
+      for (let j = 0; j < batchResults.length; j++) {
+        nliResults[nliIndices[j]] = batchResults[j];
+      }
+    }
+  }
+
+  // ── Phase 1d: Hybrid score computation ──
+  const verifiedClaims: VerifiedClaim[] = claims.map((claim, i) => {
+    const bm25Score = claimBestEvidence[i].bm25Score;
+    const nli = nliResults[i];
+
+    // Cross-source consensus
     const consensus = computeConsensus(claim.claim, pageContents, sources, consensusThreshold);
 
-    // Boost verification score based on consensus
-    // Multi-source agreement increases confidence in the claim
-    let adjustedScore = bestScore;
+    // Compute hybrid verification score
+    let hybridScore: number;
+    let nliScore: NLIScore | undefined;
+
+    if (nli) {
+      // NLI available: combine BM25 (lexical) + NLI (semantic)
+      // BM25 weight: 0.3, NLI entailment weight: 0.7
+      // NLI is the stronger signal — it understands meaning, not just keywords
+      hybridScore = bm25Score * 0.3 + nli.entailment * 0.7;
+
+      // If NLI says contradiction, penalize heavily even if BM25 matched
+      if (nli.label === "contradiction" && nli.contradiction > 0.7) {
+        hybridScore = Math.min(hybridScore, 0.15);
+      }
+
+      // If NLI strongly entails but BM25 missed (paraphrase), boost
+      if (nli.entailment > 0.8 && bm25Score < bm25Threshold) {
+        hybridScore = Math.max(hybridScore, nli.entailment * 0.85);
+      }
+
+      nliScore = {
+        entailment: Math.round(nli.entailment * 100) / 100,
+        contradiction: Math.round(nli.contradiction * 100) / 100,
+        neutral: Math.round(nli.neutral * 100) / 100,
+        label: nli.label,
+      };
+    } else {
+      // NLI unavailable: use BM25-only (existing behavior)
+      hybridScore = bm25Score;
+    }
+
+    // Boost based on consensus (same as before)
+    let adjustedScore = hybridScore;
     if (consensus.count >= 3) adjustedScore = Math.min(1, adjustedScore * 1.15);
     else if (consensus.count >= 2) adjustedScore = Math.min(1, adjustedScore * 1.08);
 
@@ -896,14 +975,23 @@ export function verifyEvidence(
       verificationScore: Math.round(adjustedScore * 100) / 100,
       consensusCount: consensus.count,
       consensusLevel: consensus.level,
+      nliScore,
     };
   });
 
-  // Contradiction detection (Phase 2)
+  // ── Phase 2: Contradiction detection (NLI-enhanced) ──
   const claimTexts = claims.map(c => c.claim);
-  const contradictions = detectContradictions(claimTexts);
+  let contradictions: Contradiction[];
 
-  // Compute aggregate scores
+  if (hfApiKey && claims.length >= 2 && claims.length <= 30) {
+    // Use NLI for semantic contradiction detection
+    contradictions = await detectContradictionsNLI(claimTexts, hfApiKey);
+  } else {
+    // Fallback: heuristic negation-based detection
+    contradictions = detectContradictions(claimTexts);
+  }
+
+  // ── Phase 3: Aggregate scores ──
   const verifiedCount = verifiedClaims.filter(c => c.verified).length;
   const verificationRate = claims.length > 0 ? verifiedCount / claims.length : 0;
 
@@ -912,7 +1000,6 @@ export function verifyEvidence(
     ? authorities.reduce((a, b) => a + b, 0) / authorities.length
     : 0.5;
 
-  // Consensus score: average consensus level across all claims (0-1)
   const consensusValues: number[] = verifiedClaims.map(c => {
     if (c.consensusLevel === "strong") return 1.0;
     if (c.consensusLevel === "moderate") return 0.7;
@@ -931,4 +1018,73 @@ export function verifyEvidence(
     consensusScore: Math.round(consensusScore * 100) / 100,
     contradictions,
   };
+}
+
+// ─── NLI-Enhanced Contradiction Detection ──────────────────────────
+
+/**
+ * Detect contradictions using NLI semantic entailment.
+ *
+ * For each pair of claims about the same topic (token overlap >= 0.3),
+ * asks the NLI model if one contradicts the other. This catches
+ * semantic contradictions that heuristic negation detection misses,
+ * like "AI will create more jobs" vs "AI will displace most workers".
+ */
+async function detectContradictionsNLI(
+  claims: string[],
+  hfApiKey: string,
+): Promise<Contradiction[]> {
+  const contradictions: Contradiction[] = [];
+
+  // First pass: filter candidate pairs by topic overlap (fast, no API calls)
+  const candidates: Array<{ i: number; j: number; topic: string }> = [];
+  for (let i = 0; i < claims.length; i++) {
+    for (let j = i + 1; j < claims.length; j++) {
+      const overlap = tokenOverlap(claims[i], claims[j]);
+      if (overlap < 0.3) continue;
+
+      const tokensA = new Set(tokenize(claims[i]));
+      const tokensB = new Set(tokenize(claims[j]));
+      const shared = [...tokensA].filter(t => tokensB.has(t));
+      candidates.push({ i, j, topic: shared.slice(0, 5).join(" ") });
+    }
+  }
+
+  if (candidates.length === 0) return contradictions;
+
+  // Second pass: NLI contradiction check on candidate pairs
+  const results = await Promise.allSettled(
+    candidates.map(({ i, j }) =>
+      checkContradiction(claims[i], claims[j], hfApiKey),
+    ),
+  );
+
+  for (let k = 0; k < results.length; k++) {
+    const result = results[k];
+    if (result.status !== "fulfilled" || !result.value) {
+      // NLI failed for this pair, fall back to heuristic
+      const { i, j } = candidates[k];
+      const negA = countNegations(claims[i]);
+      const negB = countNegations(claims[j]);
+      if ((negA === 0 && negB > 0) || (negB === 0 && negA > 0)) {
+        contradictions.push({
+          claimA: claims[i],
+          claimB: claims[j],
+          topic: candidates[k].topic,
+        });
+      }
+      continue;
+    }
+
+    if (result.value.isContradiction) {
+      contradictions.push({
+        claimA: claims[candidates[k].i],
+        claimB: claims[candidates[k].j],
+        topic: candidates[k].topic,
+        nliConfidence: Math.round(result.value.score * 100) / 100,
+      });
+    }
+  }
+
+  return contradictions;
 }

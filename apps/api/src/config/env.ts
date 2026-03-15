@@ -19,6 +19,7 @@ const EnvSchema = z.object({
   API_KEY_ENCRYPTION_KEY: z.string().trim().transform(v => v || undefined).pipe(z.string().length(64).optional()),
   SUPABASE_JWT_SECRET: z.string().optional(),
   BRAVE_API_KEY: z.string().optional(),
+  HF_API_KEY: z.string().optional(),
 });
 
 export type Env = z.infer<typeof EnvSchema>;

@@ -32,7 +32,7 @@ npx pnpm --filter browse-ai build  # Build MCP only
 
 - **LLM:** Google Gemini 2.5 Flash via OpenRouter (`packages/shared/src/constants.ts`)
 - **Search:** Tavily API for web search
-- **Verification pipeline:** BM25 sentence matching → cross-source consensus → contradiction detection (`apps/api/src/lib/verify.ts`)
+- **Verification pipeline:** Hybrid BM25 + NLI semantic entailment → cross-source consensus → NLI contradiction detection (`apps/api/src/lib/verify.ts`, `apps/api/src/lib/nli.ts`). Falls back to BM25-only when `HF_API_KEY` is not set.
 - **Confidence scores:** 7-factor evidence-based algorithm in `apps/api/src/lib/gemini.ts` — NOT LLM self-assessed. Factors: source count, domain diversity, claim grounding, citation depth, verification rate, domain authority, consensus score. Contradiction penalty applied.
 - **Domain authority:** 10,000+ domains in Supabase (260 curated + Majestic Million), 5-tier scoring with Bayesian dynamic blending from real query verification data. Cold-start safe via prior weight smoothing.
 - **Thorough mode:** `depth: "thorough"` auto-retries with rephrased query when first-pass confidence < 60%. Available across API, MCP, and Python SDK.
@@ -48,6 +48,8 @@ OPENROUTER_API_KEY    — OpenRouter key (for LLM)
 SUPABASE_URL          — Supabase project URL
 SUPABASE_SERVICE_ROLE_KEY — Supabase service role key
 API_KEY_ENCRYPTION_KEY — AES-256-GCM key for encrypting stored API keys
+BRAVE_API_KEY          — Brave Search API key (optional, adds source diversity)
+HF_API_KEY             — HuggingFace API token (optional, enables NLI verification)
 ```
 
 ## Deployment

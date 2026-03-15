@@ -15,19 +15,19 @@ describe("verifyEvidence", () => {
     sources: ["https://example.com/article"],
   };
 
-  it("verifies a claim that matches source text exactly", () => {
+  it("verifies a claim that matches source text exactly", async () => {
     const pageContents = new Map([
       ["https://example.com/article", "Quantum computing uses qubits to process information. It is a revolutionary technology."],
     ]);
 
-    const result = verifyEvidence([baseClaim], [baseSource], pageContents);
+    const result = await verifyEvidence([baseClaim], [baseSource], pageContents);
 
     expect(result.claims[0].verified).toBe(true);
     expect(result.claims[0].verificationScore).toBeGreaterThan(0);
     expect(result.verificationRate).toBe(1);
   });
 
-  it("fails verification when source text is completely unrelated", () => {
+  it("fails verification when source text is completely unrelated", async () => {
     const pageContents = new Map([
       ["https://example.com/article", "The weather today is sunny with temperatures around 75 degrees Fahrenheit."],
     ]);
@@ -37,12 +37,12 @@ describe("verifyEvidence", () => {
       sources: ["https://example.com/article"],
     };
 
-    const result = verifyEvidence([unrelatedClaim], [baseSource], pageContents);
+    const result = await verifyEvidence([unrelatedClaim], [baseSource], pageContents);
 
     expect(result.claims[0].verificationScore).toBeLessThan(0.35);
   });
 
-  it("verifies paraphrased claims via BM25 matching", () => {
+  it("verifies paraphrased claims via BM25 matching", async () => {
     const pageContents = new Map([
       ["https://example.com/article", "Quantum computers utilize quantum bits, known as qubits, for processing computational information and solving complex problems."],
     ]);
@@ -52,12 +52,12 @@ describe("verifyEvidence", () => {
       sources: ["https://example.com/article"],
     };
 
-    const result = verifyEvidence([paraphrasedClaim], [baseSource], pageContents);
+    const result = await verifyEvidence([paraphrasedClaim], [baseSource], pageContents);
 
     expect(result.claims[0].verificationScore).toBeGreaterThan(0);
   });
 
-  it("computes consensus across multiple sources", () => {
+  it("computes consensus across multiple sources", async () => {
     const sources: BrowseSource[] = [
       { url: "https://a.com/1", title: "A", domain: "a.com", quote: "Q" },
       { url: "https://b.com/1", title: "B", domain: "b.com", quote: "Q" },
@@ -75,32 +75,32 @@ describe("verifyEvidence", () => {
       ["https://c.com/1", "Python programming language is among the most popular choices for data science and artificial intelligence projects."],
     ]);
 
-    const result = verifyEvidence([claim], sources, pageContents);
+    const result = await verifyEvidence([claim], sources, pageContents);
 
     expect(result.claims[0].consensusCount).toBeGreaterThanOrEqual(2);
     expect(result.claims[0].consensusLevel).not.toBe("none");
     expect(result.consensusScore).toBeGreaterThan(0);
   });
 
-  it("detects contradictions between claims", () => {
+  it("detects contradictions between claims", async () => {
     const claims: BrowseClaim[] = [
       { claim: "Coffee consumption increases heart disease risk significantly", sources: [] },
       { claim: "Coffee consumption does not increase heart disease risk", sources: [] },
     ];
 
-    const result = verifyEvidence(claims, [], new Map());
+    const result = await verifyEvidence(claims, [], new Map());
 
     expect(result.contradictions.length).toBeGreaterThanOrEqual(1);
     expect(result.contradictions[0].claimA).toContain("Coffee");
     expect(result.contradictions[0].claimB).toContain("Coffee");
   });
 
-  it("computes domain authority for known TLDs", () => {
+  it("computes domain authority for known TLDs", async () => {
     const sources: BrowseSource[] = [
       { url: "https://nasa.gov/science", title: "NASA", domain: "nasa.gov", quote: "Q" },
     ];
 
-    const result = verifyEvidence([], sources, new Map());
+    const result = await verifyEvidence([], sources, new Map());
 
     expect(result.sources[0].authority).toBeGreaterThanOrEqual(0.9);
   });
@@ -110,7 +110,7 @@ describe("verifyEvidence", () => {
     expect(authority).toBe(0.5);
   });
 
-  it("returns aggregate metrics", () => {
+  it("returns aggregate metrics", async () => {
     const sources: BrowseSource[] = [
       { url: "https://a.com", title: "A", domain: "a.com", quote: "Test quote about technology" },
     ];
@@ -122,7 +122,7 @@ describe("verifyEvidence", () => {
       ["https://a.com", "Technology is advancing rapidly in every sector. AI will transform industries and create new opportunities."],
     ]);
 
-    const result = verifyEvidence(claims, sources, pageContents);
+    const result = await verifyEvidence(claims, sources, pageContents);
 
     expect(result.verificationRate).toBeGreaterThanOrEqual(0);
     expect(result.verificationRate).toBeLessThanOrEqual(1);
@@ -130,6 +130,18 @@ describe("verifyEvidence", () => {
     expect(result.avgAuthority).toBeLessThanOrEqual(1);
     expect(result.consensusScore).toBeGreaterThanOrEqual(0);
     expect(result.consensusScore).toBeLessThanOrEqual(1);
+  });
+
+  it("falls back to BM25-only when no HF API key is provided", async () => {
+    const pageContents = new Map([
+      ["https://example.com/article", "Quantum computing uses qubits to process information. It is a revolutionary technology."],
+    ]);
+
+    // No hfApiKey → should work exactly like before (BM25-only)
+    const result = await verifyEvidence([baseClaim], [baseSource], pageContents);
+
+    expect(result.claims[0].verified).toBe(true);
+    expect(result.claims[0].nliScore).toBeUndefined();
   });
 });
 
