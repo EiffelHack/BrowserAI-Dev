@@ -113,8 +113,8 @@ export async function streamAnswer(
             currentEvent === "result" ? { type: "result", data } :
             currentEvent === "error" ? { type: "error", data } :
             currentEvent === "reasoning_step" ? { type: "reasoning_step", data } :
-            currentEvent === "done" ? { type: "done" } :
-            { type: "done" };
+            currentEvent === "done" ? { type: "done", data } :
+            { type: "done", data };
 
           onEvent(event);
 
