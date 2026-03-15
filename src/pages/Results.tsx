@@ -145,6 +145,21 @@ const Results = () => {
           />
         )}
 
+        {/* Depth fallback notice */}
+        {!loading && depth === "deep" && effectiveDepth !== "deep" && (
+          <motion.div
+            initial={{ opacity: 0, y: -5 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-400 text-xs font-mono"
+          >
+            <Zap className="w-3.5 h-3.5 shrink-0" />
+            <span>
+              Ran in <strong>standard mode</strong> (thorough) — deep mode
+              {user ? " quota exhausted for today, resets in ~24h" : " requires sign in with a BAI key"}
+            </span>
+          </motion.div>
+        )}
+
         {error && (
           <motion.div
             initial={{ opacity: 0 }}

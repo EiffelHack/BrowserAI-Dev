@@ -499,7 +499,11 @@ const Playground = () => {
               {quota && (
                 <Badge variant="outline" className={`text-[10px] px-2 py-0.5 ${quota.premiumActive ? "text-emerald-400 border-emerald-500/30" : "text-amber-400 border-amber-500/30"}`}>
                   {quota.premiumActive ? "Premium" : "Standard"} · {quota.used}/{quota.limit}
-                  {!quota.premiumActive && depth === "deep" && " · fell back to thorough — resets in ~24h"}
+                </Badge>
+              )}
+              {depth === "deep" && response.effectiveDepth && response.effectiveDepth !== "deep" && (
+                <Badge variant="outline" className="text-[10px] px-2 py-0.5 text-amber-400 border-amber-500/30">
+                  Ran as thorough — deep mode {user ? "quota exhausted, resets in ~24h" : "requires sign in"}
                 </Badge>
               )}
               {/* Feedback buttons */}
