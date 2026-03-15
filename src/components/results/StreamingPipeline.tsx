@@ -26,122 +26,6 @@ const STEP_ICONS: Record<string, React.ReactNode> = {
   "Neural Rerank": <Sparkles className="w-4 h-4" />,
 };
 
-// ── Phase definitions for fast/thorough progress pipelines ──
-
-type Phase = {
-  label: string;
-  icon: React.ReactNode;
-  /** Trace step names that trigger this phase as "active" */
-  activeTriggers: string[];
-  /** Trace step names that mark this phase as "complete" */
-  completeTriggers: string[];
-};
-
-const FAST_PHASES: Phase[] = [
-  {
-    label: "Search Web",
-    icon: <Globe className="w-4 h-4" />,
-    activeTriggers: ["Searching"],
-    completeTriggers: ["Search Web"],
-  },
-  {
-    label: "Fetch Pages",
-    icon: <FileText className="w-4 h-4" />,
-    activeTriggers: ["Fetching"],
-    completeTriggers: ["Fetch Pages"],
-  },
-  {
-    label: "Generate Answer",
-    icon: <Sparkles className="w-4 h-4" />,
-    activeTriggers: ["Generating Answer"],
-    completeTriggers: ["Generate Answer"],
-  },
-  {
-    label: "Extract & Verify",
-    icon: <Shield className="w-4 h-4" />,
-    activeTriggers: ["Extract Claims", "Analyzing"],
-    completeTriggers: ["Verify Evidence"],
-  },
-  {
-    label: "Build Evidence",
-    icon: <GitMerge className="w-4 h-4" />,
-    activeTriggers: ["Cross-Source Consensus"],
-    completeTriggers: ["Build Evidence Graph"],
-  },
-];
-
-const THOROUGH_PHASES: Phase[] = [
-  {
-    label: "Search & Fetch",
-    icon: <Globe className="w-4 h-4" />,
-    activeTriggers: ["Searching", "Fetching"],
-    completeTriggers: ["Fetch Pages"],
-  },
-  {
-    label: "Analyze & Verify",
-    icon: <Shield className="w-4 h-4" />,
-    activeTriggers: ["Generating Answer", "Analyzing"],
-    completeTriggers: ["Build Evidence Graph"],
-  },
-  {
-    label: "Rephrase Query",
-    icon: <RefreshCw className="w-4 h-4" />,
-    activeTriggers: [],
-    completeTriggers: ["Rephrase Query"],
-  },
-  {
-    label: "Second Pass",
-    icon: <Search className="w-4 h-4" />,
-    activeTriggers: [],
-    // Any pass 2 step completing means this phase is active/done
-    completeTriggers: ["Build Evidence Graph (pass 2)"],
-  },
-  {
-    label: "Select Best",
-    icon: <CheckCircle2 className="w-4 h-4" />,
-    activeTriggers: [],
-    completeTriggers: ["Select Best Result"],
-  },
-];
-
-type PhaseState = "pending" | "active" | "complete";
-
-function computePhaseStates(phases: Phase[], steps: TraceEvent[], done: boolean): { state: PhaseState; duration: number }[] {
-  const stepNames = new Set(steps.map((s) => s.step));
-  const stepDurations = new Map<string, number>();
-  for (const s of steps) {
-    if (s.duration_ms > 0) stepDurations.set(s.step, s.duration_ms);
-  }
-
-  let lastCompleteIdx = -1;
-  const states = phases.map((phase, i) => {
-    const isComplete = done || phase.completeTriggers.some((t) => {
-      // Exact match or prefix match for "(pass 2)" steps
-      return stepNames.has(t) || [...stepNames].some((sn) => sn.startsWith(t.replace(/ \(pass 2\)$/, "")) && sn.includes("(pass 2)"));
-    });
-
-    // Duration: sum of all matching complete trigger durations
-    let duration = 0;
-    for (const t of phase.completeTriggers) {
-      duration += stepDurations.get(t) || 0;
-    }
-
-    if (isComplete) lastCompleteIdx = i;
-    return { isComplete, duration };
-  });
-
-  return states.map(({ isComplete, duration }, i) => {
-    if (isComplete) return { state: "complete" as PhaseState, duration };
-
-    // Active if: it's the phase right after the last complete one,
-    // OR any of its active triggers have been seen
-    const isActive = i === lastCompleteIdx + 1 ||
-      phases[i].activeTriggers.some((t) => stepNames.has(t));
-
-    return { state: isActive ? "active" as PhaseState : "pending" as PhaseState, duration };
-  });
-}
-
 // ── Deep mode grouping (unchanged — works well) ──
 
 const GROUP_LABELS: Record<string, string> = {
@@ -306,67 +190,88 @@ function GroupRow({ group }: { group: Extract<GroupedStep, { type: "group" }> })
   );
 }
 
-// ── Phase pipeline (fixed-layout progress for fast/thorough) ──
+// ── Pill-based pipeline (same style as Playground's PipelineSteps) ──
 
-function PhasePipeline({ phases, steps, done }: { phases: Phase[]; steps: TraceEvent[]; done: boolean }) {
-  const phaseStates = useMemo(() => computePhaseStates(phases, steps, done), [phases, steps, done]);
+const PIPELINE_STEPS = {
+  fast: ["Search Web", "Fetch Pages", "Extract Claims", "Verify Evidence", "Generate Answer"],
+  thorough: ["Search Web", "Fetch Pages", "Extract & Verify", "Rephrase Query", "Second Pass", "Select Best"],
+};
+
+/** Map trace event names to which pipeline pill they complete. */
+const PILL_TRIGGERS: Record<string, Record<string, number>> = {
+  fast: {
+    "Search Web": 0,
+    "Fetch Pages": 1,
+    "Extract Claims": 2,
+    "Verify Evidence": 3,
+    "Generate Answer": 4,
+    "Build Evidence Graph": 4,
+  },
+  thorough: {
+    "Search Web": 0,
+    "Fetch Pages": 1,
+    "Build Evidence Graph": 2,
+    "Rephrase Query": 3,
+    "Select Best Result": 5,
+  },
+};
+
+function PipelinePills({ depth, steps, done }: { depth: "fast" | "thorough"; steps: TraceEvent[]; done: boolean }) {
+  const pills = PIPELINE_STEPS[depth];
+  const triggers = PILL_TRIGGERS[depth];
+
+  // Compute how far along we are based on real trace events
+  const completedIdx = useMemo(() => {
+    if (done) return pills.length - 1;
+    let maxCompleted = -1;
+    for (const s of steps) {
+      const baseName = s.step.replace(/\s*\(.*\)$/, "");
+      const idx = triggers[s.step] ?? triggers[baseName];
+      if (idx !== undefined && idx > maxCompleted) maxCompleted = idx;
+      // For thorough pass 2, mark "Second Pass" as active/complete
+      if (s.step.includes("(pass 2)") && 4 > maxCompleted) maxCompleted = 4;
+    }
+    return maxCompleted;
+  }, [steps, done, pills.length, triggers]);
+
+  // If no trace events yet, cycle with a timer (same as Playground)
+  const [timerStep, setTimerStep] = useState(0);
+  const hasRealSteps = completedIdx >= 0;
+
+  useEffect(() => {
+    if (hasRealSteps || done) return;
+    const interval = setInterval(() => {
+      setTimerStep((prev) => (prev + 1) % pills.length);
+    }, 2000);
+    return () => clearInterval(interval);
+  }, [hasRealSteps, done, pills.length]);
+
+  const activeStep = hasRealSteps ? Math.min(completedIdx + 1, pills.length - 1) : timerStep;
 
   return (
-    <div className="w-full max-w-md space-y-1.5">
-      {phases.map((phase, i) => {
-        const { state, duration } = phaseStates[i];
+    <div className="flex flex-wrap items-center justify-center gap-1.5 max-w-sm">
+      {pills.map((step, i) => {
+        const isComplete = hasRealSteps ? i <= completedIdx : i < timerStep;
+        const isActive = hasRealSteps ? i === activeStep && !done : i === timerStep;
+
         return (
-          <motion.div
-            key={phase.label}
-            initial={{ opacity: 0.4 }}
+          <motion.span
+            key={step}
             animate={{
-              opacity: state === "pending" ? 0.4 : 1,
+              opacity: isComplete || isActive ? 1 : 0.3,
+              scale: isActive ? 1.05 : 1,
             }}
-            transition={{ duration: 0.4, ease: "easeOut" }}
-            className="flex items-center gap-3 py-2 px-3 rounded-lg"
+            transition={{ duration: 0.3 }}
+            className={`text-[10px] px-2 py-0.5 rounded-full border font-mono ${
+              isComplete
+                ? "text-emerald-400 border-emerald-500/30"
+                : isActive
+                ? "text-accent border-accent/40"
+                : "text-muted-foreground border-border"
+            }`}
           >
-            <div className={`shrink-0 transition-colors duration-300 ${
-              state === "complete" ? "text-emerald-400" :
-              state === "active" ? "text-accent" :
-              "text-muted-foreground/30"
-            }`}>
-              {state === "active" ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : state === "complete" ? (
-                <motion.div initial={{ scale: 0.5 }} animate={{ scale: 1 }} transition={{ type: "spring", stiffness: 300 }}>
-                  <CheckCircle2 className="w-4 h-4" />
-                </motion.div>
-              ) : (
-                phase.icon
-              )}
-            </div>
-            <span className={`text-sm flex-1 transition-colors duration-300 ${
-              state === "complete" ? "text-foreground" :
-              state === "active" ? "text-accent font-medium" :
-              "text-muted-foreground/50"
-            }`}>
-              {phase.label}
-            </span>
-            {state === "complete" && duration > 0 && (
-              <motion.span
-                initial={{ opacity: 0, x: 5 }}
-                animate={{ opacity: 1, x: 0 }}
-                className="text-[10px] tabular-nums font-mono text-emerald-400/70"
-              >
-                {duration >= 1000 ? `${(duration / 1000).toFixed(1)}s` : `${duration}ms`}
-              </motion.span>
-            )}
-            {state === "active" && (
-              <motion.span
-                initial={{ opacity: 0 }}
-                animate={{ opacity: [0.3, 0.7, 0.3] }}
-                transition={{ duration: 1.5, repeat: Infinity }}
-                className="text-[10px] text-accent/60"
-              >
-                processing
-              </motion.span>
-            )}
-          </motion.div>
+            {isComplete ? "✓" : isActive ? "●" : "○"} {step}
+          </motion.span>
         );
       })}
     </div>
@@ -405,8 +310,6 @@ export function StreamingPipeline({ steps, sources, done, depth = "fast" }: Prop
       })()
     : null;
 
-  // Choose pipeline phases based on depth
-  const phases = depth === "thorough" ? THOROUGH_PHASES : FAST_PHASES;
   const isDeep = depth === "deep";
 
   // For deep mode, group the display steps
@@ -487,8 +390,8 @@ export function StreamingPipeline({ steps, sources, done, depth = "fast" }: Prop
           </AnimatePresence>
         </div>
       ) : (
-        // Fast/Thorough: fixed-layout phase pipeline (no layout shifts)
-        <PhasePipeline phases={phases} steps={steps} done={done} />
+        // Fast/Thorough: pill-based pipeline (same as Playground)
+        <PipelinePills depth={depth as "fast" | "thorough"} steps={steps} done={done} />
       )}
 
       {/* Early source previews */}
