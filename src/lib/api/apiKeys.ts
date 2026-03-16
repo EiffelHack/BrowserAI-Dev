@@ -135,8 +135,8 @@ export interface AdminMetrics {
   users: AdminUser[];
   totalUsers: number;
   packageStats: {
-    npm: { weeklyDownloads: number; totalDownloads: number } | null;
-    pypi: { weeklyDownloads: number; totalDownloads: number } | null;
+    npm: { weeklyDownloads: number; totalDownloads: number; new?: { weekly: number; total: number }; old?: { weekly: number; total: number } } | null;
+    pypi: { weeklyDownloads: number; totalDownloads: number; new?: { weekly: number; total: number }; old?: { weekly: number; total: number } } | null;
     github: { stars: number; forks: number; openIssues: number } | null;
   };
 }
