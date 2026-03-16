@@ -1,19 +1,19 @@
-# browseai
+# browseaidev
 
 **Reliable research infrastructure for AI agents.** Python SDK for [BrowseAI Dev](https://browseai.dev) — the research layer for LangChain, CrewAI, and custom agent pipelines.
 
 ## Install
 
 ```bash
-pip install browseai
+pip install browseaidev
 ```
 
 ## Quick Start
 
 ```python
-from browseai import BrowseAI
+from browseaidev import BrowseAIDev
 
-client = BrowseAI(api_key="bai_xxx")
+client = BrowseAIDev(api_key="bai_xxx")
 
 # Research with citations
 result = client.ask("What is quantum computing?")
@@ -50,9 +50,9 @@ client.feedback(result_id=result.share_id, rating="good")
 ## Async
 
 ```python
-from browseai import AsyncBrowseAI
+from browseaidev import AsyncBrowseAIDev
 
-async with AsyncBrowseAI(api_key="bai_xxx") as client:
+async with AsyncBrowseAIDev(api_key="bai_xxx") as client:
     result = await client.ask("What is quantum computing?")
     # Thorough mode works with async too
     thorough = await client.ask("What is quantum computing?", depth="thorough")
@@ -85,9 +85,9 @@ Persistent research sessions that accumulate knowledge across multiple queries. 
 > **Sessions require a BrowseAI Dev API key** (`api_key="bai_xxx"`) for identity and ownership. BYOK clients (`tavily_key`/`openrouter_key` only) can use search/answer but cannot create or access sessions. Get a free API key at [browseai.dev/dashboard](https://browseai.dev/dashboard).
 
 ```python
-from browseai import BrowseAI
+from browseaidev import BrowseAIDev
 
-client = BrowseAI(api_key="bai_xxx")
+client = BrowseAIDev(api_key="bai_xxx")
 
 # Create a session
 session = client.session("wasm-research")
@@ -125,7 +125,7 @@ forked = client.fork_session(share.share_id)
 Async sessions work the same way:
 
 ```python
-async with AsyncBrowseAI(api_key="bai_xxx") as client:
+async with AsyncBrowseAIDev(api_key="bai_xxx") as client:
     session = await client.session("my-project")
     r1 = await session.ask("What is WASM?")
     r2 = await session.ask("WASM vs JS?")
@@ -168,7 +168,7 @@ if result.contradictions:
 Use your own data sources instead of — or alongside — public web search. Supports `elasticsearch`, `confluence`, and `custom` endpoints with optional `data_retention="none"` for compliance.
 
 ```python
-from browseai.models import SearchProviderConfig
+from browseaidev.models import SearchProviderConfig
 
 # Using the typed model (snake_case fields)
 provider = SearchProviderConfig(
@@ -209,29 +209,29 @@ result = client.ask("Patient protocols", search_provider=SearchProviderConfig(
 No signup required — just pass your own keys:
 
 ```python
-client = BrowseAI(tavily_key="tvly-xxx", openrouter_key="sk-or-xxx")
+client = BrowseAIDev(tavily_key="tvly-xxx", openrouter_key="sk-or-xxx")
 ```
 
 ## LangChain
 
 ```bash
-pip install browseai[langchain]
+pip install browseaidev[langchain]
 ```
 
 ```python
-from browseai.integrations.langchain import BrowseAIAskTool
+from browseaidev.integrations.langchain import BrowseAIDevAskTool
 
-tools = [BrowseAIAskTool(api_key="bai_xxx")]
+tools = [BrowseAIDevAskTool(api_key="bai_xxx")]
 ```
 
 ## CrewAI
 
 ```bash
-pip install browseai[crewai]
+pip install browseaidev[crewai]
 ```
 
 ```python
-from browseai.integrations.crewai import BrowseAITool
+from browseaidev.integrations.crewai import BrowseAIDevTool
 
-researcher = Agent(tools=[BrowseAITool(api_key="bai_xxx")])
+researcher = Agent(tools=[BrowseAIDevTool(api_key="bai_xxx")])
 ```

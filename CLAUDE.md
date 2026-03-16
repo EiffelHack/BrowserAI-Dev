@@ -10,9 +10,9 @@ BrowseAI Dev is open-source research infrastructure for AI agents. It gives agen
 
 ```
 apps/api/          — Fastify REST API (search, answer, extract, compare)
-apps/mcp/          — MCP server (npm: browse-ai)
+apps/mcp/          — MCP server (npm: browseai-dev)
 packages/shared/   — Shared types, schemas, constants
-packages/python-sdk/ — Python SDK (PyPI: browseai)
+packages/python-sdk/ — Python SDK (PyPI: browseaidev)
 src/               — Vite + React frontend (landing, developers, playground pages)
 ```
 
@@ -25,7 +25,7 @@ pnpm dev:web          # Frontend only (Vite)
 pnpm build            # Full build (Vercel)
 pnpm test             # Run tests (vitest)
 npx pnpm --filter api build   # Build API only (tsc)
-npx pnpm --filter browse-ai build  # Build MCP only
+npx pnpm --filter browseai-dev build  # Build MCP only
 ```
 
 ## Architecture decisions
@@ -86,7 +86,7 @@ HF_API_KEY             — HuggingFace API token (optional, enables NLI verifica
 - `packages/shared/src/types.ts` — BrowseResult, BrowseClaim, BrowseSource, Contradiction types
 - `packages/shared/src/schemas.ts` — Zod schemas for all request types
 - `apps/mcp/src/index.ts` — MCP server tool definitions
-- `packages/python-sdk/browseai/client.py` — Python SDK (sync + async clients)
+- `packages/python-sdk/browseaidev/client.py` — Python SDK (sync + async clients)
 - `src/pages/Index.tsx` — Landing page
 - `src/pages/Developers.tsx` — Developer page (roadmap, code examples)
 - `src/pages/Playground.tsx` — Interactive playground
@@ -100,15 +100,15 @@ Every time a new feature is implemented, go through this checklist before consid
 ### 1. Code (always)
 - [ ] Types updated in `packages/shared/src/types.ts`
 - [ ] Schemas updated in `packages/shared/src/schemas.ts`
-- [ ] Build all packages: `npx pnpm --filter shared build && npx pnpm --filter api build && npx pnpm --filter browse-ai build`
+- [ ] Build all packages: `npx pnpm --filter shared build && npx pnpm --filter api build && npx pnpm --filter browseai-dev build`
 - [ ] Run tests: `npx pnpm test`
 - [ ] Full build passes: `npx pnpm build`
 
 ### 2. API surfaces (if feature adds/changes parameters or behavior)
 - [ ] REST API route updated in `apps/api/src/routes/browse.ts`
 - [ ] MCP tool schema updated in `apps/mcp/src/index.ts` (params, description)
-- [ ] Python SDK methods updated in `packages/python-sdk/browseai/client.py` (both sync + async)
-- [ ] Python SDK models updated in `packages/python-sdk/browseai/models.py` (if new response fields)
+- [ ] Python SDK methods updated in `packages/python-sdk/browseaidev/client.py` (both sync + async)
+- [ ] Python SDK models updated in `packages/python-sdk/browseaidev/models.py` (if new response fields)
 
 ### 3. Documentation (if feature is user-facing)
 - [ ] `README.md` — Update feature list, verification pipeline description, API examples
@@ -119,7 +119,7 @@ Every time a new feature is implemented, go through this checklist before consid
 
 ### 4. Versioning (if publishing)
 - [ ] Bump version in `apps/mcp/package.json` AND `apps/mcp/src/index.ts` (`VERSION` constant) — must match
-- [ ] Bump version in `packages/python-sdk/pyproject.toml` AND `packages/python-sdk/browseai/__init__.py` (`__version__`) — must match
+- [ ] Bump version in `packages/python-sdk/pyproject.toml` AND `packages/python-sdk/browseaidev/__init__.py` (`__version__`) — must match
 - [ ] CI auto-publishes on merge to main but **skips if version unchanged** — always bump before merging
 - [ ] Update `CLAUDE.md` architecture section if significant new capability
 
@@ -134,6 +134,6 @@ Every time a new feature is implemented, go through this checklist before consid
 - **Site:** https://browseai.dev
 - **GitHub:** https://github.com/BrowseAI-HQ/BrowseAI-Dev
 - **Discord:** https://discord.gg/ubAuT4YQsT
-- **npm:** https://www.npmjs.com/package/browse-ai
-- **PyPI:** https://pypi.org/project/browseai/
+- **npm:** https://www.npmjs.com/package/browseai-dev
+- **PyPI:** https://pypi.org/project/browseaidev/
 - **License:** MIT

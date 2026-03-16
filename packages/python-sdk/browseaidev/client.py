@@ -1,4 +1,4 @@
-"""BrowseAI Python client — sync and async."""
+"""BrowseAI Dev Python client — sync and async."""
 
 from __future__ import annotations
 
@@ -10,7 +10,7 @@ import httpx
 
 from .exceptions import (
     AuthenticationError,
-    BrowseAIError,
+    BrowseAIDevError,
     InsufficientCreditsError,
     RateLimitError,
     ServerError,
@@ -69,17 +69,17 @@ def _handle_error(response: httpx.Response) -> None:
         raise ValidationError(message, status)
     if status >= 500:
         raise ServerError(message, status)
-    raise BrowseAIError(message, status)
+    raise BrowseAIDevError(message, status)
 
 
-class BrowseAI:
-    """Synchronous BrowseAI client.
+class BrowseAIDev:
+    """Synchronous BrowseAI Dev client.
 
     Usage::
 
-        from browseai import BrowseAI
+        from browseaidev import BrowseAIDev
 
-        client = BrowseAI(api_key="bai_xxx")
+        client = BrowseAIDev(api_key="bai_xxx")
         result = client.ask("What is quantum computing?")
         print(result.answer)
     """
@@ -105,12 +105,12 @@ class BrowseAI:
         )
 
     @classmethod
-    def from_config(cls, config_path: str | None = None, **kwargs: Any) -> "BrowseAI":
-        """Create a client from ~/.browseai.json (written by ``browseai setup``)."""
-        path = config_path or os.path.expanduser("~/.browseai.json")
+    def from_config(cls, config_path: str | None = None, **kwargs: Any) -> "BrowseAIDev":
+        """Create a client from ~/.browseaidev.json (written by ``browseaidev setup``)."""
+        path = config_path or os.path.expanduser("~/.browseaidev.json")
         if not os.path.exists(path):
             raise FileNotFoundError(
-                f"No config found at {path}. Run 'browseai setup' first."
+                f"No config found at {path}. Run 'browseaidev setup' first."
             )
         with open(path) as f:
             config = json.load(f)
@@ -131,7 +131,7 @@ class BrowseAI:
         _handle_error(response)
         data = response.json()
         if not data.get("success"):
-            raise BrowseAIError(data.get("error", "Unknown error"))
+            raise BrowseAIDevError(data.get("error", "Unknown error"))
         if "quota" in data:
             self._last_quota = PremiumQuota(**data["quota"])
         return data["result"]
@@ -141,7 +141,7 @@ class BrowseAI:
         _handle_error(response)
         data = response.json()
         if not data.get("success"):
-            raise BrowseAIError(data.get("error", "Unknown error"))
+            raise BrowseAIDevError(data.get("error", "Unknown error"))
         return data["result"]
 
     def search(self, query: str, *, limit: int = 5) -> list[SearchResult]:
@@ -254,7 +254,7 @@ class BrowseAI:
 class SessionClient:
     """Stateful research session. Created via ``client.session("name")``."""
 
-    def __init__(self, client: BrowseAI, session: Session):
+    def __init__(self, client: BrowseAIDev, session: Session):
         self._client = client
         self.session = session
 
@@ -296,19 +296,19 @@ class SessionClient:
         _handle_error(response)
         data = response.json()
         if not data.get("success"):
-            raise BrowseAIError(data.get("error", "Unknown error"))
+            raise BrowseAIDevError(data.get("error", "Unknown error"))
 
 
-class AsyncBrowseAI:
-    """Async BrowseAI client.
+class AsyncBrowseAIDev:
+    """Async BrowseAI Dev client.
 
     Usage::
 
         import asyncio
-        from browseai import AsyncBrowseAI
+        from browseaidev import AsyncBrowseAIDev
 
         async def main():
-            async with AsyncBrowseAI(api_key="bai_xxx") as client:
+            async with AsyncBrowseAIDev(api_key="bai_xxx") as client:
                 result = await client.ask("What is quantum computing?")
                 print(result.answer)
 
@@ -336,12 +336,12 @@ class AsyncBrowseAI:
         )
 
     @classmethod
-    def from_config(cls, config_path: str | None = None, **kwargs: Any) -> "AsyncBrowseAI":
-        """Create an async client from ~/.browseai.json (written by ``browseai setup``)."""
-        path = config_path or os.path.expanduser("~/.browseai.json")
+    def from_config(cls, config_path: str | None = None, **kwargs: Any) -> "AsyncBrowseAIDev":
+        """Create an async client from ~/.browseaidev.json (written by ``browseaidev setup``)."""
+        path = config_path or os.path.expanduser("~/.browseaidev.json")
         if not os.path.exists(path):
             raise FileNotFoundError(
-                f"No config found at {path}. Run 'browseai setup' first."
+                f"No config found at {path}. Run 'browseaidev setup' first."
             )
         with open(path) as f:
             config = json.load(f)
@@ -362,7 +362,7 @@ class AsyncBrowseAI:
         _handle_error(response)
         data = response.json()
         if not data.get("success"):
-            raise BrowseAIError(data.get("error", "Unknown error"))
+            raise BrowseAIDevError(data.get("error", "Unknown error"))
         if "quota" in data:
             self._last_quota = PremiumQuota(**data["quota"])
         return data["result"]
@@ -372,7 +372,7 @@ class AsyncBrowseAI:
         _handle_error(response)
         data = response.json()
         if not data.get("success"):
-            raise BrowseAIError(data.get("error", "Unknown error"))
+            raise BrowseAIDevError(data.get("error", "Unknown error"))
         return data["result"]
 
     async def search(self, query: str, *, limit: int = 5) -> list[SearchResult]:
@@ -468,7 +468,7 @@ class AsyncBrowseAI:
 class AsyncSessionClient:
     """Async stateful research session."""
 
-    def __init__(self, client: AsyncBrowseAI, session: Session):
+    def __init__(self, client: AsyncBrowseAIDev, session: Session):
         self._client = client
         self.session = session
 
@@ -510,4 +510,4 @@ class AsyncSessionClient:
         _handle_error(response)
         data = response.json()
         if not data.get("success"):
-            raise BrowseAIError(data.get("error", "Unknown error"))
+            raise BrowseAIDevError(data.get("error", "Unknown error"))

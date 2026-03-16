@@ -206,7 +206,7 @@ python agent.py "Create a real-time chat application"
 
 - Python 3.10+
 - A [BrowseAI API key](https://browseai.dev) (`bai_xxx` prefix)
-- Dependencies: `browseai`, `rich`
+- Dependencies: `browseaidev`, `rich`
 
 ## License
 

@@ -61,7 +61,7 @@ is-this-true/
 **Use your own keys instead of a BrowseAI API key:**
 
 ```python
-client = BrowseAI(tavily_key="tvly-xxx", openrouter_key="sk-or-xxx")
+client = BrowseAIDev(tavily_key="tvly-xxx", openrouter_key="sk-or-xxx")
 ```
 
 **Change the default depth:**
@@ -75,6 +75,6 @@ This is a standard FastAPI app. Deploy anywhere that runs Python -- Railway, Ren
 ## Links
 
 - [BrowseAI Docs](https://browseai.dev)
-- [Python SDK on PyPI](https://pypi.org/project/browseai/)
+- [Python SDK on PyPI](https://pypi.org/project/browseaidev/)
 - [GitHub](https://github.com/BrowseAI-HQ/BrowserAI-Dev)
 - [Discord](https://discord.gg/ubAuT4YQsT)

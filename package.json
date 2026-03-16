@@ -13,7 +13,7 @@
     "dev:api": "pnpm --filter @browse/api dev",
     "dev:mcp": "pnpm --filter @browse/mcp dev",
     "build": "bash scripts/build-vercel.sh",
-    "build:all": "pnpm --filter @browse/shared build && pnpm --filter @browse/api build && pnpm --filter browse-ai build && vite build",
+    "build:all": "pnpm --filter @browse/shared build && pnpm --filter @browse/api build && pnpm --filter browseai-dev build && vite build",
     "build:web": "vite build",
     "build:vercel": "bash scripts/build-vercel.sh",
     "build:dev": "vite build --mode development",

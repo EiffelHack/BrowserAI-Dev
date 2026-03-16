@@ -14,8 +14,8 @@ import os
 import sys
 import time
 
-from browseai import BrowseAI
-from browseai.models import BrowseResult
+from browseaidev import BrowseAIDev
+from browseaidev.models import BrowseResult
 from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
@@ -43,7 +43,7 @@ def get_api_key() -> str:
     return key
 
 
-def research_claim(client: BrowseAI, claim: str, label: str) -> BrowseResult:
+def research_claim(client: BrowseAIDev, claim: str, label: str) -> BrowseResult:
     """Research a single claim using thorough mode."""
     console.print(f"\n[bold blue]Researching {label}:[/bold blue] {claim}")
     with console.status(f"[bold green]Searching & verifying {label}...[/bold green]"):
@@ -336,7 +336,7 @@ def main() -> None:
 
     # Initialize client
     api_key = get_api_key()
-    client = BrowseAI(api_key=api_key)
+    client = BrowseAIDev(api_key=api_key)
 
     # Research both sides
     console.rule("[bold]Researching Both Sides[/bold]")

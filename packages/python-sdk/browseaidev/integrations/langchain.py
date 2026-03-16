@@ -2,9 +2,9 @@
 
 Usage::
 
-    from browseai.integrations.langchain import BrowseAISearchTool, BrowseAIAskTool
+    from browseaidev.integrations.langchain import BrowseAIDevSearchTool, BrowseAIDevAskTool
 
-    tools = [BrowseAISearchTool(api_key="bai_xxx"), BrowseAIAskTool(api_key="bai_xxx")]
+    tools = [BrowseAIDevSearchTool(api_key="bai_xxx"), BrowseAIDevAskTool(api_key="bai_xxx")]
     agent = initialize_agent(tools, llm)
 """
 
@@ -15,21 +15,21 @@ from typing import Any
 from langchain_core.tools import BaseTool
 from pydantic import Field
 
-from ..client import BrowseAI
+from ..client import BrowseAIDev
 
 
-class BrowseAISearchTool(BaseTool):
+class BrowseAIDevSearchTool(BaseTool):
     """Search the web via BrowseAI Dev. Returns ranked results with URLs and snippets."""
 
-    name: str = "browseai_search"
+    name: str = "browseaidev_search"
     description: str = (
         "Search the web for information on a topic. Returns a list of relevant URLs, "
         "titles, snippets, and relevance scores. Use this for broad web searches."
     )
     client: Any = Field(exclude=True)
 
-    def __init__(self, api_key: str | None = None, *, client: BrowseAI | None = None, **kwargs: Any):
-        cli = client or BrowseAI(api_key=api_key)
+    def __init__(self, api_key: str | None = None, *, client: BrowseAIDev | None = None, **kwargs: Any):
+        cli = client or BrowseAIDev(api_key=api_key)
         super().__init__(client=cli, **kwargs)
 
     def _run(self, query: str) -> str:
@@ -40,10 +40,10 @@ class BrowseAISearchTool(BaseTool):
         return "\n".join(lines) if lines else "No results found."
 
 
-class BrowseAIAskTool(BaseTool):
+class BrowseAIDevAskTool(BaseTool):
     """Full research pipeline via BrowseAI Dev. Returns answer with citations and confidence."""
 
-    name: str = "browseai_ask"
+    name: str = "browseaidev_ask"
     description: str = (
         "Research a question using BrowseAI Dev's evidence-backed pipeline. "
         "Searches the web, extracts claims from sources, and returns a cited answer "
@@ -51,8 +51,8 @@ class BrowseAIAskTool(BaseTool):
     )
     client: Any = Field(exclude=True)
 
-    def __init__(self, api_key: str | None = None, *, client: BrowseAI | None = None, **kwargs: Any):
-        cli = client or BrowseAI(api_key=api_key)
+    def __init__(self, api_key: str | None = None, *, client: BrowseAIDev | None = None, **kwargs: Any):
+        cli = client or BrowseAIDev(api_key=api_key)
         super().__init__(client=cli, **kwargs)
 
     def _run(self, query: str) -> str:
@@ -65,10 +65,10 @@ class BrowseAIAskTool(BaseTool):
         )
 
 
-class BrowseAIExtractTool(BaseTool):
+class BrowseAIDevExtractTool(BaseTool):
     """Extract structured knowledge from a specific URL via BrowseAI Dev."""
 
-    name: str = "browseai_extract"
+    name: str = "browseaidev_extract"
     description: str = (
         "Extract structured knowledge (claims, sources, confidence) from a specific URL. "
         "Optionally provide a query to focus the extraction. "
@@ -76,8 +76,8 @@ class BrowseAIExtractTool(BaseTool):
     )
     client: Any = Field(exclude=True)
 
-    def __init__(self, api_key: str | None = None, *, client: BrowseAI | None = None, **kwargs: Any):
-        cli = client or BrowseAI(api_key=api_key)
+    def __init__(self, api_key: str | None = None, *, client: BrowseAIDev | None = None, **kwargs: Any):
+        cli = client or BrowseAIDev(api_key=api_key)
         super().__init__(client=cli, **kwargs)
 
     def _run(self, input_str: str) -> str:

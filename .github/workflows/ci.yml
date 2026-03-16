@@ -42,7 +42,7 @@ jobs:
       - name: Type check API
         run: pnpm --filter @browse/api exec tsc --noEmit
       - name: Type check MCP
-        run: pnpm --filter browse-ai exec tsc --noEmit
+        run: pnpm --filter browseai-dev exec tsc --noEmit
 
   build:
     name: Build
@@ -60,7 +60,7 @@ jobs:
       - name: Build API
         run: pnpm --filter @browse/api build
       - name: Build MCP
-        run: pnpm --filter browse-ai build
+        run: pnpm --filter browseai-dev build
       - name: Build frontend
         run: pnpm exec vite build
         env:

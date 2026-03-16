@@ -13,7 +13,7 @@ Commands:
 import os
 
 import discord
-from browseai import AsyncBrowseAI
+from browseaidev import AsyncBrowseAIDev
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -36,8 +36,8 @@ intents.message_content = True
 bot = discord.Client(intents=intents)
 
 # Use BrowseAI API key. For BYOK, replace with:
-#   AsyncBrowseAI(tavily_key=TAVILY_KEY, openrouter_key=OPENROUTER_KEY)
-browse = AsyncBrowseAI(api_key=BROWSEAI_API_KEY, timeout=120.0)
+#   AsyncBrowseAIDev(tavily_key=TAVILY_KEY, openrouter_key=OPENROUTER_KEY)
+browse = AsyncBrowseAIDev(api_key=BROWSEAI_API_KEY, timeout=120.0)
 
 
 # ── Helpers ────────────────────────────────────────────────────────────────────

@@ -3,7 +3,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "browseai"
+name = "browseaidev"
 version = "0.1.7"
 description = "Python SDK for BrowseAI Dev — reliable research infrastructure for AI agents"
 readme = "README.md"
@@ -28,7 +28,7 @@ dependencies = [
 ]
 
 [project.scripts]
-browseai = "browseai.cli:main"
+browseaidev = "browseaidev.cli:main"
 
 [project.optional-dependencies]
 langchain = ["langchain-core>=0.2.0"]

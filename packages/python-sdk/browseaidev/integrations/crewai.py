@@ -2,11 +2,11 @@
 
 Usage::
 
-    from browseai.integrations.crewai import BrowseAITool
+    from browseaidev.integrations.crewai import BrowseAIDevTool
 
     researcher = Agent(
         role="Researcher",
-        tools=[BrowseAITool(api_key="bai_xxx")],
+        tools=[BrowseAIDevTool(api_key="bai_xxx")],
     )
 """
 
@@ -17,10 +17,10 @@ from typing import Any
 from crewai.tools import BaseTool
 from pydantic import Field
 
-from ..client import BrowseAI
+from ..client import BrowseAIDev
 
 
-class BrowseAITool(BaseTool):
+class BrowseAIDevTool(BaseTool):
     """Research any question with evidence-backed answers via BrowseAI Dev."""
 
     name: str = "BrowseAI Research"
@@ -31,8 +31,8 @@ class BrowseAITool(BaseTool):
     )
     client: Any = Field(exclude=True)
 
-    def __init__(self, api_key: str | None = None, *, client: BrowseAI | None = None, **kwargs: Any):
-        cli = client or BrowseAI(api_key=api_key)
+    def __init__(self, api_key: str | None = None, *, client: BrowseAIDev | None = None, **kwargs: Any):
+        cli = client or BrowseAIDev(api_key=api_key)
         super().__init__(client=cli, **kwargs)
 
     def _run(self, query: str) -> str:

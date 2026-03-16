@@ -5,16 +5,16 @@ A simple agent that researches any topic and returns
 evidence-backed answers with citations and confidence scores.
 
 Usage:
-    pip install browseai
+    pip install browseaidev
     python research-agent.py "What are the latest breakthroughs in fusion energy?"
 """
 
 import sys
-from browseai import BrowseAI
+from browseaidev import BrowseAIDev
 
 
 def research(query: str):
-    client = BrowseAI(api_key="bai_xxx")  # or use BYOK: BrowseAI(tavily_key="...", openrouter_key="...")
+    client = BrowseAIDev(api_key="bai_xxx")  # or use BYOK: BrowseAIDev(tavily_key="...", openrouter_key="...")
 
     print(f"\nResearching: {query}\n")
 

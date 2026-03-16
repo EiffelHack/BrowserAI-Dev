@@ -113,7 +113,7 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
   });
 
   const server = new McpServer({
-    name: "browse-ai",
+    name: "browseai-dev",
     version: VERSION,
   });
   registerTools(server, apiKey);

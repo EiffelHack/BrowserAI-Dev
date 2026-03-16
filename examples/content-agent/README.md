@@ -251,7 +251,7 @@ The `depth="thorough"` mode auto-retries with a rephrased query when confidence 
 
 - Python 3.10+
 - A [BrowseAI API key](https://browseai.dev) (`bai_xxx` prefix)
-- Dependencies: `browseai`, `rich`
+- Dependencies: `browseaidev`, `rich`
 
 ## License
 

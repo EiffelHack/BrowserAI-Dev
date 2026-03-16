@@ -6,16 +6,16 @@ before writing code. Perfect for AI coding assistants that need
 to verify docs and APIs before generating code.
 
 Usage:
-    pip install browseai
+    pip install browseaidev
     python code-research-agent.py "best Python async HTTP libraries"
 """
 
 import sys
-from browseai import BrowseAI
+from browseaidev import BrowseAIDev
 
 
 def code_research(query: str):
-    client = BrowseAI(api_key="bai_xxx")
+    client = BrowseAIDev(api_key="bai_xxx")
 
     print(f"\n--- Code Research Agent ---")
     print(f"Query: {query}\n")

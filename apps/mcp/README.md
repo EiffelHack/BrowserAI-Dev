@@ -1,4 +1,4 @@
-# browse-ai
+# browseai-dev
 
 **Reliable research infrastructure for AI agents.** The research layer your agents are missing.
 
@@ -6,7 +6,7 @@ MCP server with real-time web search, evidence extraction, and structured citati
 
 ## What it does
 
-Instead of letting your AI hallucinate, `browse-ai` gives it real-time access to the web with **structured, cited answers**:
+Instead of letting your AI hallucinate, `browseai-dev` gives it real-time access to the web with **structured, cited answers**:
 
 ```
 Your question → Web search → Neural rerank → Fetch pages → Extract claims → Verify → Cited answer (streamed)
@@ -37,7 +37,7 @@ Free BAI key users get a generous daily quota (100 premium queries/day, or ~33 d
 ## Quick Start
 
 ```bash
-npx browse-ai setup
+npx browseai-dev setup
 ```
 
 This auto-configures Claude Desktop. You'll need:
@@ -53,9 +53,9 @@ Add to `~/Library/Application Support/Claude/claude_desktop_config.json`:
 ```json
 {
   "mcpServers": {
-    "browse-ai": {
+    "browseai-dev": {
       "command": "npx",
-      "args": ["-y", "browse-ai"],
+      "args": ["-y", "browseai-dev"],
       "env": {
         "SERP_API_KEY": "tvly-your-key",
         "OPENROUTER_API_KEY": "your-openrouter-key",
@@ -74,9 +74,9 @@ Add to your MCP settings:
 
 ```json
 {
-  "browse-ai": {
+  "browseai-dev": {
     "command": "npx",
-    "args": ["-y", "browse-ai"],
+    "args": ["-y", "browseai-dev"],
     "env": {
       "SERP_API_KEY": "tvly-your-key",
       "OPENROUTER_API_KEY": "your-openrouter-key",
@@ -94,10 +94,10 @@ Run as an HTTP server for browser-based clients, Smithery, or any HTTP-capable a
 
 ```bash
 # Start with HTTP transport
-npx browse-ai --http
+npx browseai-dev --http
 
 # Or set the port via environment variable
-MCP_HTTP_PORT=3100 npx browse-ai --http
+MCP_HTTP_PORT=3100 npx browseai-dev --http
 ```
 
 The server exposes:
@@ -107,8 +107,8 @@ The server exposes:
 ### Docker
 
 ```bash
-docker build -t browse-ai ./apps/mcp
-docker run -p 3100:3100 -e BROWSE_API_KEY=bai_xxx browse-ai
+docker build -t browseai-dev ./apps/mcp
+docker run -p 3100:3100 -e BROWSE_API_KEY=bai_xxx browseai-dev
 ```
 
 ## MCP Tools
@@ -182,9 +182,9 @@ docker run -p 3100:3100 -e BROWSE_API_KEY=bai_xxx browse-ai
 }
 ```
 
-## Why browse-ai?
+## Why browseai-dev?
 
-| Feature | Raw LLM | browse-ai |
+| Feature | Raw LLM | browseai-dev |
 |---------|---------|-----------|
 | Sources | None | Real URLs with quotes |
 | Citations | Hallucinated | Verified from pages |

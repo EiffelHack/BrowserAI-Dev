@@ -7,17 +7,17 @@ or any custom endpoint) instead of — or alongside — public web search.
 Supports zero data retention mode for compliance-sensitive environments.
 
 Usage:
-    pip install browseai
+    pip install browseaidev
     BROWSEAI_API_KEY=bai_xxx python enterprise-search.py
 """
 
 import os
-from browseai import BrowseAI
+from browseaidev import BrowseAIDev
 
 
 def main():
     api_key = os.environ.get("BROWSEAI_API_KEY", "bai_xxx")
-    client = BrowseAI(api_key=api_key)
+    client = BrowseAIDev(api_key=api_key)
 
     # ── Elasticsearch ──
     # Point BrowseAI at your Elasticsearch cluster

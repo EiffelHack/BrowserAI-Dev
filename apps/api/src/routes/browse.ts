@@ -214,8 +214,8 @@ async function checkDemoLimit(
 /** Detect client type from User-Agent and headers */
 function detectClient(request: FastifyRequest): string {
   const ua = (request.headers["user-agent"] || "").toLowerCase();
-  if (ua.includes("browseai-python")) return "python-sdk";
-  if (ua.includes("browse-ai-mcp") || ua.includes("mcp")) return "mcp";
+  if (ua.includes("browseaidev-python") || ua.includes("browseai-python")) return "python-sdk";
+  if (ua.includes("browseai-dev-mcp") || ua.includes("browse-ai-mcp") || ua.includes("mcp")) return "mcp";
   if (request.headers["x-browse-client"]) return String(request.headers["x-browse-client"]).slice(0, 50).replace(/[^a-zA-Z0-9_.-]/g, "");
   if (request.headers.origin || request.headers.referer) return "web";
   if (ua.includes("curl")) return "curl";

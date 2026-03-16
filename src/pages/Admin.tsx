@@ -236,7 +236,7 @@ const Admin = () => {
                   <div>
                     <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
                       <Download className="w-4 h-4" />
-                      npm (browse-ai)
+                      npm (browseai-dev)
                     </div>
                     {metrics.packageStats.npm ? (
                       <>
@@ -251,7 +251,7 @@ const Admin = () => {
                   <div>
                     <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
                       <Download className="w-4 h-4" />
-                      PyPI (browseai)
+                      PyPI (browseaidev)
                     </div>
                     {metrics.packageStats.pypi ? (
                       <>

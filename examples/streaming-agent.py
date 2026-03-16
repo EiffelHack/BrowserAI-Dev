@@ -6,7 +6,7 @@ Shows pipeline steps, discovered sources, and answer tokens
 as they arrive — ideal for building responsive UIs.
 
 Usage:
-    pip install browseai httpx
+    pip install browseaidev httpx
     python streaming-agent.py "What are the latest breakthroughs in fusion energy?"
 """
 

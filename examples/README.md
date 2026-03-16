@@ -5,7 +5,7 @@ Agent recipes and tutorials showing how to use BrowseAI Dev as the research laye
 ## Quick Start
 
 ```bash
-pip install browseai
+pip install browseaidev
 ```
 
 ## Agent Recipes
@@ -34,7 +34,7 @@ Full project tutorials — each with its own README, working code, and setup ins
 | [coding-agent/](coding-agent/) | Agent that researches before writing code — never recommends deprecated libraries | Ask (thorough), Code Research |
 | [support-agent/](support-agent/) | Agent that verifies answers before responding — escalates when confidence is low | Ask (fast), Confidence Thresholds |
 | [content-agent/](content-agent/) | Agent that writes blog posts where every stat has a citation and confidence score | Ask (thorough), Citations, Writing |
-| [fact-checker-bot/](fact-checker-bot/) | Discord bot that verifies any claim with `!verify` and `!compare` | Ask (thorough), Compare, AsyncBrowseAI |
+| [fact-checker-bot/](fact-checker-bot/) | Discord bot that verifies any claim with `!verify` and `!compare` | Ask (thorough), Compare, AsyncBrowseAIDev |
 | [is-this-true/](is-this-true/) | Web app — paste any sentence, get a confidence score and sources | Ask, Streaming, FastAPI |
 | [debate-settler/](debate-settler/) | CLI tool — two claims battle it out, evidence decides the winner | Ask (thorough), Contradictions |
 | [docs-verifier/](docs-verifier/) | Verify every factual claim in your README or docs | Ask, Open, Extract |

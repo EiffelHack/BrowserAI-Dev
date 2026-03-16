@@ -1,7 +1,7 @@
 # BrowseAI Dev
 
-[![npm](https://img.shields.io/npm/v/browse-ai)](https://www.npmjs.com/package/browse-ai)
-[![PyPI](https://img.shields.io/pypi/v/browseai)](https://pypi.org/project/browseai/)
+[![npm](https://img.shields.io/npm/v/browseai-dev)](https://www.npmjs.com/package/browseai-dev)
+[![PyPI](https://img.shields.io/pypi/v/browseaidev)](https://pypi.org/project/browseaidev/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Discord](https://img.shields.io/badge/Discord-Join-5865F2?logo=discord&logoColor=white)](https://discord.gg/ubAuT4YQsT)
 
@@ -164,13 +164,13 @@ client.feedback(result_id="abc123", rating="wrong", claim_index=2)
 ### Python SDK
 
 ```bash
-pip install browseai
+pip install browseaidev
 ```
 
 ```python
-from browseai import BrowseAI
+from browseaidev import BrowseAIDev
 
-client = BrowseAI(api_key="bai_xxx")
+client = BrowseAIDev(api_key="bai_xxx")
 
 # Research with citations
 result = client.ask("What is quantum computing?")
@@ -191,24 +191,24 @@ for step in deep.reasoning_steps or []:
 **Framework integrations:**
 
 ```bash
-pip install browseai[langchain]   # LangChain tools
-pip install browseai[crewai]      # CrewAI integration
+pip install browseaidev[langchain]   # LangChain tools
+pip install browseaidev[crewai]      # CrewAI integration
 ```
 
 ```python
 # LangChain
-from browseai.integrations.langchain import BrowseAIAskTool
-tools = [BrowseAIAskTool(api_key="bai_xxx")]
+from browseaidev.integrations.langchain import BrowseAIDevAskTool
+tools = [BrowseAIDevAskTool(api_key="bai_xxx")]
 
 # CrewAI
-from browseai.integrations.crewai import BrowseAITool
-researcher = Agent(tools=[BrowseAITool(api_key="bai_xxx")])
+from browseaidev.integrations.crewai import BrowseAIDevTool
+researcher = Agent(tools=[BrowseAIDevTool(api_key="bai_xxx")])
 ```
 
 ### MCP Server (Claude Desktop, Cursor, Windsurf)
 
 ```sh
-npx browse-ai setup
+npx browseai-dev setup
 ```
 
 Or manually add to your MCP config:
@@ -216,9 +216,9 @@ Or manually add to your MCP config:
 ```json
 {
   "mcpServers": {
-    "browse-ai": {
+    "browseai-dev": {
       "command": "npx",
-      "args": ["-y", "browse-ai"],
+      "args": ["-y", "browseai-dev"],
       "env": {
         "SERP_API_KEY": "your-search-key",
         "OPENROUTER_API_KEY": "your-llm-key",
@@ -300,9 +300,9 @@ API responses include quota info when using a BAI key:
 
 ```
 /apps/api              Fastify API server (port 3001)
-/apps/mcp              MCP server (stdio transport, npm: browse-ai)
+/apps/mcp              MCP server (stdio transport, npm: browseai-dev)
 /packages/shared       Shared types, Zod schemas, constants
-/packages/python-sdk   Python SDK (PyPI: browseai)
+/packages/python-sdk   Python SDK (PyPI: browseaidev)
 /src                   React frontend (Vite, port 8080)
 /supabase              Database migrations
 ```
@@ -373,7 +373,7 @@ API responses include quota info when using a BAI key:
 | `session.delete()` | Delete a session |
 | `client.feedback(result_id, rating)` | Submit feedback (good/bad/wrong) to improve accuracy |
 
-Async support: `AsyncBrowseAI` with the same API.
+Async support: `AsyncBrowseAIDev` with the same API.
 
 ### Enterprise Search Providers
 
