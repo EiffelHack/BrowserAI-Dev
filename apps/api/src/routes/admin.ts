@@ -312,33 +312,38 @@ async function fetchAdminList(supabaseUrl: string, serviceRoleKey: string) {
 }
 
 async function fetchPackageStats(): Promise<{
-  npm: { weeklyDownloads: number; totalDownloads: number } | null;
-  pypi: { weeklyDownloads: number; totalDownloads: number } | null;
+  npm: { weeklyDownloads: number; totalDownloads: number; new: { weekly: number; total: number }; old: { weekly: number; total: number } } | null;
+  pypi: { weeklyDownloads: number; totalDownloads: number; new: { weekly: number; total: number }; old: { weekly: number; total: number } } | null;
   github: { stars: number; forks: number; openIssues: number } | null;
 }> {
   const [npm, pypi, github] = await Promise.all([
-    // npm weekly downloads (combine old browse-ai + new browseai-dev)
+    // npm weekly downloads (browseai-dev + deprecated browse-ai)
     Promise.all([
       fetch("https://api.npmjs.org/downloads/point/last-week/browseai-dev").then(r => r.ok ? r.json() : null).catch(() => null),
       fetch("https://api.npmjs.org/downloads/point/last-week/browse-ai").then(r => r.ok ? r.json() : null).catch(() => null),
       fetch("https://api.npmjs.org/downloads/point/2000-01-01:2030-01-01/browseai-dev").then(r => r.ok ? r.json() : null).catch(() => null),
       fetch("https://api.npmjs.org/downloads/point/2000-01-01:2030-01-01/browse-ai").then(r => r.ok ? r.json() : null).catch(() => null),
-    ]).then(([newWeek, oldWeek, newTotal, oldTotal]) => ({
-      weeklyDownloads: (newWeek?.downloads || 0) + (oldWeek?.downloads || 0),
-      totalDownloads: (newTotal?.downloads || 0) + (oldTotal?.downloads || 0),
-    })).catch(() => null),
-    // PyPI downloads (combine old browseai + new browseaidev)
+    ]).then(([newWeek, oldWeek, newTotal, oldTotal]) => {
+      const nw = newWeek?.downloads || 0, ow = oldWeek?.downloads || 0;
+      const nt = newTotal?.downloads || 0, ot = oldTotal?.downloads || 0;
+      return {
+        weeklyDownloads: nw + ow, totalDownloads: nt + ot,
+        new: { weekly: nw, total: nt }, old: { weekly: ow, total: ot },
+      };
+    }).catch(() => null),
+    // PyPI downloads (browseaidev + deprecated browseai)
     Promise.all([
       fetch("https://pypistats.org/api/packages/browseaidev/recent?period=week").then(r => r.ok ? r.json() : null).catch(() => null),
       fetch("https://pypistats.org/api/packages/browseai/recent?period=week").then(r => r.ok ? r.json() : null).catch(() => null),
       fetch("https://pypistats.org/api/packages/browseaidev/overall?mirrors=false").then(r => r.ok ? r.json() : null).catch(() => null),
       fetch("https://pypistats.org/api/packages/browseai/overall?mirrors=false").then(r => r.ok ? r.json() : null).catch(() => null),
     ]).then(([newWeek, oldWeek, newTotal, oldTotal]) => {
-      const newTotalDl = newTotal?.data?.reduce((s: number, d: { downloads: number }) => s + d.downloads, 0) || 0;
-      const oldTotalDl = oldTotal?.data?.reduce((s: number, d: { downloads: number }) => s + d.downloads, 0) || 0;
+      const nt = newTotal?.data?.reduce((s: number, d: { downloads: number }) => s + d.downloads, 0) || 0;
+      const ot = oldTotal?.data?.reduce((s: number, d: { downloads: number }) => s + d.downloads, 0) || 0;
+      const nw = newWeek?.data?.last_week || 0, ow = oldWeek?.data?.last_week || 0;
       return {
-        weeklyDownloads: (newWeek?.data?.last_week || 0) + (oldWeek?.data?.last_week || 0),
-        totalDownloads: newTotalDl + oldTotalDl,
+        weeklyDownloads: nw + ow, totalDownloads: nt + ot,
+        new: { weekly: nw, total: nt }, old: { weekly: ow, total: ot },
       };
     }).catch(() => null),
     // GitHub stats

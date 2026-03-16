@@ -236,12 +236,16 @@ const Admin = () => {
                   <div>
                     <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
                       <Download className="w-4 h-4" />
-                      npm (browseai-dev)
+                      npm (total)
                     </div>
                     {metrics.packageStats.npm ? (
                       <>
                         <p className="text-2xl font-bold">{metrics.packageStats.npm.totalDownloads.toLocaleString()}</p>
                         <p className="text-xs text-muted-foreground">{metrics.packageStats.npm.weeklyDownloads.toLocaleString()}/week</p>
+                        <div className="mt-2 space-y-1 text-xs text-muted-foreground border-t pt-2">
+                          <p>browseai-dev: {metrics.packageStats.npm.new?.total.toLocaleString() ?? 0} ({metrics.packageStats.npm.new?.weekly.toLocaleString() ?? 0}/wk)</p>
+                          <p className="opacity-60">browse-ai (deprecated): {metrics.packageStats.npm.old?.total.toLocaleString() ?? 0} ({metrics.packageStats.npm.old?.weekly.toLocaleString() ?? 0}/wk)</p>
+                        </div>
                       </>
                     ) : (
                       <p className="text-sm text-muted-foreground">unavailable</p>
@@ -251,12 +255,16 @@ const Admin = () => {
                   <div>
                     <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
                       <Download className="w-4 h-4" />
-                      PyPI (browseaidev)
+                      PyPI (total)
                     </div>
                     {metrics.packageStats.pypi ? (
                       <>
                         <p className="text-2xl font-bold">{metrics.packageStats.pypi.totalDownloads.toLocaleString()}</p>
                         <p className="text-xs text-muted-foreground">{metrics.packageStats.pypi.weeklyDownloads.toLocaleString()}/week</p>
+                        <div className="mt-2 space-y-1 text-xs text-muted-foreground border-t pt-2">
+                          <p>browseaidev: {metrics.packageStats.pypi.new?.total.toLocaleString() ?? 0} ({metrics.packageStats.pypi.new?.weekly.toLocaleString() ?? 0}/wk)</p>
+                          <p className="opacity-60">browseai (deprecated): {metrics.packageStats.pypi.old?.total.toLocaleString() ?? 0} ({metrics.packageStats.pypi.old?.weekly.toLocaleString() ?? 0}/wk)</p>
+                        </div>
                       </>
                     ) : (
                       <p className="text-sm text-muted-foreground">unavailable</p>
