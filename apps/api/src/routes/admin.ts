@@ -318,12 +318,12 @@ async function fetchPackageStats(): Promise<{
 }> {
   const [npm, pypi, github] = await Promise.all([
     // npm weekly downloads
-    fetch("https://api.npmjs.org/downloads/point/last-week/browse-ai")
+    fetch("https://api.npmjs.org/downloads/point/last-week/browseai-dev")
       .then(async (r) => {
         if (!r.ok) return null;
         const data = await r.json();
         // Also get total (all-time) — npm only gives ranges, use last-year as proxy
-        const totalRes = await fetch("https://api.npmjs.org/downloads/point/2000-01-01:2030-01-01/browse-ai");
+        const totalRes = await fetch("https://api.npmjs.org/downloads/point/2000-01-01:2030-01-01/browseai-dev");
         const totalData = totalRes.ok ? await totalRes.json() : null;
         return {
           weeklyDownloads: data.downloads || 0,
@@ -332,12 +332,12 @@ async function fetchPackageStats(): Promise<{
       })
       .catch(() => null),
     // PyPI downloads (use pypistats API)
-    fetch("https://pypistats.org/api/packages/browseai/recent?period=week")
+    fetch("https://pypistats.org/api/packages/browseaidev/recent?period=week")
       .then(async (r) => {
         if (!r.ok) return null;
         const data = await r.json();
         // Get overall stats
-        const overallRes = await fetch("https://pypistats.org/api/packages/browseai/overall?mirrors=false");
+        const overallRes = await fetch("https://pypistats.org/api/packages/browseaidev/overall?mirrors=false");
         const overallData = overallRes.ok ? await overallRes.json() : null;
         const totalDownloads = overallData?.data?.reduce((s: number, d: { downloads: number }) => s + d.downloads, 0) || 0;
         return {

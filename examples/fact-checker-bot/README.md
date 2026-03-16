@@ -156,7 +156,7 @@ Thorough mode automatically retries with a rephrased query if the first-pass con
 The bot is intentionally simple -- a single `bot.py` file with no framework overhead:
 
 - **`discord.py`** handles the Discord gateway connection and message events
-- **`AsyncBrowseAI`** (the async Python SDK client) calls the BrowseAI API without blocking the event loop
+- **`AsyncBrowseAIDev`** (the async Python SDK client) calls the BrowseAI Dev API without blocking the event loop
 - The bot listens for `!verify`, `!fact`, and `!compare` prefixes, extracts the claim text, and dispatches to the appropriate handler
 - Results are formatted into Discord embeds with color-coded confidence (green/yellow/red)
 - The `typing()` context manager shows "Bot is typing..." while the API call is in progress

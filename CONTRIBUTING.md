@@ -30,10 +30,10 @@ BrowseAI-Dev/
       src/routes/         # API endpoints
       src/services/       # Business logic
       src/config/         # Environment config
-    mcp/                  # MCP server (npm: browse-ai)
+    mcp/                  # MCP server (npm: browseai-dev)
   packages/
     shared/               # Shared types, schemas, constants
-    python-sdk/           # Python SDK (PyPI: browseai)
+    python-sdk/           # Python SDK (PyPI: browseaidev)
   supabase/
     migrations/           # Database migrations (timestamp format)
     functions/            # Supabase Edge Functions
@@ -53,7 +53,7 @@ BrowseAI-Dev/
 | `pnpm lint` | Lint with ESLint |
 | `pnpm build:all` | Build everything |
 | `pnpm --filter @browse/api exec tsc --noEmit` | Type check API |
-| `pnpm --filter browse-ai exec tsc --noEmit` | Type check MCP |
+| `pnpm --filter browseai-dev exec tsc --noEmit` | Type check MCP |
 
 ## Contribution Rules
 
@@ -73,7 +73,7 @@ BrowseAI-Dev/
    pnpm test
    pnpm --filter @browse/shared build
    pnpm --filter @browse/api exec tsc --noEmit
-   pnpm --filter browse-ai exec tsc --noEmit
+   pnpm --filter browseai-dev exec tsc --noEmit
    ```
 5. Write a clear PR description — what changed and why
 6. Wait for maintainer review — changes may be requested
@@ -112,14 +112,14 @@ BrowseAI-Dev/
 
 ### MCP Server
 - Tool implementations in `apps/mcp/src/`
-- Published to npm as `browse-ai`
+- Published to npm as `browseai-dev`
 - Works with Claude Desktop, Cursor, Windsurf
 
 ### Python SDK
-- Client and models in `packages/python-sdk/browseai/`
-- LangChain integration in `packages/python-sdk/browseai/integrations/langchain.py`
-- CrewAI integration in `packages/python-sdk/browseai/integrations/crewai.py`
-- Published to PyPI as `browseai`
+- Client and models in `packages/python-sdk/browseaidev/`
+- LangChain integration in `packages/python-sdk/browseaidev/integrations/langchain.py`
+- CrewAI integration in `packages/python-sdk/browseaidev/integrations/crewai.py`
+- Published to PyPI as `browseaidev`
 
 ### Research & Prompts
 - Improve LLM prompts for better extraction
@@ -154,11 +154,11 @@ On merge to `main`:
 - **Vercel** auto-deploys frontend + API
 - **Supabase migrations** run via GitHub Actions (if migration files changed)
 - **Supabase Edge Functions** deploy via GitHub Actions (if function files changed)
-- **npm publish** triggers for browse-ai MCP package (if `apps/mcp/` changed and version bumped)
+- **npm publish** triggers for browseai-dev MCP package (if `apps/mcp/` changed and version bumped)
 
 ## Publishing the MCP Package (Maintainers Only)
 
-The `browse-ai` npm package lives in `apps/mcp/`. Publishing is automated via CI when the version in `apps/mcp/package.json` is bumped and changes merge to `main`.
+The `browseai-dev` npm package lives in `apps/mcp/`. Publishing is automated via CI when the version in `apps/mcp/package.json` is bumped and changes merge to `main`.
 
 To publish manually:
 
@@ -179,7 +179,7 @@ npm publish --access public
 |--------|---------|
 | `SUPABASE_ACCESS_TOKEN` | Supabase CLI auth for migrations/functions |
 | `SUPABASE_PROJECT_REF` | Supabase project identifier |
-| `NPM_TOKEN` | npm publish auth for browse-ai package |
+| `NPM_TOKEN` | npm publish auth for browseai-dev package |
 
 Contributors don't need these — CI handles everything on merge.
 

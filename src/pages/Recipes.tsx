@@ -43,7 +43,7 @@ const RECIPES = [
     title: "LangChain Agent",
     desc: "Drop BrowseAI Dev tools into any LangChain agent. Search, ask, and extract with evidence.",
     file: "langchain-agent.py",
-    cmd: "pip install browseai[langchain] && python examples/langchain-agent.py",
+    cmd: "pip install browseaidev[langchain] && python examples/langchain-agent.py",
     tags: ["LangChain", "Agent Framework", "Tools"],
     icon: Layers,
     github: `${GITHUB_EXAMPLES}/langchain-agent.py`,
@@ -52,7 +52,7 @@ const RECIPES = [
     title: "CrewAI Research Team",
     desc: "Multi-agent team: one agent researches with BrowseAI Dev, another analyzes and writes a report.",
     file: "crewai-research-team.py",
-    cmd: "pip install browseai[crewai] && python examples/crewai-research-team.py",
+    cmd: "pip install browseaidev[crewai] && python examples/crewai-research-team.py",
     tags: ["CrewAI", "Multi-Agent", "Reports"],
     icon: Brain,
     github: `${GITHUB_EXAMPLES}/crewai-research-team.py`,
@@ -96,8 +96,8 @@ const RECIPES = [
   {
     title: "MCP Server for AI Assistants",
     desc: "Give Claude Desktop, Cursor, or Windsurf 12 research tools. Search, open, extract, answer, compare, feedback, and session memory — all via MCP.",
-    file: "npx browse-ai",
-    cmd: "npx browse-ai setup",
+    file: "npx browseai-dev",
+    cmd: "npx browseai-dev setup",
     tags: ["MCP", "Claude Desktop", "Cursor", "npm"],
     icon: Terminal,
     github: "https://github.com/BrowseAI-HQ/BrowseAI-Dev/tree/main/apps/mcp",
@@ -174,12 +174,12 @@ const Recipes = () => {
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3 max-w-lg mx-auto">
             <div className="flex items-center gap-3 px-4 py-3 rounded-lg bg-secondary flex-1 w-full sm:w-auto">
               <Terminal className="w-4 h-4 text-accent shrink-0" />
-              <code className="text-sm font-mono">pip install browseai</code>
+              <code className="text-sm font-mono">pip install browseaidev</code>
             </div>
             <span className="text-xs text-muted-foreground">or</span>
             <div className="flex items-center gap-3 px-4 py-3 rounded-lg bg-secondary flex-1 w-full sm:w-auto">
               <Terminal className="w-4 h-4 text-accent shrink-0" />
-              <code className="text-sm font-mono">npx browse-ai setup</code>
+              <code className="text-sm font-mono">npx browseai-dev setup</code>
             </div>
           </div>
         </motion.div>
@@ -290,7 +290,7 @@ const Recipes = () => {
             <div className="space-y-4 mb-8">
               {[
                 { step: "1", label: "Clone the repo", cmd: "git clone https://github.com/BrowseAI-HQ/BrowseAI-Dev.git && cd BrowseAI-Dev" },
-                { step: "2", label: "Install the SDK", cmd: "pip install browseai" },
+                { step: "2", label: "Install the SDK", cmd: "pip install browseaidev" },
                 { step: "3", label: "Run a recipe", cmd: 'python examples/research-agent.py "your question here"' },
               ].map((item) => (
                 <div key={item.step} className="flex items-start gap-3">
@@ -312,7 +312,7 @@ const Recipes = () => {
                 <div className="flex-1">
                   <span className="text-sm font-medium block mb-1">Run setup</span>
                   <div className="px-4 py-2.5 rounded-lg bg-secondary overflow-x-auto">
-                    <code className="text-xs font-mono text-muted-foreground whitespace-nowrap">npx browse-ai setup</code>
+                    <code className="text-xs font-mono text-muted-foreground whitespace-nowrap">npx browseai-dev setup</code>
                   </div>
                 </div>
               </div>

@@ -26,15 +26,15 @@ const args = process.argv.slice(2);
 
 if (args.includes("--help") || args.includes("-h")) {
   console.log(`
-  browse-ai v${VERSION}
+  browseai-dev v${VERSION}
   Open-source deep research MCP server for AI agents
 
   Usage:
-    browse-ai              Start the MCP server (stdio transport)
-    browse-ai --http       Start the MCP server (HTTP transport)
-    browse-ai setup        Auto-configure Claude Desktop
-    browse-ai --help       Show this help
-    browse-ai --version    Show version
+    browseai-dev              Start the MCP server (stdio transport)
+    browseai-dev --http       Start the MCP server (HTTP transport)
+    browseai-dev setup        Auto-configure Claude Desktop
+    browseai-dev --help       Show this help
+    browseai-dev --version    Show version
 
   Environment Variables:
     BROWSE_API_KEY         BrowseAI Dev API key (get one at https://browseai.dev/dashboard)
@@ -57,12 +57,12 @@ if (args.includes("--help") || args.includes("-h")) {
   Quick Setup:
     Option A: Use a BrowseAI Dev API key (one key for everything)
       1. Sign in at https://browseai.dev and generate an API key
-      2. Run: npx browse-ai setup
+      2. Run: npx browseai-dev setup
       3. Restart Claude Desktop
 
     Option B: Bring your own keys (BYOK)
       1. Get API keys: https://tavily.com + https://openrouter.ai
-      2. Run: npx browse-ai setup
+      2. Run: npx browseai-dev setup
       3. Restart Claude Desktop
 `);
   process.exit(0);
@@ -107,13 +107,13 @@ function getEnvKeys() {
 
   if (!SERP_API_KEY || !OPENROUTER_API_KEY) {
     console.error(`
-  browse-ai: Missing required environment variables
+  browseai-dev: Missing required environment variables
 
   ${!SERP_API_KEY ? "  SERP_API_KEY       - Get one at https://tavily.com" : "  SERP_API_KEY       - Set"}
   ${!OPENROUTER_API_KEY ? "  OPENROUTER_API_KEY - Get one at https://openrouter.ai" : "  OPENROUTER_API_KEY - Set"}
 
-  Quick fix: run 'npx browse-ai setup' to configure automatically.
-  Or use a BrowseAI Dev API key: BROWSE_API_KEY=bai_xxx npx browse-ai
+  Quick fix: run 'npx browseai-dev setup' to configure automatically.
+  Or use a BrowseAI Dev API key: BROWSE_API_KEY=bai_xxx npx browseai-dev
 `);
     process.exit(1);
   }
@@ -726,7 +726,7 @@ function startServer() {
         };
 
         const server = new McpServer({
-          name: "browse-ai",
+          name: "browseai-dev",
           version: VERSION,
         });
         registerTools(server);
@@ -745,11 +745,11 @@ function startServer() {
     });
 
     httpServer.listen(port, () => {
-      console.error(`browse-ai v${VERSION} MCP server running on http://localhost:${port}/mcp`);
+      console.error(`browseai-dev v${VERSION} MCP server running on http://localhost:${port}/mcp`);
     });
   } else {
     const server = new McpServer({
-      name: "browse-ai",
+      name: "browseai-dev",
       version: VERSION,
     });
     registerTools(server);
@@ -757,11 +757,11 @@ function startServer() {
     async function run() {
       const transport = new StdioServerTransport();
       await server.connect(transport);
-      console.error(`browse-ai v${VERSION} MCP server running on stdio`);
+      console.error(`browseai-dev v${VERSION} MCP server running on stdio`);
     }
 
     run().catch((err) => {
-      console.error("Failed to start browse-ai:", err);
+      console.error("Failed to start browseai-dev:", err);
       process.exit(1);
     });
   }

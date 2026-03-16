@@ -166,7 +166,7 @@ Researching Side B: Coffee is bad for health
 
 - Python 3.10+
 - A [BrowseAI API key](https://browseai.dev) (`bai_xxx` prefix)
-- Dependencies: `browseai`, `rich`
+- Dependencies: `browseaidev`, `rich`
 
 ## License
 

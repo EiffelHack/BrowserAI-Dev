@@ -1,4 +1,4 @@
-"""BrowseAI CLI — quick setup and testing."""
+"""BrowseAI Dev CLI — quick setup and testing."""
 
 from __future__ import annotations
 
@@ -8,14 +8,14 @@ import sys
 
 
 def cmd_setup(args: argparse.Namespace) -> None:
-    """Interactive setup — store API keys in ~/.browseai.json."""
+    """Interactive setup — store API keys in ~/.browseaidev.json."""
     import os
 
-    config_path = os.path.expanduser("~/.browseai.json")
+    config_path = os.path.expanduser("~/.browseaidev.json")
 
     print()
-    print("  browseai setup")
-    print("  ==============")
+    print("  browseaidev setup")
+    print("  =================")
     print("  Configure the BrowseAI Dev Python SDK\n")
 
     api_key = input("  BrowseAI Dev API key (leave blank to use your own keys):").strip()
@@ -47,23 +47,23 @@ def cmd_setup(args: argparse.Namespace) -> None:
 
   Quick start:
 
-    from browseai import BrowseAI
+    from browseaidev import BrowseAIDev
 
-    client = BrowseAI.from_config()
+    client = BrowseAIDev.from_config()
     result = client.ask("What is quantum computing?")
     print(result.answer)
 
   Or test it now:
 
-    browseai ask "What is quantum computing?"
+    browseaidev ask "What is quantum computing?"
 """)
 
 
 def cmd_ask(args: argparse.Namespace) -> None:
     """Run a query via the CLI."""
-    from .client import BrowseAI
+    from .client import BrowseAIDev
 
-    client = BrowseAI.from_config()
+    client = BrowseAIDev.from_config()
     result = client.ask(args.query)
 
     print(f"\n  Answer (confidence: {result.confidence:.0%}):\n")
@@ -85,9 +85,9 @@ def cmd_ask(args: argparse.Namespace) -> None:
 
 def cmd_search(args: argparse.Namespace) -> None:
     """Search the web via the CLI."""
-    from .client import BrowseAI
+    from .client import BrowseAIDev
 
-    client = BrowseAI.from_config()
+    client = BrowseAIDev.from_config()
     results = client.search(args.query, limit=args.limit)
 
     print(f"\n  Results ({len(results)}):\n")
@@ -102,12 +102,12 @@ def cmd_search(args: argparse.Namespace) -> None:
 
 def cmd_version(args: argparse.Namespace) -> None:
     from . import __version__
-    print(f"browseai {__version__}")
+    print(f"browseaidev {__version__}")
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        prog="browseai",
+        prog="browseaidev",
         description="BrowseAI Dev — Reliable research infrastructure for AI agents",
     )
     sub = parser.add_subparsers(dest="command")

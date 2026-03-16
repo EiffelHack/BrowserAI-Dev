@@ -1,9 +1,9 @@
 """BrowseAI Dev — Reliable research infrastructure for AI agents."""
 
-from .client import AsyncBrowseAI, BrowseAI
+from .client import AsyncBrowseAIDev, BrowseAIDev
 from .exceptions import (
     AuthenticationError,
-    BrowseAIError,
+    BrowseAIDevError,
     InsufficientCreditsError,
     RateLimitError,
     ServerError,
@@ -29,9 +29,9 @@ from .models import (
 )
 
 __all__ = [
-    "BrowseAI",
-    "AsyncBrowseAI",
-    "BrowseAIError",
+    "BrowseAIDev",
+    "AsyncBrowseAIDev",
+    "BrowseAIDevError",
     "AuthenticationError",
     "RateLimitError",
     "InsufficientCreditsError",

@@ -5,18 +5,18 @@ Research a controversial topic and surface contradictions found
 across different sources. Uses thorough mode for deeper verification.
 
 Usage:
-    pip install browseai
+    pip install browseaidev
     python contradiction-detector.py "Is coffee good for your health?"
 """
 
 import os
 import sys
-from browseai import BrowseAI
+from browseaidev import BrowseAIDev
 
 
 def detect_contradictions(query: str):
     api_key = os.environ.get("BROWSEAI_API_KEY", "bai_xxx")
-    client = BrowseAI(api_key=api_key)
+    client = BrowseAIDev(api_key=api_key)
 
     print(f"\nSearching for contradictions: {query}\n")
 

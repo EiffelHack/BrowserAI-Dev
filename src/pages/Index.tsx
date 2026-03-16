@@ -403,7 +403,7 @@ const Index = () => {
             {(() => {
               const roadmapItems = [
                 { phase: "Shipped", text: "Reliable research infrastructure — web search, evidence extraction, structured citations, Python SDK & MCP" },
-                { phase: "Shipped", text: "Python SDK & framework integrations — pip install browseai, works with LangChain and CrewAI out of the box" },
+                { phase: "Shipped", text: "Python SDK & framework integrations — pip install browseaidev, works with LangChain and CrewAI out of the box" },
                 { phase: "Shipped", text: "Multi-source verification — hybrid BM25 + NLI semantic entailment, cross-source consensus, contradiction detection, 10,000+ domain authority tiers" },
                 { phase: "Shipped", text: "NLI evidence reranking — top-3 BM25 candidates reranked by DeBERTa semantic entailment for best evidence selection" },
                 { phase: "Shipped", text: "Atomic claim decomposition — compound claims auto-split into individual verifiable facts for finer-grained verification" },
@@ -648,7 +648,7 @@ const Index = () => {
               <div className="flex items-center justify-between mb-3">
                 <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Quick Setup</span>
                 <button
-                  onClick={() => copyText("npx browse-ai setup", "setup")}
+                  onClick={() => copyText("npx browseai-dev setup", "setup")}
                   className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1"
                 >
                   {copied === "setup" ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
@@ -657,7 +657,7 @@ const Index = () => {
               </div>
               <div className="flex items-center gap-3 px-4 py-3 rounded-lg bg-secondary">
                 <Terminal className="w-4 h-4 text-accent" />
-                <code className="text-sm font-mono">npx browse-ai setup</code>
+                <code className="text-sm font-mono">npx browseai-dev setup</code>
               </div>
               <p className="text-xs text-muted-foreground mt-3">
                 Prompts for your API keys and auto-writes the MCP config for Claude Desktop.
@@ -671,9 +671,9 @@ const Index = () => {
                 <button
                   onClick={() => copyText(`{
   "mcpServers": {
-    "browse-ai": {
+    "browseai-dev": {
       "command": "npx",
-      "args": ["-y", "browse-ai"],
+      "args": ["-y", "browseai-dev"],
       "env": {
         "SERP_API_KEY": "your-search-key",
         "OPENROUTER_API_KEY": "your-llm-key"
@@ -690,9 +690,9 @@ const Index = () => {
               <pre className="text-xs font-mono text-muted-foreground bg-secondary rounded-lg p-4 overflow-x-auto">{`// ~/Library/Application Support/Claude/claude_desktop_config.json
 {
   "mcpServers": {
-    "browse-ai": {
+    "browseai-dev": {
       "command": "npx",
-      "args": ["-y", "browse-ai"],
+      "args": ["-y", "browseai-dev"],
       "env": {
         "SERP_API_KEY": "your-search-key",
         "OPENROUTER_API_KEY": "your-llm-key"
@@ -707,7 +707,7 @@ const Index = () => {
               <div className="flex items-center justify-between mb-3">
                 <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Python SDK</span>
                 <button
-                  onClick={() => copyText("pip install browseai", "pip")}
+                  onClick={() => copyText("pip install browseaidev", "pip")}
                   className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1"
                 >
                   {copied === "pip" ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
@@ -716,15 +716,15 @@ const Index = () => {
               </div>
               <div className="flex items-center gap-3 px-4 py-3 rounded-lg bg-secondary mb-3">
                 <Terminal className="w-4 h-4 text-accent" />
-                <code className="text-sm font-mono">pip install browseai</code>
+                <code className="text-sm font-mono">pip install browseaidev</code>
               </div>
-              <pre className="text-xs font-mono text-muted-foreground bg-secondary rounded-lg p-4 overflow-x-auto">{`from browseai import BrowseAI
+              <pre className="text-xs font-mono text-muted-foreground bg-secondary rounded-lg p-4 overflow-x-auto">{`from browseaidev import BrowseAIDev
 
-client = BrowseAI(api_key="bai_xxx")
+client = BrowseAIDev(api_key="bai_xxx")
 result = client.ask("What causes aurora borealis?")
 print(result.answer, result.confidence)`}</pre>
               <p className="text-xs text-muted-foreground mt-3">
-                Works with LangChain and CrewAI — <code className="bg-secondary px-1 rounded">pip install browseai[langchain]</code>
+                Works with LangChain and CrewAI — <code className="bg-secondary px-1 rounded">pip install browseaidev[langchain]</code>
               </p>
             </div>
 

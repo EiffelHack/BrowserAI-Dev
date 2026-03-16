@@ -32,9 +32,9 @@ function getConfigPath(): string {
 
 export async function runSetup() {
   console.log(`
-  browse-ai setup
+  browseai-dev setup
   ================
-  Configure browse-ai for Claude Desktop / Cursor / Windsurf
+  Configure browseai-dev for Claude Desktop / Cursor / Windsurf
 `);
 
   const browseKey = await ask(
@@ -72,7 +72,7 @@ export async function runSetup() {
 
   const mcpEntry = {
     command: "npx",
-    args: ["-y", "browse-ai"],
+    args: ["-y", "browseai-dev"],
     env: mcpEnv,
   };
 
@@ -93,15 +93,15 @@ export async function runSetup() {
     mkdirSync(dir, { recursive: true });
   }
 
-  config.mcpServers["browse-ai"] = mcpEntry;
+  config.mcpServers["browseai-dev"] = mcpEntry;
   writeFileSync(configPath, JSON.stringify(config, null, 2));
 
   console.log(`
-  Done! browse-ai has been configured.
+  Done! browseai-dev has been configured.
 
   Next steps:
     1. Restart Claude Desktop
-    2. You should see "browse-ai" in the MCP tools list
+    2. You should see "browseai-dev" in the MCP tools list
     3. Try asking: "Use browse_answer to explain quantum computing"
 
   Available tools:

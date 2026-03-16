@@ -21,8 +21,8 @@ import sys
 import time
 import textwrap
 
-from browseai import BrowseAI
-from browseai.models import BrowseResult
+from browseaidev import BrowseAIDev
+from browseaidev.models import BrowseResult
 from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
@@ -433,7 +433,7 @@ def show_session_knowledge(session) -> None:
 
 def run_agent(task: str, api_key: str) -> None:
     """Run the full coding agent pipeline for a single task."""
-    client = BrowseAI(api_key=api_key)
+    client = BrowseAIDev(api_key=api_key)
 
     # Create a session so knowledge accumulates across tasks
     session = client.session("coding-agent")

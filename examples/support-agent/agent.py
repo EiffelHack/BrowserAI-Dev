@@ -21,7 +21,7 @@ import sys
 import time
 from dataclasses import dataclass, field
 
-from browseai import BrowseAI
+from browseaidev import BrowseAIDev
 from dotenv import load_dotenv
 from rich.console import Console
 from rich.live import Live
@@ -101,7 +101,7 @@ class SupportAgent:
     """Customer support agent that verifies answers before responding."""
 
     def __init__(self, api_key: str, knowledge_base_url: str | None = None):
-        self.client = BrowseAI(api_key=api_key, timeout=120.0)
+        self.client = BrowseAIDev(api_key=api_key, timeout=120.0)
         self.knowledge_base_url = knowledge_base_url
         self.session_client = None
         self.cache: dict[str, CachedAnswer] = {}

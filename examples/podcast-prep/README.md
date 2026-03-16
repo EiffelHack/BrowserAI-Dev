@@ -110,10 +110,10 @@ This queries the session's stored knowledge without making new web searches — 
 
 ```python
 import asyncio
-from browseai import AsyncBrowseAI
+from browseaidev import AsyncBrowseAIDev
 
 async def quick_prep():
-    async with AsyncBrowseAI(api_key="bai_xxx") as client:
+    async with AsyncBrowseAIDev(api_key="bai_xxx") as client:
         session = await client.session("interview-prep")
 
         # Research in parallel

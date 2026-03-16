@@ -21,13 +21,13 @@ jobs:
           registry-url: https://registry.npmjs.org
       - run: pnpm install --frozen-lockfile
       - name: Build MCP package
-        run: pnpm --filter browse-ai build
+        run: pnpm --filter browseai-dev build
       - name: Check version against npm
         id: version
         working-directory: apps/mcp
         run: |
           CURRENT=$(node -p "require('./package.json').version")
-          PUBLISHED=$(npm view browse-ai version 2>/dev/null || echo "0.0.0")
+          PUBLISHED=$(npm view browseai-dev version 2>/dev/null || echo "0.0.0")
           if [ "$CURRENT" = "$PUBLISHED" ]; then
             echo "Version unchanged ($CURRENT), skipping publish"
             echo "skip=true" >> $GITHUB_OUTPUT

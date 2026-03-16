@@ -39,7 +39,7 @@ const CONTRIBUTION_AREAS = [
   {
     icon: Code2,
     title: "Python SDK & Integrations",
-    desc: "The browseai Python package, LangChain tools, and CrewAI integration.",
+    desc: "The browseaidev Python package, LangChain tools, and CrewAI integration.",
     examples: ["Async improvements", "New framework integrations", "SDK documentation"],
   },
   {
@@ -60,7 +60,7 @@ const ROADMAP_ITEMS = [
   {
     phase: "Shipped",
     title: "Python SDK & framework integrations",
-    desc: "pip install browseai — works with LangChain and CrewAI out of the box.",
+    desc: "pip install browseaidev — works with LangChain and CrewAI out of the box.",
     done: true,
   },
   {
@@ -473,7 +473,7 @@ const Developers = () => {
                 </p>
                 <div className="flex items-center gap-3 px-4 py-3 rounded-lg bg-secondary">
                   <Terminal className="w-4 h-4 text-accent" />
-                  <code className="text-sm font-mono">npx browse-ai setup</code>
+                  <code className="text-sm font-mono">npx browseai-dev setup</code>
                 </div>
               </div>
 
@@ -488,11 +488,11 @@ const Developers = () => {
                 </p>
                 <div className="flex items-center gap-3 px-4 py-3 rounded-lg bg-secondary mb-3">
                   <Terminal className="w-4 h-4 text-accent" />
-                  <code className="text-sm font-mono">pip install browseai</code>
+                  <code className="text-sm font-mono">pip install browseaidev</code>
                 </div>
-                <pre className="text-xs font-mono text-muted-foreground bg-secondary rounded-lg p-4 overflow-x-auto">{`from browseai import BrowseAI
+                <pre className="text-xs font-mono text-muted-foreground bg-secondary rounded-lg p-4 overflow-x-auto">{`from browseaidev import BrowseAIDev
 
-client = BrowseAI(api_key="bai_xxx")
+client = BrowseAIDev(api_key="bai_xxx")
 result = client.ask("What causes aurora borealis?")
 print(result.answer, result.confidence)`}</pre>
               </div>

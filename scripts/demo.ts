@@ -182,7 +182,7 @@ async function main() {
     console.log(c("gray", `  Web UI:  http://localhost:8080`));
     console.log(c("gray", `  Compare: http://localhost:8080/compare?q=${encodeURIComponent(query)}`));
     console.log(c("gray", `  API:     ${API_BASE}`));
-    console.log(c("gray", `  MCP:     npx browse-ai setup`));
+    console.log(c("gray", `  MCP:     npx browseai-dev setup`));
     console.log();
   } catch (err: any) {
     console.error();

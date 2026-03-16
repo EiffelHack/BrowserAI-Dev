@@ -6,16 +6,16 @@ recalls prior findings and stores new verified claims — giving your
 agent memory that compounds over time.
 
 Usage:
-    pip install browseai
+    pip install browseaidev
     python research-session.py "quantum computing"
 """
 
 import sys
-from browseai import BrowseAI
+from browseaidev import BrowseAIDev
 
 
 def research_session(topic: str):
-    client = BrowseAI(api_key="bai_xxx")  # or use BYOK: BrowseAI(tavily_key="...", openrouter_key="...")
+    client = BrowseAIDev(api_key="bai_xxx")  # or use BYOK: BrowseAIDev(tavily_key="...", openrouter_key="...")
 
     # Create a named session
     session = client.session(f"{topic}-research")

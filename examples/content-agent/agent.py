@@ -20,8 +20,8 @@ import sys
 import time
 from dataclasses import dataclass, field
 
-from browseai import BrowseAI
-from browseai.models import BrowseResult, BrowseSource, Contradiction
+from browseaidev import BrowseAIDev
+from browseaidev.models import BrowseResult, BrowseSource, Contradiction
 from rich.console import Console
 from rich.panel import Panel
 from rich.progress import Progress, SpinnerColumn, TextColumn, BarColumn
@@ -124,7 +124,7 @@ def generate_research_queries(topic: str) -> list[str]:
     ]
 
 
-def run_research(client: BrowseAI, topic: str) -> tuple[list[BrowseResult], list[SourceEntry]]:
+def run_research(client: BrowseAIDev, topic: str) -> tuple[list[BrowseResult], list[SourceEntry]]:
     """Phase 1: Research the topic across multiple queries using a session."""
     queries = generate_research_queries(topic)
     results: list[BrowseResult] = []
@@ -358,7 +358,7 @@ def write_draft(
 
 
 def run_final_verification(
-    client: BrowseAI,
+    client: BrowseAIDev,
     topic: str,
     drafts: list[SectionDraft],
     results: list[BrowseResult],
@@ -688,7 +688,7 @@ def main() -> None:
 
     # Initialize client
     api_key = get_api_key()
-    client = BrowseAI(api_key=api_key)
+    client = BrowseAIDev(api_key=api_key)
 
     start_time = time.time()
 

@@ -13,7 +13,7 @@ import uuid
 from fastapi import FastAPI, Request, Form
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
-from browseai import BrowseAI
+from browseaidev import BrowseAIDev
 
 app = FastAPI(title="Is This True?")
 templates = Jinja2Templates(directory=os.path.join(os.path.dirname(__file__), "templates"))
@@ -24,8 +24,8 @@ results_store: dict[str, dict] = {}
 API_KEY = os.environ.get("BROWSEAI_API_KEY", "bai_xxx")
 
 
-def get_client() -> BrowseAI:
-    return BrowseAI(api_key=API_KEY)
+def get_client() -> BrowseAIDev:
+    return BrowseAIDev(api_key=API_KEY)
 
 
 @app.get("/", response_class=HTMLResponse)

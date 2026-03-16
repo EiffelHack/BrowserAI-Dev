@@ -107,9 +107,9 @@ export function ApiKeyManager() {
     if (!newKey) return;
     const snippet = JSON.stringify(
       {
-        "browse-ai": {
+        "browseai-dev": {
           command: "npx",
-          args: ["-y", "browse-ai"],
+          args: ["-y", "browseai-dev"],
           env: { BROWSE_API_KEY: newKey },
         },
       },
@@ -299,9 +299,9 @@ export function ApiKeyManager() {
               </h4>
               <pre className="text-xs font-mono bg-muted p-3 rounded-lg overflow-x-auto">
 {`{
-  "browse-ai": {
+  "browseai-dev": {
     "command": "npx",
-    "args": ["-y", "browse-ai"],
+    "args": ["-y", "browseai-dev"],
     "env": {
       "BROWSE_API_KEY": "${newKey}"
     }

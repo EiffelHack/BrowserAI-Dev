@@ -6,18 +6,18 @@ gaps, and follows up until confidence is high. Shows reasoning steps,
 contradictions, and verified claims.
 
 Usage:
-    pip install browseai
+    pip install browseaidev
     BROWSEAI_API_KEY=bai_xxx python deep-research-agent.py "Compare CRISPR approaches for sickle cell disease"
 """
 
 import os
 import sys
-from browseai import BrowseAI
+from browseaidev import BrowseAIDev
 
 
 def deep_research(query: str):
     api_key = os.environ.get("BROWSEAI_API_KEY", "bai_xxx")
-    client = BrowseAI(api_key=api_key)
+    client = BrowseAIDev(api_key=api_key)
 
     print(f"\nDeep researching: {query}\n")
 

@@ -28,7 +28,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from urllib.parse import urlparse
 
-from browseai import BrowseAI
+from browseaidev import BrowseAIDev
 from rich.console import Console
 from rich.panel import Panel
 from rich.progress import Progress, SpinnerColumn, TextColumn
@@ -158,7 +158,7 @@ class VerificationReport:
 CONFIDENCE_THRESHOLD = 0.50
 
 
-def verify_claim(client: BrowseAI, claim: str, depth: str = "fast") -> ClaimResult:
+def verify_claim(client: BrowseAIDev, claim: str, depth: str = "fast") -> ClaimResult:
     """Verify a single claim using BrowseAI's ask() endpoint."""
     result = ClaimResult(claim=claim)
 
@@ -196,7 +196,7 @@ def verify_claim(client: BrowseAI, claim: str, depth: str = "fast") -> ClaimResu
     return result
 
 
-def fetch_document(client: BrowseAI, source: str) -> str:
+def fetch_document(client: BrowseAIDev, source: str) -> str:
     """Fetch document content from a URL or local file path."""
     parsed = urlparse(source)
 
@@ -218,7 +218,7 @@ def fetch_document(client: BrowseAI, source: str) -> str:
 
 
 def run_verification(
-    client: BrowseAI,
+    client: BrowseAIDev,
     source: str,
     depth: str = "fast",
     max_claims: int | None = None,
@@ -480,7 +480,7 @@ Examples:
         border_style="blue",
     ))
 
-    client = BrowseAI(api_key=api_key)
+    client = BrowseAIDev(api_key=api_key)
 
     report = run_verification(
         client=client,

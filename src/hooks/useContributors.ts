@@ -7,7 +7,7 @@ export interface Contributor {
   contributions: number;
 }
 
-const CACHE_KEY = "browseai_contributors";
+const CACHE_KEY = "browseaidev_contributors";
 const CACHE_TTL = 1000 * 60 * 30; // 30 minutes
 
 export function useContributors() {

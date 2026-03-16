@@ -20,7 +20,7 @@ import sys
 from datetime import datetime
 from pathlib import Path
 
-from browseai import AsyncBrowseAI
+from browseaidev import AsyncBrowseAIDev
 from rich.console import Console
 from rich.panel import Panel
 from rich.progress import Progress, SpinnerColumn, TextColumn
@@ -60,7 +60,7 @@ def build_queries(guest: str, topic: str) -> list[dict[str, str]]:
 # ── Research engine ─────────────────────────────────────────────────
 
 async def run_research(
-    client: AsyncBrowseAI,
+    client: AsyncBrowseAIDev,
     guest: str,
     topic: str,
     depth: str,
@@ -350,7 +350,7 @@ def display_brief(data: dict) -> None:
 
 # ── Recall mode ─────────────────────────────────────────────────────
 
-async def recall_fact(client: AsyncBrowseAI, session_id: str, query: str) -> None:
+async def recall_fact(client: AsyncBrowseAIDev, session_id: str, query: str) -> None:
     """Look up a specific fact from an existing session."""
     session = await client.get_session(session_id)
 
@@ -419,7 +419,7 @@ async def main() -> None:
 
     args = parser.parse_args()
 
-    async with AsyncBrowseAI(api_key=args.api_key) as client:
+    async with AsyncBrowseAIDev(api_key=args.api_key) as client:
 
         # ── Recall mode ──
         if args.recall:

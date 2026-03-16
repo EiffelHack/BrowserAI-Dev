@@ -187,9 +187,9 @@ const Docs = () => {
   -H "X-OpenRouter-Key: sk-or-xxx" \\
   -d '{"query": "What is quantum computing?", "depth": "thorough"}'`}</CodeBlock>
 
-            <CodeBlock label="Python SDK">{`from browseai import BrowseAI
+            <CodeBlock label="Python SDK">{`from browseaidev import BrowseAIDev
 
-client = BrowseAI(api_key="bai_xxx")
+client = BrowseAIDev(api_key="bai_xxx")
 
 # Fast (default)
 result = client.ask("What is quantum computing?")
@@ -256,9 +256,9 @@ Or append &depth=thorough to the results URL.`}</CodeBlock>
   -H "Authorization: Bearer bai_xxx" \\
   -d '{"query": "Compare RISC-V vs ARM for edge AI inference", "depth": "deep"}'`}</CodeBlock>
 
-            <CodeBlock label="Python SDK">{`from browseai import BrowseAI
+            <CodeBlock label="Python SDK">{`from browseaidev import BrowseAIDev
 
-client = BrowseAI(api_key="bai_xxx")
+client = BrowseAIDev(api_key="bai_xxx")
 
 # Deep — iterative research with gap analysis
 result = client.ask(
@@ -312,9 +312,9 @@ for step in result.reasoning_steps:
 
             <h4 className="text-sm font-semibold text-foreground pt-2">Usage</h4>
 
-            <CodeBlock label="Python SDK">{`from browseai import BrowseAI
+            <CodeBlock label="Python SDK">{`from browseaidev import BrowseAIDev
 
-client = BrowseAI(api_key="bai_xxx")
+client = BrowseAIDev(api_key="bai_xxx")
 
 # Create a session
 session = client.session("quantum-research")
@@ -605,9 +605,9 @@ Minimum 3 samples before dynamic data is used at all`}</CodeBlock>
             </div>
 
             <h4 className="text-sm font-semibold text-foreground pt-4">Python SDK</h4>
-            <CodeBlock label="pip install browseai">{`from browseai import BrowseAI
+            <CodeBlock label="pip install browseaidev">{`from browseaidev import BrowseAIDev
 
-client = BrowseAI(api_key="bai_xxx")
+client = BrowseAIDev(api_key="bai_xxx")
 
 # Full pipeline
 result = client.ask("What is quantum computing?")
@@ -626,7 +626,7 @@ r = session.ask("What is quantum computing?")
 knowledge = session.knowledge()`}</CodeBlock>
 
             <h4 className="text-sm font-semibold text-foreground pt-4">MCP Server</h4>
-            <CodeBlock label="Setup">{`npx browse-ai setup`}</CodeBlock>
+            <CodeBlock label="Setup">{`npx browseai-dev setup`}</CodeBlock>
             <p>
               12 tools: <code className="bg-secondary px-1.5 py-0.5 rounded text-xs">browse_search</code>,{" "}
               <code className="bg-secondary px-1.5 py-0.5 rounded text-xs">browse_open</code>,{" "}

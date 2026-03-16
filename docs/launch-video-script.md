@@ -84,8 +84,8 @@ All agents glowing green — a constellation of powered-up agents.
 **Visual:** Constellation shrinks to background. Terminal foreground, three lines type in rapid cascade:
 
 ```
-$ npx browse-ai setup                              MCP
-$ pip install browseai                              Python
+$ npx browseai-dev setup                              MCP
+$ pip install browseaidev                              Python
 $ npx skills add BrowseAI-HQ/browseAIDev_Skills     Skills
 ```
 
