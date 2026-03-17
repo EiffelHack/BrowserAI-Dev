@@ -3,13 +3,12 @@ import { motion } from "framer-motion";
 import { SEO } from "@/components/SEO";
 import {
   ArrowLeft, ArrowRight, CheckCircle2, XCircle, Minus,
-  Shield, Brain, Code2, Globe, Zap, ExternalLink,
-  Search, GitCompare, Terminal, BookOpen,
+  Shield, Brain, Code2,
+  GitCompare, Terminal, BookOpen,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { BrowseLogo } from "@/components/BrowseLogo";
-import { useAuth } from "@/contexts/AuthContext";
 
 // --- Competitor data ---
 
@@ -118,15 +117,15 @@ const COMPETITORS: Competitor[] = [
     pricing: "Free tier (2K queries/mo), paid from $3/1K queries",
     strengths: [
       "Independent search index (not Google/Bing)",
-      "Privacy-focused — no user tracking",
-      "Official MCP server",
-      "Competitive pricing",
+      "AI Summarizer API for generated answers",
+      "Official MCP server and LangChain integration",
+      "Privacy-focused — competitive pricing",
     ],
     weaknesses: [
-      "Raw search results only — no AI synthesis",
       "No claim verification or evidence analysis",
-      "No confidence scoring",
-      "No LangChain/CrewAI framework integrations",
+      "No confidence scoring of any kind",
+      "No CrewAI or LlamaIndex integrations",
+      "Core search index is closed-source",
     ],
     useCases: ["Privacy-conscious search", "Independent web index access", "Cost-effective bulk search"],
   },
@@ -158,7 +157,7 @@ const FEATURE_MATRIX: FeatureRow[] = [
   { feature: "LangChain integration", browseai: "full", tavily: "full", perplexity: "full", exa: "full", you: "full", brave: "full" },
   { feature: "CrewAI integration", browseai: "full", tavily: "full", perplexity: "partial", exa: "none", you: "none", brave: "none" },
   { feature: "Open source (full pipeline)", browseai: "full", tavily: "partial", perplexity: "partial", exa: "partial", you: "partial", brave: "partial" },
-  { feature: "Self-hostable", browseai: "full", tavily: "none", perplexity: "none", exa: "none", you: "none", brave: "none" },
+  { feature: "Self-hostable", browseai: "partial", tavily: "none", perplexity: "none", exa: "none", you: "none", brave: "none" },
   { feature: "BYOK (bring your own keys)", browseai: "full", tavily: "none", perplexity: "none", exa: "none", you: "none", brave: "none" },
 ];
 
@@ -183,7 +182,6 @@ function SupportIcon({ support }: { support: FeatureSupport }) {
 
 const Alternatives = () => {
   const navigate = useNavigate();
-  const { user, loading: authLoading } = useAuth();
 
   return (
     <>
