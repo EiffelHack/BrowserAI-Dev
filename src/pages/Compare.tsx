@@ -16,7 +16,7 @@ const Compare = () => {
   const query = searchParams.get("q") || "";
   const [result, setResult] = useState<CompareResult | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [showJson, setShowJson] = useState(false);
   const { user, loading: authLoading } = useAuth();
 
@@ -51,6 +51,18 @@ const Compare = () => {
       </nav>
 
       <div className="max-w-6xl mx-auto px-6 py-10">
+        {!query && !loading && !result && (
+          <div className="flex flex-col items-center justify-center py-20 gap-4 text-center">
+            <p className="text-lg font-medium">Compare Raw LLM vs Evidence-Backed</p>
+            <p className="text-sm text-muted-foreground max-w-md">
+              Add a query parameter to compare. Example: <code className="text-accent">/compare?q=Is caffeine bad for you</code>
+            </p>
+            <Button onClick={() => navigate("/compare?q=Is caffeine bad for you")}>
+              Try an example
+            </Button>
+          </div>
+        )}
+
         {loading && (
           <div className="flex flex-col items-center justify-center py-20 gap-4">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-accent" />
