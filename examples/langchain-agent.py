@@ -5,23 +5,23 @@ Drop BrowseAI Dev into a LangChain agent as a research tool.
 The agent gets evidence-backed web research capabilities.
 
 Usage:
-    pip install browseaidev[langchain] langchain langchain-openai
+    pip install langchain-browseaidev langchain langchain-openai
     python langchain-agent.py
 """
 
 from langchain.agents import AgentExecutor, create_tool_calling_agent
 from langchain_openai import ChatOpenAI
 from langchain_core.prompts import ChatPromptTemplate
-from browseaidev.integrations.langchain import (
+from langchain_browseaidev import (
     BrowseAIDevSearchTool,
-    BrowseAIDevAskTool,
+    BrowseAIDevAnswerTool,
     BrowseAIDevExtractTool,
 )
 
 # BrowseAI Dev tools — agent gets evidence-backed research
 tools = [
     BrowseAIDevSearchTool(api_key="bai_xxx"),     # Web search
-    BrowseAIDevAskTool(api_key="bai_xxx"),         # Full research pipeline
+    BrowseAIDevAnswerTool(api_key="bai_xxx"),      # Full research pipeline (verified)
     BrowseAIDevExtractTool(api_key="bai_xxx"),     # Page extraction
 ]
 

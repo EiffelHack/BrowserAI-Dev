@@ -212,26 +212,40 @@ No signup required — just pass your own keys:
 client = BrowseAIDev(tavily_key="tvly-xxx", openrouter_key="sk-or-xxx")
 ```
 
-## LangChain
+## Framework Integrations
+
+### LangChain
 
 ```bash
-pip install browseaidev[langchain]
+pip install langchain-browseaidev
 ```
 
 ```python
-from browseaidev.integrations.langchain import BrowseAIDevAskTool
+from langchain_browseaidev import BrowseAIDevAnswerTool, BrowseAIDevSearchTool
 
-tools = [BrowseAIDevAskTool(api_key="bai_xxx")]
+tools = [BrowseAIDevAnswerTool(api_key="bai_xxx")]
 ```
 
-## CrewAI
+### CrewAI
 
 ```bash
-pip install browseaidev[crewai]
+pip install crewai-browseaidev
 ```
 
 ```python
-from browseaidev.integrations.crewai import BrowseAIDevTool
+from crewai_browseaidev import BrowseAIDevAnswerTool
 
-researcher = Agent(tools=[BrowseAIDevTool(api_key="bai_xxx")])
+researcher = Agent(tools=[BrowseAIDevAnswerTool(api_key="bai_xxx")])
+```
+
+### LlamaIndex
+
+```bash
+pip install llamaindex-browseaidev
+```
+
+```python
+from llamaindex_browseaidev import BrowseAIDevAnswerTool
+
+answer_tool = BrowseAIDevAnswerTool(api_key="bai_xxx")
 ```
