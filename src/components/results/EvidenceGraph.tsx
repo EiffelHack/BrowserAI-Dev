@@ -125,7 +125,7 @@ export function EvidenceGraph({
                           trusted
                         </Badge>
                       )}
-                      <span className="text-xs text-muted-foreground truncate">— {src.title}</span>
+                      <span className="text-xs text-muted-foreground truncate max-w-[150px] sm:max-w-none">— {src.title}</span>
                     </div>
                     {src.quote && (
                       <div className="flex items-start gap-2 mt-1">

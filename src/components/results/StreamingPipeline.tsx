@@ -323,7 +323,7 @@ export function StreamingPipeline({ steps, sources, done, depth = "fast" }: Prop
       {/* Step timeline — different approach per mode */}
       {isDeep ? (
         // Deep mode: grouped expandable view
-        <div className="w-full max-w-md space-y-1">
+        <div className="w-full max-w-xs sm:max-w-md space-y-1">
           <AnimatePresence mode="popLayout">
             {deepGroups.map((item, i) => (
               <motion.div

@@ -363,7 +363,7 @@ const Sessions = () => {
                   onKeyDown={(e) => e.key === "Enter" && handleAsk()}
                   placeholder="Ask a question (recalls prior knowledge automatically)..."
                   disabled={asking}
-                  className="w-full h-12 pl-12 pr-32 rounded-xl bg-secondary border border-border text-foreground focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent/50 transition-all text-sm"
+                  className="w-full h-12 pl-12 pr-20 sm:pr-32 rounded-xl bg-secondary border border-border text-foreground focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent/50 transition-all text-sm"
                 />
                 <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1.5">
                   <DepthToggle depth={depth} setDepth={setDepth} quota={quota} size="sm" />
@@ -442,7 +442,7 @@ const Sessions = () => {
                   <div className="mt-2 flex flex-wrap gap-2">
                     {lastResult.trace.map((t, i) => (
                       <span key={i} className="text-[10px] px-2 py-1 rounded-full bg-secondary text-muted-foreground">
-                        {t.step} {t.duration_ms > 0 ? `${(t.duration_ms / 1000).toFixed(1)}s` : ""}
+                        {t.step} <span className="hidden sm:inline">{t.duration_ms > 0 ? `${(t.duration_ms / 1000).toFixed(1)}s` : ""}</span>
                       </span>
                     ))}
                   </div>

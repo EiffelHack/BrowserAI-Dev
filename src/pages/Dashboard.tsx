@@ -208,7 +208,7 @@ const Dashboard = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-1 max-h-96 overflow-y-auto">
+                <div className="space-y-1 max-h-64 sm:max-h-96 overflow-y-auto">
                   {history.map((item) => {
                     const Icon = TOOL_ICONS[item.tool] || Sparkles;
                     return (
