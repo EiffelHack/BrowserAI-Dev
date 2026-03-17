@@ -218,6 +218,7 @@ async function streamingSinglePass(
     (token) => emit("token", { text: token }),
     pageTexts, analysis.type, {
       hfApiKey: env.HF_API_KEY,
+      embeddingApiKey: env.HF_API_KEY ? env.OPENROUTER_API_KEY : undefined,
     },
     phaseHandler,
   );

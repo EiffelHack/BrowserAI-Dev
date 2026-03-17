@@ -359,6 +359,7 @@ export async function answerQueryDeep(
   if (allPageTexts.size > 0) {
     const verification = await verifyEvidence(allClaims, allSources, allPageTexts, {
       hfApiKey: env.HF_API_KEY,
+      embeddingApiKey: env.HF_API_KEY ? env.OPENROUTER_API_KEY : undefined,
     });
     finalResult = {
       answer: bestAnswer,

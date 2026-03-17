@@ -298,6 +298,7 @@ export async function singlePass(
     consensusThreshold: getAdaptiveConsensusThreshold(analysis.type),
     weights: getAdaptiveWeights(analysis.type),
     hfApiKey: env.HF_API_KEY,
+    embeddingApiKey: env.HF_API_KEY ? env.OPENROUTER_API_KEY : undefined,
   };
   const knowledge = await extractKnowledge(query, pageContents, env.OPENROUTER_API_KEY, pageTexts, analysis.type, sessionContext, adaptiveOptions);
   const llmDuration = Date.now() - llmStart;

@@ -529,6 +529,7 @@ export async function extractKnowledge(
     consensusThreshold?: number;
     weights?: { source: number; domain: number; grounding: number; depth: number; verification: number; authority: number; consensus: number };
     hfApiKey?: string;
+    embeddingApiKey?: string;
   },
 ): Promise<Omit<BrowseResult, "trace">> {
   const systemPrompt = getExtractionPrompt(queryType);
@@ -597,6 +598,7 @@ export async function extractKnowledge(
       bm25Threshold: adaptiveOptions?.bm25Threshold,
       consensusThreshold: adaptiveOptions?.consensusThreshold,
       hfApiKey: adaptiveOptions?.hfApiKey,
+      embeddingApiKey: adaptiveOptions?.embeddingApiKey,
     });
     return {
       answer: knowledge.answer,
@@ -646,6 +648,7 @@ export async function streamAnswer(
     consensusThreshold?: number;
     weights?: { source: number; domain: number; grounding: number; depth: number; verification: number; authority: number; consensus: number };
     hfApiKey?: string;
+    embeddingApiKey?: string;
   },
   onPhase?: (phase: "extract_claims" | "verify_evidence" | "consensus" | "build_graph" | "done") => void,
 ): Promise<Omit<BrowseResult, "trace">> {
@@ -788,6 +791,7 @@ export async function streamAnswer(
       bm25Threshold: adaptiveOptions?.bm25Threshold,
       consensusThreshold: adaptiveOptions?.consensusThreshold,
       hfApiKey: adaptiveOptions?.hfApiKey,
+      embeddingApiKey: adaptiveOptions?.embeddingApiKey,
     });
     onPhase?.("done");
     return {
