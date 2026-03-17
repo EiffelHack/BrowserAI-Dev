@@ -104,7 +104,7 @@ const Docs = () => {
         </div>
       </nav>
 
-      <div className="max-w-5xl mx-auto px-6 pt-24 pb-20 flex gap-10">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 pt-24 pb-20 flex flex-col lg:flex-row gap-0 lg:gap-10">
         {/* Sidebar */}
         <aside className="hidden lg:block w-48 shrink-0 sticky top-24 self-start">
           <nav className="space-y-1">
@@ -456,8 +456,8 @@ Another agent: "Fork the shared session abc123def456"
               The score is computed from 7 real signals after verification:
             </p>
 
-            <div className="overflow-x-auto">
-              <table className="w-full text-xs">
+            <div className="overflow-x-auto [mask-image:linear-gradient(to_right,black_calc(100%-2rem),transparent)] sm:[mask-image:none]">
+              <table className="w-full text-xs min-w-[400px]">
                 <thead>
                   <tr className="border-b border-border">
                     <th className="text-left py-2 pr-4 font-semibold text-foreground">Factor</th>
@@ -506,8 +506,8 @@ Another agent: "Fork the shared session abc123def456"
               10,000+ domains are classified into 5 tiers of trustworthiness, loaded from a database seeded with curated domains and Majestic Million rankings. Scores self-improve over time via Bayesian smoothing. Unknown domains get a neutral score (0.50).
             </p>
 
-            <div className="overflow-x-auto">
-              <table className="w-full text-xs">
+            <div className="overflow-x-auto [mask-image:linear-gradient(to_right,black_calc(100%-2rem),transparent)] sm:[mask-image:none]">
+              <table className="w-full text-xs min-w-[400px]">
                 <thead>
                   <tr className="border-b border-border">
                     <th className="text-left py-2 pr-4 font-semibold text-foreground">Tier</th>
@@ -569,8 +569,8 @@ Minimum 3 samples before dynamic data is used at all`}</CodeBlock>
           {/* API Reference */}
           <Section id="api" title="API Reference" icon={Code2}>
             <h4 className="text-sm font-semibold text-foreground">REST API</h4>
-            <div className="overflow-x-auto">
-              <table className="w-full text-xs">
+            <div className="overflow-x-auto [mask-image:linear-gradient(to_right,black_calc(100%-2rem),transparent)] sm:[mask-image:none]">
+              <table className="w-full text-xs min-w-[400px]">
                 <thead>
                   <tr className="border-b border-border">
                     <th className="text-left py-2 pr-4 font-semibold text-foreground">Endpoint</th>
@@ -644,8 +644,8 @@ knowledge = session.knowledge()`}</CodeBlock>
             </p>
 
             <h4 className="text-sm font-semibold text-foreground pt-4">Authentication</h4>
-            <div className="overflow-x-auto">
-              <table className="w-full text-xs">
+            <div className="overflow-x-auto [mask-image:linear-gradient(to_right,black_calc(100%-2rem),transparent)] sm:[mask-image:none]">
+              <table className="w-full text-xs min-w-[400px]">
                 <thead>
                   <tr className="border-b border-border">
                     <th className="text-left py-2 pr-4 font-semibold text-foreground">Method</th>
@@ -670,8 +670,8 @@ knowledge = session.knowledge()`}</CodeBlock>
               provides advantages that can't be replicated by running your own instance:
             </p>
 
-            <div className="overflow-x-auto">
-              <table className="w-full text-xs">
+            <div className="overflow-x-auto [mask-image:linear-gradient(to_right,black_calc(100%-2rem),transparent)] sm:[mask-image:none]">
+              <table className="w-full text-xs min-w-[400px]">
                 <thead>
                   <tr className="border-b border-border">
                     <th className="text-left py-2 pr-4 font-semibold text-foreground">Feature</th>
@@ -875,7 +875,7 @@ knowledge = session.knowledge()`}</CodeBlock>
             <img src="/logo.svg" alt="BrowseAI Dev" className="w-4 h-4" />
             <span className="text-sm font-semibold">BrowseAI Dev</span>
           </div>
-          <div className="flex items-center gap-6 text-xs text-muted-foreground">
+          <div className="flex items-center gap-2 sm:gap-4 md:gap-6 text-xs text-muted-foreground">
             <a href="https://github.com/BrowseAI-HQ/BrowseAI-Dev" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">GitHub</a>
             <a href="https://discord.gg/ubAuT4YQsT" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">Discord</a>
             <button onClick={() => navigate("/playground")} className="hover:text-foreground transition-colors">Playground</button>

@@ -338,7 +338,7 @@ const Playground = () => {
               initial={{ opacity: 0, y: -5 }}
               animate={{ opacity: 1, y: 0 }}
               role="listbox"
-              className="absolute z-20 top-12 left-0 w-full sm:w-[500px] bg-card border border-border rounded-xl shadow-lg overflow-hidden"
+              className="absolute z-20 top-12 left-0 w-full sm:w-[500px] max-w-[calc(100vw-2rem)] bg-card border border-border rounded-xl shadow-lg overflow-hidden"
             >
               {TUTORIAL_SCENARIOS.map((scenario) => (
                 <button
@@ -409,7 +409,7 @@ const Playground = () => {
                     <button
                       key={ex}
                       onClick={() => handleExample(ex)}
-                      className="px-3 py-1 rounded-full border border-border text-xs text-muted-foreground hover:text-foreground hover:border-accent/40 transition-all truncate max-w-[280px]"
+                      className="px-3 py-1 rounded-full border border-border text-xs text-muted-foreground hover:text-foreground hover:border-accent/40 transition-all truncate max-w-[180px] sm:max-w-[280px]"
                     >
                       {ex}
                     </button>
@@ -669,7 +669,7 @@ const Playground = () => {
               </div>
             )}
             {response.text && (
-              <div className="p-4 rounded-xl bg-card border border-border text-sm leading-relaxed max-h-[500px] overflow-y-auto whitespace-pre-wrap">
+              <div className="px-2 sm:px-4 py-4 rounded-xl bg-card border border-border text-sm leading-relaxed max-h-[500px] overflow-y-auto whitespace-pre-wrap">
                 {response.text.slice(0, 5000)}{response.text.length > 5000 && "…"}
               </div>
             )}
@@ -741,7 +741,7 @@ const Playground = () => {
                 >
                   {copied ? <Check className="w-4 h-4 text-green-400" /> : <Copy className="w-4 h-4" />}
                 </button>
-                <pre className="p-5 rounded-xl bg-card border border-border overflow-x-auto text-xs font-mono text-secondary-foreground leading-relaxed max-h-[500px] overflow-y-auto">
+                <pre className="px-2 sm:px-5 py-5 rounded-xl bg-card border border-border overflow-x-auto text-xs font-mono text-secondary-foreground leading-relaxed max-h-[500px] overflow-y-auto">
                   {JSON.stringify(response, null, 2)}
                 </pre>
               </div>

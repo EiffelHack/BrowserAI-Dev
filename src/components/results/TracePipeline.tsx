@@ -28,7 +28,7 @@ export function TracePipeline({ trace }: { trace: TraceStep[] }) {
             <CheckCircle2 className="w-4 h-4 text-accent shrink-0" />
             <span className="text-sm font-medium flex-1">{step.step}</span>
             {step.detail && (
-              <span className="text-xs text-muted-foreground truncate max-w-[200px]">{step.detail}</span>
+              <span className="text-xs text-muted-foreground truncate max-w-[100px] sm:max-w-[200px]">{step.detail}</span>
             )}
             <span className="text-xs font-mono text-accent tabular-nums">{step.duration_ms}ms</span>
           </motion.div>

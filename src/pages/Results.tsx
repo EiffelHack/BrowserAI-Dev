@@ -133,14 +133,14 @@ const Results = () => {
               Ran as thorough — deep mode requires sign in
             </span>
           )}
-          <p className="text-sm text-muted-foreground truncate hidden sm:block max-w-md font-mono ml-2">
+          <p className="text-sm text-muted-foreground truncate hidden sm:block max-w-[120px] sm:max-w-xs md:max-w-md font-mono ml-2">
             "{query}"
           </p>
           {!authLoading && (user ? <UserMenu /> : <LoginModal />)}
         </div>
       </nav>
 
-      <div className="max-w-5xl mx-auto px-6 py-10 space-y-10">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 py-10 space-y-10">
         {/* Streaming pipeline progress */}
         {loading && (
           <StreamingPipeline
