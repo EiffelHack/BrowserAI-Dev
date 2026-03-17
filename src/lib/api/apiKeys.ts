@@ -138,6 +138,7 @@ export interface AdminMetrics {
     npm: { weeklyDownloads: number; totalDownloads: number; new?: { weekly: number; total: number }; old?: { weekly: number; total: number } } | null;
     pypi: { weeklyDownloads: number; totalDownloads: number; new?: { weekly: number; total: number }; old?: { weekly: number; total: number } } | null;
     github: { stars: number; forks: number; openIssues: number } | null;
+    frameworks?: { langchain: { weekly: number; total: number }; crewai: { weekly: number; total: number }; llamaindex: { weekly: number; total: number } } | null;
   };
   userQueries: { userId: string; queryCount: number; lastQuery: string; lastAt: string; tools: Record<string, number> }[];
 }

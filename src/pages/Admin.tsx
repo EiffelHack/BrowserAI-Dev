@@ -244,7 +244,7 @@ const Admin = () => {
                         <p className="text-xs text-muted-foreground">{metrics.packageStats.npm.weeklyDownloads.toLocaleString()}/week</p>
                         <div className="mt-2 space-y-1 text-xs text-muted-foreground border-t pt-2">
                           <p>browseai-dev: {metrics.packageStats.npm.new?.total.toLocaleString() ?? 0} ({metrics.packageStats.npm.new?.weekly.toLocaleString() ?? 0}/wk)</p>
-                          <p className="opacity-60">browse-ai (deprecated): {metrics.packageStats.npm.old?.total.toLocaleString() ?? 0} ({metrics.packageStats.npm.old?.weekly.toLocaleString() ?? 0}/wk)</p>
+                          <p>browse-ai (redirect): {metrics.packageStats.npm.old?.total.toLocaleString() ?? 0} ({metrics.packageStats.npm.old?.weekly.toLocaleString() ?? 0}/wk)</p>
                         </div>
                       </>
                     ) : (
@@ -263,7 +263,7 @@ const Admin = () => {
                         <p className="text-xs text-muted-foreground">{metrics.packageStats.pypi.weeklyDownloads.toLocaleString()}/week</p>
                         <div className="mt-2 space-y-1 text-xs text-muted-foreground border-t pt-2">
                           <p>browseaidev: {metrics.packageStats.pypi.new?.total.toLocaleString() ?? 0} ({metrics.packageStats.pypi.new?.weekly.toLocaleString() ?? 0}/wk)</p>
-                          <p className="opacity-60">browseai (deprecated): {metrics.packageStats.pypi.old?.total.toLocaleString() ?? 0} ({metrics.packageStats.pypi.old?.weekly.toLocaleString() ?? 0}/wk)</p>
+                          <p>browseai (redirect): {metrics.packageStats.pypi.old?.total.toLocaleString() ?? 0} ({metrics.packageStats.pypi.old?.weekly.toLocaleString() ?? 0}/wk)</p>
                         </div>
                       </>
                     ) : (
@@ -293,6 +293,22 @@ const Admin = () => {
                           </div>
                         </div>
                       </>
+                    ) : (
+                      <p className="text-sm text-muted-foreground">unavailable</p>
+                    )}
+                  </div>
+                  {/* Framework Integrations */}
+                  <div>
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
+                      <Download className="w-4 h-4" />
+                      Framework Packages (PyPI)
+                    </div>
+                    {metrics.packageStats.frameworks ? (
+                      <div className="space-y-1 text-xs text-muted-foreground">
+                        <p>langchain-browseaidev: {metrics.packageStats.frameworks.langchain?.total.toLocaleString() ?? 0} ({metrics.packageStats.frameworks.langchain?.weekly.toLocaleString() ?? 0}/wk)</p>
+                        <p>crewai-browseaidev: {metrics.packageStats.frameworks.crewai?.total.toLocaleString() ?? 0} ({metrics.packageStats.frameworks.crewai?.weekly.toLocaleString() ?? 0}/wk)</p>
+                        <p>llamaindex-browseaidev: {metrics.packageStats.frameworks.llamaindex?.total.toLocaleString() ?? 0} ({metrics.packageStats.frameworks.llamaindex?.weekly.toLocaleString() ?? 0}/wk)</p>
+                      </div>
                     ) : (
                       <p className="text-sm text-muted-foreground">unavailable</p>
                     )}

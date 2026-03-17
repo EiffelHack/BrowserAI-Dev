@@ -313,13 +313,27 @@ async function fetchAdminList(supabaseUrl: string, serviceRoleKey: string) {
   return res.json();
 }
 
+interface PkgDownloads { weekly: number; total: number }
+
+async function fetchPyPIPkg(name: string): Promise<PkgDownloads> {
+  const [weekR, totalR] = await Promise.all([
+    fetch(`https://pypistats.org/api/packages/${name}/recent?period=week`).then(r => r.ok ? r.json() : null).catch(() => null),
+    fetch(`https://pypistats.org/api/packages/${name}/overall?mirrors=false`).then(r => r.ok ? r.json() : null).catch(() => null),
+  ]);
+  return {
+    weekly: weekR?.data?.last_week || 0,
+    total: totalR?.data?.reduce((s: number, d: { downloads: number }) => s + d.downloads, 0) || 0,
+  };
+}
+
 async function fetchPackageStats(): Promise<{
-  npm: { weeklyDownloads: number; totalDownloads: number; new: { weekly: number; total: number }; old: { weekly: number; total: number } } | null;
-  pypi: { weeklyDownloads: number; totalDownloads: number; new: { weekly: number; total: number }; old: { weekly: number; total: number } } | null;
+  npm: { weeklyDownloads: number; totalDownloads: number; new: PkgDownloads; old: PkgDownloads } | null;
+  pypi: { weeklyDownloads: number; totalDownloads: number; new: PkgDownloads; old: PkgDownloads } | null;
   github: { stars: number; forks: number; openIssues: number } | null;
+  frameworks: { langchain: PkgDownloads; crewai: PkgDownloads; llamaindex: PkgDownloads } | null;
 }> {
-  const [npm, pypi, github] = await Promise.all([
-    // npm weekly downloads (browseai-dev + deprecated browse-ai)
+  const [npm, pypi, github, frameworks] = await Promise.all([
+    // npm downloads (browseai-dev + browse-ai redirect)
     Promise.all([
       fetch("https://api.npmjs.org/downloads/point/last-week/browseai-dev").then(r => r.ok ? r.json() : null).catch(() => null),
       fetch("https://api.npmjs.org/downloads/point/last-week/browse-ai").then(r => r.ok ? r.json() : null).catch(() => null),
@@ -333,36 +347,32 @@ async function fetchPackageStats(): Promise<{
         new: { weekly: nw, total: nt }, old: { weekly: ow, total: ot },
       };
     }).catch(() => null),
-    // PyPI downloads (browseaidev + deprecated browseai)
+    // PyPI downloads (browseaidev + browseai redirect)
     Promise.all([
-      fetch("https://pypistats.org/api/packages/browseaidev/recent?period=week").then(r => r.ok ? r.json() : null).catch(() => null),
-      fetch("https://pypistats.org/api/packages/browseai/recent?period=week").then(r => r.ok ? r.json() : null).catch(() => null),
-      fetch("https://pypistats.org/api/packages/browseaidev/overall?mirrors=false").then(r => r.ok ? r.json() : null).catch(() => null),
-      fetch("https://pypistats.org/api/packages/browseai/overall?mirrors=false").then(r => r.ok ? r.json() : null).catch(() => null),
-    ]).then(([newWeek, oldWeek, newTotal, oldTotal]) => {
-      const nt = newTotal?.data?.reduce((s: number, d: { downloads: number }) => s + d.downloads, 0) || 0;
-      const ot = oldTotal?.data?.reduce((s: number, d: { downloads: number }) => s + d.downloads, 0) || 0;
-      const nw = newWeek?.data?.last_week || 0, ow = oldWeek?.data?.last_week || 0;
-      return {
-        weeklyDownloads: nw + ow, totalDownloads: nt + ot,
-        new: { weekly: nw, total: nt }, old: { weekly: ow, total: ot },
-      };
-    }).catch(() => null),
+      fetchPyPIPkg("browseaidev"),
+      fetchPyPIPkg("browseai"),
+    ]).then(([newPkg, oldPkg]) => ({
+      weeklyDownloads: newPkg.weekly + oldPkg.weekly,
+      totalDownloads: newPkg.total + oldPkg.total,
+      new: newPkg, old: oldPkg,
+    })).catch(() => null),
     // GitHub stats
     fetch("https://api.github.com/repos/BrowseAI-HQ/BrowseAI-Dev")
       .then(async (r) => {
         if (!r.ok) return null;
         const data = await r.json();
-        return {
-          stars: data.stargazers_count || 0,
-          forks: data.forks_count || 0,
-          openIssues: data.open_issues_count || 0,
-        };
+        return { stars: data.stargazers_count || 0, forks: data.forks_count || 0, openIssues: data.open_issues_count || 0 };
       })
       .catch(() => null),
+    // Framework integration packages
+    Promise.all([
+      fetchPyPIPkg("langchain-browseaidev"),
+      fetchPyPIPkg("crewai-browseaidev"),
+      fetchPyPIPkg("llamaindex-browseaidev"),
+    ]).then(([langchain, crewai, llamaindex]) => ({ langchain, crewai, llamaindex })).catch(() => null),
   ]);
 
-  return { npm, pypi, github };
+  return { npm, pypi, github, frameworks };
 }
 
 async function fetchUsers(supabaseUrl: string, serviceRoleKey: string) {

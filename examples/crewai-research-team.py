@@ -5,22 +5,23 @@ A multi-agent research team using CrewAI + BrowseAI Dev.
 One agent researches, another analyzes and summarizes.
 
 Usage:
-    pip install browseaidev[crewai] crewai
+    pip install crewai-browseaidev crewai
     python crewai-research-team.py
 """
 
 from crewai import Agent, Task, Crew
-from browseaidev.integrations.crewai import BrowseAIDevTool
+from crewai_browseaidev import BrowseAIDevAnswerTool, BrowseAIDevSearchTool
 
-# BrowseAI Dev as a CrewAI tool
-browse_tool = BrowseAIDevTool(api_key="bai_xxx")
+# BrowseAI Dev as CrewAI tools
+answer_tool = BrowseAIDevAnswerTool(api_key="bai_xxx")
+search_tool = BrowseAIDevSearchTool(api_key="bai_xxx")
 
 # Agent 1: Researcher — finds evidence-backed information
 researcher = Agent(
     role="Senior Research Analyst",
     goal="Find accurate, evidence-backed information about the given topic",
     backstory="You are a meticulous researcher who never makes claims without sources.",
-    tools=[browse_tool],
+    tools=[answer_tool, search_tool],
     verbose=True,
 )
 
