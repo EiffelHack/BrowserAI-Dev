@@ -12,7 +12,7 @@
 Agent → BrowseAI Dev → Internet → Verified answers + sources
 ```
 
-[Website](https://browseai.dev) · [Playground](https://browseai.dev/playground) · [API Docs](https://browseai.dev/developers) · [Discord](https://discord.gg/ubAuT4YQsT)
+[Website](https://browseai.dev) · [Playground](https://browseai.dev/playground) · [API Docs](https://browseai.dev/developers) · [Alternatives](https://browseai.dev/alternatives) · [Discord](https://discord.gg/ubAuT4YQsT)
 
 > **Package names:** npm: [`browseai-dev`](https://www.npmjs.com/package/browseai-dev) · PyPI: [`browseaidev`](https://pypi.org/project/browseaidev/) · LangChain: [`langchain-browseaidev`](https://pypi.org/project/langchain-browseaidev/) — Previously `browse-ai` and `browseai`. Old names still work and redirect automatically.
 

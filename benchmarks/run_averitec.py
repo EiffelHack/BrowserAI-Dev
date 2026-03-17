@@ -112,7 +112,7 @@ def query_browseai(claim: str, depth: str = "fast", retries: int = 2) -> dict | 
     for attempt in range(retries + 1):
         try:
             resp = requests.post(
-                f"{API_BASE}/api/answer",
+                f"{API_BASE}/browse/answer",
                 json=payload,
                 headers=headers,
                 timeout=60,
@@ -137,7 +137,7 @@ def query_browseai(claim: str, depth: str = "fast", retries: int = 2) -> dict | 
 def run_benchmark(split: str, limit: int | None, depth: str, concurrency: int):
     """Run AVeriTeC benchmark on specified split."""
     print(f"Loading AVeriTeC {split} set...")
-    ds = load_dataset("chenxwh/AVeriTeC", split=split)
+    ds = load_dataset("pminervini/averitec", split=split)
 
     if limit:
         ds = ds.select(range(min(limit, len(ds))))

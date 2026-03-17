@@ -21,6 +21,36 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://browseai.dev/alternatives</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://browseai.dev/alternatives/tavily</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://browseai.dev/alternatives/perplexity</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://browseai.dev/alternatives/exa</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://browseai.dev/alternatives/you</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://browseai.dev/alternatives/brave</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
     <loc>https://browseai.dev/recipes</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>

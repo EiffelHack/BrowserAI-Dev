@@ -167,6 +167,9 @@ const Index = () => {
           <Button variant="ghost" size="sm" className="text-muted-foreground text-xs hidden sm:inline-flex" onClick={() => navigate("/recipes")}>
             Recipes
           </Button>
+          <Button variant="ghost" size="sm" className="text-muted-foreground text-xs hidden sm:inline-flex" onClick={() => navigate("/alternatives")}>
+            Alternatives
+          </Button>
           <Button variant="ghost" size="sm" className="text-muted-foreground text-xs hidden sm:inline-flex" asChild>
             <a href="https://discord.gg/ubAuT4YQsT" target="_blank" rel="noopener">
               <MessageCircle className="w-4 h-4" />
@@ -199,6 +202,7 @@ const Index = () => {
               <DropdownMenuItem onClick={() => navigate("/docs")}>Docs</DropdownMenuItem>
               <DropdownMenuItem onClick={() => navigate("/developers")}>Developers</DropdownMenuItem>
               <DropdownMenuItem onClick={() => navigate("/recipes")}>Recipes</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => navigate("/alternatives")}>Alternatives</DropdownMenuItem>
               <DropdownMenuItem asChild>
                 <a href="https://github.com/BrowseAI-HQ/BrowseAI-Dev" target="_blank" rel="noopener" className="flex items-center gap-2">
                   <Star className="w-3.5 h-3.5" /> Star on GitHub

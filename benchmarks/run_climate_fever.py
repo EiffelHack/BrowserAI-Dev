@@ -70,7 +70,7 @@ def query_browseai(claim: str, depth: str = "fast", retries: int = 2) -> dict | 
     for attempt in range(retries + 1):
         try:
             resp = requests.post(
-                f"{API_BASE}/api/answer",
+                f"{API_BASE}/browse/answer",
                 json={"query": f"Verify this climate claim: {claim}", "depth": depth},
                 headers=headers,
                 timeout=60,

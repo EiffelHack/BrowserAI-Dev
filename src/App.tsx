@@ -20,6 +20,8 @@ import Privacy from "./pages/Privacy";
 import Terms from "./pages/Terms";
 import Sessions from "./pages/Sessions";
 import SharedSession from "./pages/SharedSession";
+import Alternatives from "./pages/Alternatives";
+import AlternativeDetail from "./pages/AlternativeDetail";
 import NotFound from "./pages/NotFound";
 import { ScrollToTop } from "./components/ScrollToTop";
 import { PendingForkRedirect } from "./components/PendingForkRedirect";
@@ -51,6 +53,8 @@ const App = () => (
             <Route path="/docs" element={<Docs />} />
             <Route path="/privacy" element={<Privacy />} />
             <Route path="/terms" element={<Terms />} />
+            <Route path="/alternatives" element={<Alternatives />} />
+            <Route path="/alternatives/:slug" element={<AlternativeDetail />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
