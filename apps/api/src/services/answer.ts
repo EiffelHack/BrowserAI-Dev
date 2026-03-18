@@ -279,13 +279,15 @@ export async function singlePass(
     detail: `${successfulPages.length} pages (Readability, reranked)`,
   });
 
-  // Build content + merge page texts
+  // Build content + merge page texts + collect publication dates
   const pageTexts = new Map<string, string>(existingPageTexts || []);
+  const pageDates = new Map<string, string>();
   const pageContents = successfulPages
     .map((entry, i) => {
       const url = entry.url;
       const content = entry.page.content.slice(0, MAX_PAGE_CONTENT_LENGTH);
       pageTexts.set(url, content);
+      if (entry.page.publishedDate) pageDates.set(url, entry.page.publishedDate);
       return `[Source ${i + 1}] URL: ${url}\nTitle: ${entry.page.title}\n\n${content}`;
     })
     .join("\n\n---\n\n");
@@ -298,8 +300,9 @@ export async function singlePass(
     consensusThreshold: getAdaptiveConsensusThreshold(analysis.type),
     weights: getAdaptiveWeights(analysis.type),
     hfApiKey: env.HF_API_KEY,
+    embeddingApiKey: env.HF_API_KEY ? env.OPENROUTER_API_KEY : undefined,
   };
-  const knowledge = await extractKnowledge(query, pageContents, env.OPENROUTER_API_KEY, pageTexts, analysis.type, sessionContext, adaptiveOptions);
+  const knowledge = await extractKnowledge(query, pageContents, env.OPENROUTER_API_KEY, pageTexts, analysis.type, sessionContext, adaptiveOptions, pageDates);
   const llmDuration = Date.now() - llmStart;
 
   // Trace steps

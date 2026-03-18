@@ -20,7 +20,11 @@ export async function buildApp() {
   const app = Fastify({ logger: true });
 
   await app.register(cors as any, {
-    origin: true, // Allow all origins — API is public, protected by auth tokens + rate limiting
+    origin: [
+      "https://browseai.dev",
+      "https://www.browseai.dev",
+      ...(process.env.NODE_ENV !== "production" ? ["http://localhost:8080", "http://localhost:5173", "http://localhost:3000"] : []),
+    ],
     methods: ["GET", "POST", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "X-Tavily-Key", "X-OpenRouter-Key", "X-API-Key", "Authorization"],
   });

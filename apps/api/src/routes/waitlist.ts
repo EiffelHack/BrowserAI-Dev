@@ -7,6 +7,20 @@ const WaitlistSchema = z.object({
   source: z.string().optional(),
 });
 
+// Simple in-memory rate limit for waitlist signups (5/hour per IP)
+const waitlistRateMap = new Map<string, { count: number; resetAt: number }>();
+function checkWaitlistRate(ip: string): boolean {
+  const now = Date.now();
+  const entry = waitlistRateMap.get(ip);
+  if (!entry || now > entry.resetAt) {
+    waitlistRateMap.set(ip, { count: 1, resetAt: now + 3600_000 });
+    return true;
+  }
+  if (entry.count >= 5) return false;
+  entry.count++;
+  return true;
+}
+
 export function registerWaitlistRoutes(
   app: FastifyInstance,
   supabaseUrl: string,
@@ -70,6 +84,11 @@ export function registerWaitlistRoutes(
   });
 
   app.post("/waitlist", async (request, reply) => {
+    const ip = request.ip || "unknown";
+    if (!checkWaitlistRate(ip)) {
+      return reply.status(429).send({ success: false, error: "Too many signups, try again later" });
+    }
+
     const parsed = WaitlistSchema.safeParse(request.body);
     if (!parsed.success) {
       return reply.status(400).send({ success: false, error: "Invalid email" });

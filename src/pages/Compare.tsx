@@ -16,7 +16,7 @@ const Compare = () => {
   const query = searchParams.get("q") || "";
   const [result, setResult] = useState<CompareResult | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [showJson, setShowJson] = useState(false);
   const { user, loading: authLoading } = useAuth();
 
@@ -43,14 +43,28 @@ const Compare = () => {
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <p className="text-sm text-muted-foreground truncate max-w-[120px] sm:max-w-md font-mono">
-            "{query}"
-          </p>
+          {query && (
+            <p className="text-sm text-muted-foreground truncate max-w-[120px] sm:max-w-md font-mono">
+              "{query}"
+            </p>
+          )}
           {!authLoading && (user ? <UserMenu /> : <LoginModal />)}
         </div>
       </nav>
 
       <div className="max-w-6xl mx-auto px-6 py-10">
+        {!query && !loading && !result && (
+          <div className="flex flex-col items-center justify-center py-20 gap-4 text-center">
+            <p className="text-lg font-medium">Compare Raw LLM vs Evidence-Backed</p>
+            <p className="text-sm text-muted-foreground max-w-md">
+              Add a query parameter to compare. Example: <code className="text-accent">/compare?q=Is caffeine bad for you</code>
+            </p>
+            <Button onClick={() => navigate("/compare?q=Is caffeine bad for you")}>
+              Try an example
+            </Button>
+          </div>
+        )}
+
         {loading && (
           <div className="flex flex-col items-center justify-center py-20 gap-4">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-accent" />
@@ -68,13 +82,13 @@ const Compare = () => {
           </motion.div>
         )}
 
-        {result && (
+        {result && result.competitor && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-8">
             {/* Stats bar */}
             <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-8 py-4">
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <ShieldAlert className="w-3.5 h-3.5 text-orange-400" />
-                <span>Raw LLM: <strong className="text-foreground">0 sources</strong></span>
+                <span>{result.competitor.label}: <strong className="text-foreground">{result.competitor.sources} sources</strong></span>
               </div>
               <span className="text-muted-foreground">vs</span>
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -85,7 +99,7 @@ const Compare = () => {
 
             {/* Split view */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Raw LLM side */}
+              {/* Competitor side */}
               <motion.div
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
@@ -94,20 +108,19 @@ const Compare = () => {
               >
                 <div className="flex items-center gap-2">
                   <ShieldAlert className="w-5 h-5 text-orange-400" />
-                  <h2 className="text-sm font-semibold uppercase tracking-wider text-orange-400">Raw LLM</h2>
+                  <h2 className="text-sm font-semibold uppercase tracking-wider text-orange-400">{result.competitor.label}</h2>
                   <Badge className="ml-auto bg-orange-400/15 text-orange-400 border-orange-400/30 text-xs">
-                    No sources
+                    {result.competitor.sources} sources
                   </Badge>
                 </div>
                 <div className="p-6 rounded-xl bg-card border border-orange-400/20 min-h-[300px]">
                   <p className="text-sm leading-relaxed whitespace-pre-wrap text-muted-foreground">
-                    {result.raw_llm.answer}
+                    {result.competitor.answer}
                   </p>
                 </div>
                 <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                  <span>Sources: 0</span>
-                  <span>Claims: 0</span>
-                  <span>Confidence: Unknown</span>
+                  <span>Sources: {result.competitor.sources}</span>
+                  <span>No claim verification</span>
                 </div>
               </motion.div>
 
@@ -136,7 +149,6 @@ const Compare = () => {
                   <span className="text-emerald-400">{Math.round(result.evidence_backed.confidence * 100)}% confidence</span>
                 </div>
 
-                {/* Sources directly below BrowseAI Dev answer */}
                 {result.evidence_backed.citations.length > 0 && (
                   <div className="space-y-2 pt-2">
                     <h4 className="text-xs font-semibold text-emerald-400/70 uppercase tracking-wider">Sources</h4>
@@ -166,7 +178,7 @@ const Compare = () => {
               </motion.div>
             </div>
 
-            {/* Agent View — How BrowseAI Dev sees it */}
+            {/* Agent View */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -189,7 +201,6 @@ const Compare = () => {
                 </Button>
               </div>
 
-              {/* Pipeline trace */}
               {result.evidence_backed.trace && result.evidence_backed.trace.length > 0 && (
                 <div className="p-4 rounded-xl bg-card border border-border">
                   <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Pipeline Trace</h4>
@@ -209,7 +220,6 @@ const Compare = () => {
                 </div>
               )}
 
-              {/* Extracted claims */}
               {result.evidence_backed.claimDetails && result.evidence_backed.claimDetails.length > 0 && (
                 <div className="p-4 rounded-xl bg-card border border-border">
                   <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">
@@ -236,7 +246,7 @@ const Compare = () => {
                   </div>
                 </div>
               )}
-              {/* Raw JSON */}
+
               {showJson && (
                 <div className="p-4 rounded-xl bg-card border border-border">
                   <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Raw JSON Response</h4>

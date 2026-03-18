@@ -32,8 +32,9 @@ npx pnpm --filter browseai-dev build  # Build MCP only
 
 - **LLM:** Google Gemini 2.5 Flash via OpenRouter (`packages/shared/src/constants.ts`)
 - **Search:** Multi-provider search — primary search API + secondary provider for source diversity (parallel execution, deduplicated results).
-- **Verification pipeline:** Hybrid BM25 + NLI semantic entailment → cross-source consensus → NLI contradiction detection (`apps/api/src/lib/verify.ts`, `apps/api/src/lib/nli.ts`). Falls back to BM25-only when `HF_API_KEY` is not set.
-- **NLI reranking:** Top-3 BM25 candidates per claim reranked by DeBERTa NLI entailment scores. Picks best supporting evidence semantically, not just by keyword match.
+- **Verification pipeline:** Hybrid BM25 + dense embeddings + NLI semantic entailment → cross-source consensus → NLI contradiction detection (`apps/api/src/lib/verify.ts`, `apps/api/src/lib/nli.ts`). Falls back to BM25-only when premium keys not set.
+- **Embedding retrieval:** OpenAI `text-embedding-3-small` via OpenRouter for semantic candidate retrieval. BM25 + embedding rankings fused via Reciprocal Rank Fusion (RRF). Catches paraphrased claims BM25 misses. Premium tier only, graceful BM25 fallback.
+- **NLI reranking:** Top-3 RRF-fused candidates per claim reranked by DeBERTa NLI entailment scores. Picks best supporting evidence semantically, not just by keyword match.
 - **Atomic claim decomposition:** Compound claims auto-split into individual verifiable facts before verification. Splitters: `and`, `;`, `while`/`whereas`/`but`.
 - **Multi-pass consistency:** In thorough mode, claims cross-checked across two independent extraction passes. Confirmed claims boosted (+0.08), unconfirmed penalized (-0.05). SelfCheckGPT-inspired.
 - **Confidence scores:** 7-factor evidence-based algorithm in `apps/api/src/lib/gemini.ts` — NOT LLM self-assessed. Auto-calibrated from user feedback via isotonic regression (70% calibrated + 30% original blending). Factors: verification rate (25%), domain authority (20%), source count (15%), consensus (15%), domain diversity (10%), claim grounding (10%), citation depth (5%). Contradiction penalty applied.

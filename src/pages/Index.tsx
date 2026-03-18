@@ -51,7 +51,7 @@ const PIPELINE_STEPS = [
   { label: "Fetch", detail: "Page parsing" },
   { label: "Extract", detail: "Atomic claims" },
   { label: "Rerank", detail: "Neural + NLI" },
-  { label: "Verify", detail: "BM25 + NLI" },
+  { label: "Verify", detail: "BM25 + Embed + NLI" },
   { label: "Consensus", detail: "Multi-pass" },
   { label: "Answer", detail: "Streamed" },
 ];
@@ -167,6 +167,9 @@ const Index = () => {
           <Button variant="ghost" size="sm" className="text-muted-foreground text-xs hidden sm:inline-flex" onClick={() => navigate("/recipes")}>
             Recipes
           </Button>
+          <Button variant="ghost" size="sm" className="text-muted-foreground text-xs hidden sm:inline-flex" onClick={() => navigate("/alternatives")}>
+            Alternatives
+          </Button>
           <Button variant="ghost" size="sm" className="text-muted-foreground text-xs hidden sm:inline-flex" asChild>
             <a href="https://discord.gg/ubAuT4YQsT" target="_blank" rel="noopener">
               <MessageCircle className="w-4 h-4" />
@@ -199,6 +202,7 @@ const Index = () => {
               <DropdownMenuItem onClick={() => navigate("/docs")}>Docs</DropdownMenuItem>
               <DropdownMenuItem onClick={() => navigate("/developers")}>Developers</DropdownMenuItem>
               <DropdownMenuItem onClick={() => navigate("/recipes")}>Recipes</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => navigate("/alternatives")}>Alternatives</DropdownMenuItem>
               <DropdownMenuItem asChild>
                 <a href="https://github.com/BrowseAI-HQ/BrowseAI-Dev" target="_blank" rel="noopener" className="flex items-center gap-2">
                   <Star className="w-3.5 h-3.5" /> Star on GitHub
@@ -404,8 +408,8 @@ const Index = () => {
               const roadmapItems = [
                 { phase: "Shipped", text: "Reliable research infrastructure — web search, evidence extraction, structured citations, Python SDK & MCP" },
                 { phase: "Shipped", text: "Python SDK & framework integrations — pip install browseaidev + langchain-browseaidev, crewai-browseaidev, llamaindex-browseaidev" },
-                { phase: "Shipped", text: "Multi-source verification — hybrid BM25 + NLI semantic entailment, cross-source consensus, contradiction detection, 10,000+ domain authority tiers" },
-                { phase: "Shipped", text: "NLI evidence reranking — top-3 BM25 candidates reranked by DeBERTa semantic entailment for best evidence selection" },
+                { phase: "Shipped", text: "Multi-source verification — hybrid BM25 + dense embeddings + NLI semantic entailment, cross-source consensus, contradiction detection, 10,000+ domain authority tiers" },
+                { phase: "Shipped", text: "Hybrid retrieval — BM25 + embedding candidates fused via Reciprocal Rank Fusion (RRF), reranked by DeBERTa NLI for best evidence selection" },
                 { phase: "Shipped", text: "Atomic claim decomposition — compound claims auto-split into individual verifiable facts for finer-grained verification" },
                 { phase: "Shipped", text: "Multi-pass consistency — thorough mode cross-checks claims across extraction passes, penalizing inconsistencies (SelfCheckGPT-inspired)" },
                 { phase: "Shipped", text: "Auto-calibrated confidence — predicted confidence auto-adjusts from user feedback data using isotonic calibration curves" },
@@ -613,7 +617,7 @@ const Index = () => {
               </div>
               <ul className="space-y-3 text-sm">
                 <li className="flex items-start gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 mt-0.5 shrink-0" /> Real URLs with quoted evidence</li>
-                <li className="flex items-start gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 mt-0.5 shrink-0" /> Hybrid BM25 + NLI verified claims against source text</li>
+                <li className="flex items-start gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 mt-0.5 shrink-0" /> Hybrid BM25 + embedding + NLI verified claims against source text</li>
                 <li className="flex items-start gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 mt-0.5 shrink-0" /> Atomic claim decomposition — compound facts split and verified independently</li>
                 <li className="flex items-start gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 mt-0.5 shrink-0" /> Domain authority scoring (10,000+ domains)</li>
                 <li className="flex items-start gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 mt-0.5 shrink-0" /> Evidence-based confidence (7-factor score, auto-calibrated from feedback)</li>

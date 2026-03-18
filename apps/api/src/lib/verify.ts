@@ -211,6 +211,92 @@ function verifyTextInSource(
   return { score: combinedScore, matchedSentence };
 }
 
+// ─── Embedding-based Retrieval ──────────────────────────────────────
+// Dense retrieval via OpenAI text-embedding-3-small complements BM25.
+// BM25 misses paraphrased claims; embeddings catch semantic similarity.
+// Combined via Reciprocal Rank Fusion (RRF) for robust candidate selection.
+
+/** Compute cosine similarity between two vectors. */
+function cosineSimilarity(a: number[], b: number[]): number {
+  let dot = 0, normA = 0, normB = 0;
+  for (let i = 0; i < a.length; i++) {
+    dot += a[i] * b[i];
+    normA += a[i] * a[i];
+    normB += b[i] * b[i];
+  }
+  const denom = Math.sqrt(normA) * Math.sqrt(normB);
+  return denom > 0 ? dot / denom : 0;
+}
+
+/** Batch embed texts via OpenRouter API (OpenAI-compatible). Returns array of embedding vectors. */
+async function embedTexts(texts: string[], apiKey: string): Promise<number[][]> {
+  const response = await fetch("https://openrouter.ai/api/v1/embeddings", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${apiKey}`,
+    },
+    body: JSON.stringify({
+      model: "openai/text-embedding-3-small",
+      input: texts,
+      dimensions: 512, // Matryoshka: reduced dims for speed, minimal quality loss
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`Embedding API error: ${response.status}`);
+  }
+
+  const data = await response.json() as { data: Array<{ embedding: number[] }> };
+  return data.data.map(d => d.embedding);
+}
+
+/**
+ * Get top-K sentences by embedding cosine similarity to a claim.
+ * Returns sentences ranked by similarity score.
+ */
+function embeddingTopSentences(
+  claimEmbedding: number[],
+  sentenceEmbeddings: Array<{ sentence: string; embedding: number[] }>,
+  topK: number,
+): Array<{ score: number; sentence: string }> {
+  const scored = sentenceEmbeddings.map(s => ({
+    score: cosineSimilarity(claimEmbedding, s.embedding),
+    sentence: s.sentence,
+  }));
+  scored.sort((a, b) => b.score - a.score);
+  return scored.slice(0, topK);
+}
+
+/**
+ * Reciprocal Rank Fusion: merge BM25 and embedding rankings.
+ * Score = 1/(rank_bm25 + k) + 1/(rank_embedding + k), k=60.
+ * Rank-based fusion avoids score normalization issues between BM25 and cosine.
+ */
+function reciprocalRankFusion(
+  bm25Ranked: Array<{ score: number; sentence: string }>,
+  embeddingRanked: Array<{ score: number; sentence: string }>,
+  topK: number = 3,
+  k: number = 60,
+): Array<{ rrfScore: number; sentence: string }> {
+  const scores = new Map<string, number>();
+
+  for (let rank = 0; rank < bm25Ranked.length; rank++) {
+    const key = bm25Ranked[rank].sentence;
+    scores.set(key, (scores.get(key) || 0) + 1 / (rank + 1 + k));
+  }
+
+  for (let rank = 0; rank < embeddingRanked.length; rank++) {
+    const key = embeddingRanked[rank].sentence;
+    scores.set(key, (scores.get(key) || 0) + 1 / (rank + 1 + k));
+  }
+
+  return [...scores.entries()]
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, topK)
+    .map(([sentence, rrfScore]) => ({ sentence, rrfScore }));
+}
+
 // ─── Domain Authority ───────────────────────────────────────────────
 // Loaded from Supabase `domain_authority` table on startup.
 // Minimal TLD fallback for when DB is unavailable (local dev, noop store).
@@ -873,11 +959,13 @@ export async function verifyEvidence(
     bm25Threshold?: number;
     consensusThreshold?: number;
     hfApiKey?: string;
+    embeddingApiKey?: string;
   },
 ): Promise<VerificationResult> {
   const bm25Threshold = options?.bm25Threshold ?? 0.35;
   const consensusThreshold = options?.consensusThreshold ?? 0.20;
   const hfApiKey = options?.hfApiKey || "";
+  const embeddingApiKey = options?.embeddingApiKey || "";
 
   // ── Phase 1a: BM25 source quote verification ──
   const verifiedSources: VerifiedSource[] = sources.map((source) => {
@@ -896,33 +984,116 @@ export async function verifyEvidence(
     };
   });
 
-  // ── Phase 1b: BM25 candidate extraction (top-3 per claim) ──
-  // Instead of just the top-1, we extract top-3 BM25 candidate sentences
-  // per claim. When NLI is available, it reranks these candidates to pick
-  // the semantically best evidence — catching cases where BM25's top pick
-  // is a keyword match but not the best semantic support.
+  // ── Phase 1b: Candidate extraction (BM25 + optional embedding RRF) ──
+  // Extract top candidate sentences per claim. When embeddings are available,
+  // we fuse BM25 (lexical) and embedding (semantic) rankings via Reciprocal
+  // Rank Fusion (RRF). This catches paraphrased claims BM25 alone misses.
+  // Without embeddings, falls back to BM25-only (existing behavior).
   const NLI_RERANK_K = 3;
+  const EMBEDDING_EXPAND_K = 5; // Retrieve more candidates for RRF fusion
   const claimCandidates: Array<Array<{ bm25Score: number; sentence: string }>> = [];
 
-  for (const claim of claims) {
-    const candidates: Array<{ bm25Score: number; sentence: string }> = [];
+  // Collect all unique sentences across all claim sources for batch embedding
+  const allSentenceMap = new Map<string, string[]>(); // url -> sentences
+  const allSentencesFlat: string[] = [];
+  const sentenceToUrl = new Map<string, string>();
+
+  if (embeddingApiKey) {
+    for (const claim of claims) {
+      if (!claim.sources) continue;
+      for (const url of claim.sources) {
+        if (allSentenceMap.has(url)) continue;
+        const pageText = pageContents.get(url) || "";
+        if (!pageText) continue;
+        const sentences = splitSentences(pageText);
+        allSentenceMap.set(url, sentences);
+        for (const s of sentences) {
+          if (!sentenceToUrl.has(s)) {
+            allSentencesFlat.push(s);
+            sentenceToUrl.set(s, url);
+          }
+        }
+      }
+    }
+  }
+
+  // Batch embed: all claims + all candidate sentences in two API calls
+  let claimEmbeddings: number[][] | null = null;
+  let sentenceEmbeddings: Map<string, number[]> | null = null;
+
+  if (embeddingApiKey && allSentencesFlat.length > 0 && claims.length > 0) {
+    try {
+      // Embed claims (small batch)
+      const claimTexts = claims.map(c => c.claim);
+      const [claimEmbs, sentEmbs] = await Promise.all([
+        embedTexts(claimTexts, embeddingApiKey),
+        // Batch sentences (cap at 2048 per OpenAI limit)
+        embedTexts(allSentencesFlat.slice(0, 2048), embeddingApiKey),
+      ]);
+      claimEmbeddings = claimEmbs;
+      sentenceEmbeddings = new Map<string, number[]>();
+      for (let i = 0; i < sentEmbs.length; i++) {
+        sentenceEmbeddings.set(allSentencesFlat[i], sentEmbs[i]);
+      }
+    } catch (e) {
+      // Embedding API failed — graceful fallback to BM25-only
+      console.warn("Embedding retrieval failed, falling back to BM25-only:", e);
+      claimEmbeddings = null;
+      sentenceEmbeddings = null;
+    }
+  }
+
+  for (let ci = 0; ci < claims.length; ci++) {
+    const claim = claims[ci];
+    const bm25Candidates: Array<{ bm25Score: number; sentence: string }> = [];
 
     if (claim.sources && claim.sources.length > 0) {
       for (const url of claim.sources) {
         const pageText = pageContents.get(url) || "";
         if (!pageText) continue;
 
-        // Get top-K candidates from each source
-        const topK = bm25TopSentences(claim.claim, pageText, NLI_RERANK_K);
+        // Get top-K candidates from each source via BM25
+        const topK = bm25TopSentences(claim.claim, pageText, EMBEDDING_EXPAND_K);
         for (const t of topK) {
-          candidates.push({ bm25Score: t.score, sentence: t.sentence });
+          bm25Candidates.push({ bm25Score: t.score, sentence: t.sentence });
         }
       }
     }
 
-    // Sort all candidates across sources by BM25 score, take top-K
-    candidates.sort((a, b) => b.bm25Score - a.bm25Score);
-    claimCandidates.push(candidates.slice(0, NLI_RERANK_K));
+    // Sort BM25 candidates
+    bm25Candidates.sort((a, b) => b.bm25Score - a.bm25Score);
+
+    // If embeddings available, fuse BM25 + embedding rankings via RRF
+    if (claimEmbeddings && sentenceEmbeddings && claim.sources) {
+      const claimEmb = claimEmbeddings[ci];
+
+      // Gather embedding candidates from same sources
+      const embCandidates: Array<{ score: number; sentence: string }> = [];
+      for (const url of claim.sources) {
+        const sentences = allSentenceMap.get(url) || [];
+        for (const s of sentences) {
+          const emb = sentenceEmbeddings.get(s);
+          if (emb) {
+            embCandidates.push({ score: cosineSimilarity(claimEmb, emb), sentence: s });
+          }
+        }
+      }
+      embCandidates.sort((a, b) => b.score - a.score);
+
+      // RRF fusion
+      const bm25ForRRF = bm25Candidates.map(c => ({ score: c.bm25Score, sentence: c.sentence }));
+      const fused = reciprocalRankFusion(bm25ForRRF, embCandidates.slice(0, EMBEDDING_EXPAND_K), NLI_RERANK_K);
+
+      claimCandidates.push(
+        fused.map(f => ({
+          bm25Score: bm25Candidates.find(b => b.sentence === f.sentence)?.bm25Score ?? 0,
+          sentence: f.sentence,
+        }))
+      );
+    } else {
+      // No embeddings: BM25-only (existing behavior)
+      claimCandidates.push(bm25Candidates.slice(0, NLI_RERANK_K));
+    }
   }
 
   // ── Phase 1c: NLI evidence reranking (when available) ──

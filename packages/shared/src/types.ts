@@ -5,6 +5,8 @@ export type BrowseSource = {
   quote: string;
   verified?: boolean;
   authority?: number;
+  /** ISO date (YYYY-MM-DD) when the source was published. null if unknown. */
+  publishedDate?: string;
 };
 
 export type NLIScore = {
@@ -143,6 +145,24 @@ export type FeedbackRequest = {
   claimIndex?: number;
 };
 
+// ── Compare ──
+
+export type CompareProvider = "perplexity" | "tavily" | "exa" | "you" | "brave" | "raw_llm";
+
+export type CompareRequest = {
+  query: string;
+  provider?: CompareProvider;
+};
+
+export type CompareCompetitorResult = {
+  provider: CompareProvider;
+  label: string;
+  answer: string;
+  sources: number;
+  citations: { url: string; title: string }[];
+  latency_ms: number;
+};
+
 // ── Premium Quota ──
 
 export type PremiumQuota = {
@@ -155,5 +175,5 @@ export type PremiumQuota = {
 };
 
 export type ApiResponse<T> =
-  | { success: true; result: T; quota?: PremiumQuota }
+  | { success: true; result: T; quota?: PremiumQuota; disclaimer?: string }
   | { success: false; error: string };

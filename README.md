@@ -12,7 +12,7 @@
 Agent → BrowseAI Dev → Internet → Verified answers + sources
 ```
 
-[Website](https://browseai.dev) · [Playground](https://browseai.dev/playground) · [API Docs](https://browseai.dev/developers) · [Discord](https://discord.gg/ubAuT4YQsT)
+[Website](https://browseai.dev) · [Playground](https://browseai.dev/playground) · [API Docs](https://browseai.dev/developers) · [Alternatives](https://browseai.dev/alternatives) · [Discord](https://discord.gg/ubAuT4YQsT)
 
 > **Package names:** npm: [`browseai-dev`](https://www.npmjs.com/package/browseai-dev) · PyPI: [`browseaidev`](https://pypi.org/project/browseaidev/) · LangChain: [`langchain-browseaidev`](https://pypi.org/project/langchain-browseaidev/) — Previously `browse-ai` and `browseai`. Old names still work and redirect automatically.
 
@@ -31,8 +31,8 @@ Every answer goes through a multi-step verification pipeline. No hallucination. 
 Confidence scores are **evidence-based** — not LLM self-assessed. After the LLM extracts claims and sources, a post-extraction verification engine checks every claim against the actual source page text:
 
 1. **Atomic claim decomposition** — Compound claims are auto-split into individual verifiable facts. "Tesla had $96B revenue and 1.8M deliveries" becomes two atomic claims, each verified independently.
-2. **Neural re-ranking** — Search results are re-scored by a cross-encoder model for semantic query-document relevance before page fetching. Then for each claim, BM25 finds the top-3 candidate sentences from source text. A [DeBERTa-v3 NLI model](https://huggingface.co/MoritzLaurer/DeBERTa-v3-base-mnli-fever-anli) reranks candidates by semantic entailment, picking the best supporting evidence — not just the best keyword match.
-3. **Hybrid BM25 + NLI verification** — Each claim is scored using BM25 lexical matching + NLI semantic entailment (30% BM25, 70% NLI). Catches paraphrased claims that keyword matching alone would miss, with contradiction penalties and paraphrase boosts.
+2. **Hybrid retrieval (BM25 + dense embeddings)** — For each claim, BM25 finds lexical matches and OpenAI `text-embedding-3-small` (via OpenRouter) finds semantic matches from source text. Rankings are fused using Reciprocal Rank Fusion (RRF) — a rank-based method that avoids score normalization issues. This catches paraphrased evidence that BM25 alone misses (e.g., "prevents fabricated answers" matching "reduces hallucinations"). Premium tier only, with graceful BM25 fallback.
+3. **NLI evidence reranking** — Top-3 RRF-fused candidates per claim are reranked by a [DeBERTa-v3 NLI model](https://huggingface.co/MoritzLaurer/DeBERTa-v3-base-mnli-fever-anli) for semantic entailment. Final hybrid score: 30% BM25 + 70% NLI, with contradiction penalties and paraphrase boosts.
 4. **Multi-provider search** — Parallel search across multiple providers for broader source diversity. More independent sources = stronger cross-reference = higher confidence.
 5. **Domain authority scoring** — 10,000+ domains across 5 tiers (institutional `.gov`/`.edu` → major news → tech journalism → community → low-quality), stored in Supabase with Majestic Million bulk import. Self-improving via Bayesian cold-start smoothing.
 6. **Source quote verification** — LLM-extracted quotes verified against actual page text using hybrid matching (exact substring → BM25 fallback).
@@ -43,7 +43,7 @@ Confidence scores are **evidence-based** — not LLM self-assessed. After the LL
 
 Claims include `verified`, `verificationScore`, `consensusCount`, `consensusLevel`, and optional `nliScore` fields. Sources include `verified` and `authority`. Detected `contradictions` (with optional `nliConfidence`) are returned at the top level. Agents can use these fields to make trust decisions programmatically.
 
-> **NLI graceful fallback:** When `HF_API_KEY` is not set, the system runs BM25-only verification — the same pipeline that shipped before NLI was added. No degradation, no errors. NLI is a transparent enhancement.
+> **Graceful fallback:** When premium keys are not set, the system runs BM25-only verification. Embedding retrieval and NLI are transparent premium enhancements — no degradation, no errors.
 
 ### Depth Modes
 
@@ -546,7 +546,7 @@ See the [examples/](examples/) directory for ready-to-run agent recipes:
 - **AI**: Gemini 2.5 Flash via OpenRouter
 - **Caching**: Redis or in-memory with intelligent TTL (time-sensitive queries get shorter TTL)
 - **Frontend**: React, Tailwind CSS, shadcn/ui, Framer Motion
-- **Verification**: Hybrid BM25 + NLI semantic entailment
+- **Verification**: Hybrid BM25 + dense embeddings (RRF) + NLI semantic entailment
 - **MCP**: @modelcontextprotocol/sdk
 - **Python SDK**: httpx, Pydantic
 - **Database**: Supabase (PostgreSQL)
