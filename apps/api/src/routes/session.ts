@@ -309,8 +309,12 @@ export function registerSessionRoutes(
       return reply.status(400).send({ success: false, error: zodMessage(parsed.error) });
 
     try {
+      const { userId } = await getRequestEnv(request, env, apiKeyService, cache);
       const session = await sessionStore.getSession(id);
       if (!session) return reply.status(404).send({ success: false, error: "Session not found" });
+      if (session.userId && session.userId !== userId) {
+        return reply.status(403).send({ success: false, error: "Not authorized to access this session" });
+      }
 
       const entries = await sessionStore.recallKnowledge(id, parsed.data.query, parsed.data.limit);
       return {

@@ -14,6 +14,9 @@ class BrowseSource(BaseModel):
     quote: str
     verified: bool | None = None
     authority: float | None = None
+    published_date: str | None = Field(None, alias="publishedDate")
+
+    model_config = {"populate_by_name": True}
 
 
 class NLIScore(BaseModel):

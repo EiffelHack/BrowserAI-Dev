@@ -11,9 +11,14 @@ export async function getAuthUser(supabaseUrl: string, serviceRoleKey: string, t
   return res.json();
 }
 
+function sanitizeEmail(email: string): string {
+  // Only allow valid email characters to prevent PostgREST filter injection
+  return email.replace(/[^a-zA-Z0-9@._+-]/g, "");
+}
+
 export async function isAdmin(supabaseUrl: string, serviceRoleKey: string, email: string): Promise<boolean> {
   const res = await fetch(
-    `${supabaseUrl}/rest/v1/admins?email=eq.${encodeURIComponent(email)}&select=id`,
+    `${supabaseUrl}/rest/v1/admins?email=eq.${encodeURIComponent(sanitizeEmail(email))}&select=id`,
     {
       headers: {
         apikey: serviceRoleKey,

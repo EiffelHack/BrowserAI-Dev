@@ -231,6 +231,30 @@ const Admin = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent>
+                {/* Total Downloads — all packages combined */}
+                {(() => {
+                  const npmTotal = metrics.packageStats.npm?.totalDownloads ?? 0;
+                  const pypiTotal = metrics.packageStats.pypi?.totalDownloads ?? 0;
+                  const fwLangchain = metrics.packageStats.frameworks?.langchain?.total ?? 0;
+                  const fwCrewai = metrics.packageStats.frameworks?.crewai?.total ?? 0;
+                  const fwLlamaindex = metrics.packageStats.frameworks?.llamaindex?.total ?? 0;
+                  const grandTotal = npmTotal + pypiTotal + fwLangchain + fwCrewai + fwLlamaindex;
+
+                  const npmWeekly = metrics.packageStats.npm?.weeklyDownloads ?? 0;
+                  const pypiWeekly = metrics.packageStats.pypi?.weeklyDownloads ?? 0;
+                  const fwLangchainW = metrics.packageStats.frameworks?.langchain?.weekly ?? 0;
+                  const fwCrewaiW = metrics.packageStats.frameworks?.crewai?.weekly ?? 0;
+                  const fwLlamaindexW = metrics.packageStats.frameworks?.llamaindex?.weekly ?? 0;
+                  const weeklyTotal = npmWeekly + pypiWeekly + fwLangchainW + fwCrewaiW + fwLlamaindexW;
+
+                  return grandTotal > 0 ? (
+                    <div className="mb-6 p-4 rounded-lg bg-accent/10 border border-accent/20 text-center">
+                      <p className="text-sm text-muted-foreground mb-1">Total Downloads (all packages)</p>
+                      <p className="text-4xl font-bold text-accent">{grandTotal.toLocaleString()}</p>
+                      <p className="text-sm text-muted-foreground mt-1">{weeklyTotal.toLocaleString()}/week</p>
+                    </div>
+                  ) : null;
+                })()}
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
                   {/* npm */}
                   <div>

@@ -5,6 +5,8 @@ export type BrowseSource = {
   quote: string;
   verified?: boolean;
   authority?: number;
+  /** ISO date (YYYY-MM-DD) when the source was published. null if unknown. */
+  publishedDate?: string;
 };
 
 export type NLIScore = {

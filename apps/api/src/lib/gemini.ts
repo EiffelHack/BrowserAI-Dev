@@ -97,17 +97,78 @@ const TOOL_SCHEMA = {
   },
 };
 
+// ─── Source Recency Scoring ───────────────────────────────────────────
+// Computes how fresh the sources are. Time-sensitive queries get penalized
+// heavily for stale sources; factual queries are more lenient.
+
+/**
+ * Compute a recency score (0-1) for a set of sources based on publication dates.
+ * Returns 0.5 (neutral) when no dates are available.
+ *
+ * Scoring:
+ * - Sources < 6 months old: 1.0
+ * - Sources 6-12 months old: 0.8
+ * - Sources 1-2 years old: 0.6
+ * - Sources 2-5 years old: 0.4
+ * - Sources > 5 years old: 0.2
+ *
+ * Time-sensitive queries apply stricter thresholds.
+ */
+export function computeRecencyScore(
+  sources: BrowseSource[],
+  queryType?: QueryType,
+): number {
+  const now = Date.now();
+  const datedSources = sources.filter(s => s.publishedDate);
+
+  // No dates available — neutral score (don't penalize or boost)
+  if (datedSources.length === 0) return 0.5;
+
+  const isTimeSensitive = queryType === "time-sensitive";
+
+  let totalScore = 0;
+  for (const source of datedSources) {
+    const pubDate = new Date(source.publishedDate!).getTime();
+    const ageMonths = (now - pubDate) / (1000 * 60 * 60 * 24 * 30);
+
+    let score: number;
+    if (isTimeSensitive) {
+      // Stricter: time-sensitive queries need very fresh sources
+      if (ageMonths < 3) score = 1.0;
+      else if (ageMonths < 6) score = 0.7;
+      else if (ageMonths < 12) score = 0.4;
+      else score = 0.2;
+    } else {
+      if (ageMonths < 6) score = 1.0;
+      else if (ageMonths < 12) score = 0.8;
+      else if (ageMonths < 24) score = 0.6;
+      else if (ageMonths < 60) score = 0.4;
+      else score = 0.2;
+    }
+
+    totalScore += score;
+  }
+
+  // Blend: weighted average of dated sources + neutral for undated
+  const datedAvg = totalScore / datedSources.length;
+  const undatedCount = sources.length - datedSources.length;
+  const blended = (datedAvg * datedSources.length + 0.5 * undatedCount) / sources.length;
+
+  return Math.round(blended * 100) / 100;
+}
+
 /**
  * Compute confidence from real evidence signals instead of LLM self-assessment.
  *
- * 7-factor model (each contributes a weighted portion):
+ * 8-factor model (each contributes a weighted portion):
  *   1. Source count       (15%) — more sources = more corroboration
  *   2. Domain diversity   (10%) — claims backed by different domains are stronger
  *   3. Claim grounding    (10%) — % of claims that cite at least one source
  *   4. Citation depth     (5%)  — avg citations per claim
- *   5. Verification rate  (25%) — % of claims verified in actual source text
- *   6. Domain authority   (20%) — quality/trustworthiness of source domains
- *   7. Consensus score    (15%) — cross-source agreement across independent domains
+ *   5. Verification rate  (22%) — % of claims verified in actual source text
+ *   6. Domain authority   (18%) — quality/trustworthiness of source domains
+ *   7. Consensus score    (12%) — cross-source agreement across independent domains
+ *   8. Source recency     (8%)  — freshness of source material
  *
  * Penalty: contradictions reduce confidence (each detected contradiction
  * subtracts 0.05 from the raw score before scaling).
@@ -123,6 +184,7 @@ export function computeConfidence(
   contradictionCount: number = 0,
   queryType?: QueryType,
   adaptiveWeights?: { source: number; domain: number; grounding: number; depth: number; verification: number; authority: number; consensus: number },
+  recencyScore: number = 0.5,
 ): number {
   if (sources.length === 0) return 0.10;
   if (claims.length === 0) return 0.25;
@@ -157,39 +219,57 @@ export function computeConfidence(
   // 7. Consensus — cross-source agreement
   const consensusVal = consensusScore;
 
+  // 8. Source recency — freshness of evidence
+  const recencyVal = recencyScore;
+
   // Query-type-aware weights:
   // Factual queries: consensus and source count matter more than BM25 text matching.
-  // For facts, "multiple sources agree" IS the verification — paraphrasing
-  // shouldn't penalize confidence when the answer is clearly correct.
-  // Opinion/comparison queries: verification rate stays high because claims
-  // are more nuanced and need careful textual evidence.
+  // Time-sensitive queries: recency weight is boosted.
+  // Opinion/comparison queries: verification rate stays high.
   //
   // Adaptive weights override defaults when the self-learning engine has
   // accumulated enough data (20+ queries of this type + feedback signals).
+  // Note: adaptive weights from learning engine don't include recency yet,
+  // so we apply recency separately when adaptive weights are used.
   const isFactual = queryType === "factual";
-  const weights = adaptiveWeights
-    ? adaptiveWeights
-    : isFactual
-      ? { source: 0.20, domain: 0.10, grounding: 0.10, depth: 0.05, verification: 0.10, authority: 0.20, consensus: 0.25 }
-      : { source: 0.15, domain: 0.10, grounding: 0.10, depth: 0.05, verification: 0.25, authority: 0.20, consensus: 0.15 };
+  const isTimeSensitive = queryType === "time-sensitive";
 
-  let raw =
-    sourceScore * weights.source +
-    domainScore * weights.domain +
-    groundingScore * weights.grounding +
-    depthScore * weights.depth +
-    verificationScoreVal * weights.verification +
-    authorityScore * weights.authority +
-    consensusVal * weights.consensus;
+  let raw: number;
+  if (adaptiveWeights) {
+    // Adaptive weights are 7-factor; apply recency as a separate 8% factor
+    // by scaling the 7 adaptive weights down to 92% total
+    const scale = 0.92;
+    raw =
+      sourceScore * adaptiveWeights.source * scale +
+      domainScore * adaptiveWeights.domain * scale +
+      groundingScore * adaptiveWeights.grounding * scale +
+      depthScore * adaptiveWeights.depth * scale +
+      verificationScoreVal * adaptiveWeights.verification * scale +
+      authorityScore * adaptiveWeights.authority * scale +
+      consensusVal * adaptiveWeights.consensus * scale +
+      recencyVal * 0.08;
+  } else {
+    const weights = isTimeSensitive
+      ? { source: 0.12, domain: 0.08, grounding: 0.08, depth: 0.04, verification: 0.20, authority: 0.15, consensus: 0.12, recency: 0.21 }
+      : isFactual
+        ? { source: 0.18, domain: 0.09, grounding: 0.09, depth: 0.05, verification: 0.09, authority: 0.18, consensus: 0.24, recency: 0.08 }
+        : { source: 0.14, domain: 0.09, grounding: 0.09, depth: 0.05, verification: 0.22, authority: 0.18, consensus: 0.14, recency: 0.09 };
+
+    raw =
+      sourceScore * weights.source +
+      domainScore * weights.domain +
+      groundingScore * weights.grounding +
+      depthScore * weights.depth +
+      verificationScoreVal * weights.verification +
+      authorityScore * weights.authority +
+      consensusVal * weights.consensus +
+      recencyVal * weights.recency;
+  }
 
   // Contradiction penalty: each contradiction reduces confidence
   if (contradictionCount > 0) {
     raw = Math.max(0, raw - contradictionCount * 0.05);
   }
-
-  // No hard-coded confidence floors — let the 7-factor weighted score
-  // determine confidence naturally. The weights already account for
-  // query type differences (factual vs opinion).
 
   // Scale to 0.10–0.97 range
   const scaled = 0.10 + raw * 0.87;
@@ -463,6 +543,11 @@ Intent types:
 // Splits compound claims into individual atomic claims for finer-grained
 // verification. A compound claim like "Tesla had $96B revenue and 1.8M
 // deliveries" becomes two atomic claims, each independently verifiable.
+//
+// Two-tier approach:
+//   1. LLM decomposition (preferred) — catches implicit compounds, relative
+//      clauses, and nested facts that regex misses.
+//   2. Regex fallback — fast, deterministic, used when LLM is unavailable.
 
 const COMPOUND_SPLITTERS = [
   /\band\b/i,           // "X and Y"
@@ -472,12 +557,8 @@ const COMPOUND_SPLITTERS = [
 
 const MIN_ATOMIC_LENGTH = 15; // Don't split into fragments shorter than this
 
-/**
- * Split compound claims into atomic claims.
- * Preserves source attribution — each atomic claim inherits the parent's sources.
- * Only splits when both halves look like independent, verifiable statements.
- */
-function decomposeCompoundClaims(claims: BrowseClaim[]): BrowseClaim[] {
+/** Fast regex-based decomposition (fallback). */
+function regexDecomposeCompoundClaims(claims: BrowseClaim[]): BrowseClaim[] {
   const result: BrowseClaim[] = [];
 
   for (const claim of claims) {
@@ -494,7 +575,6 @@ function decomposeCompoundClaims(claims: BrowseClaim[]): BrowseClaim[] {
     for (const pattern of COMPOUND_SPLITTERS) {
       const parts = text.split(pattern).map(p => p.trim()).filter(p => p.length >= MIN_ATOMIC_LENGTH);
       if (parts.length >= 2 && parts.length <= 4) {
-        // Verify each part looks like an independent claim (has a verb-like structure)
         const allValid = parts.every(p => /[a-z]/i.test(p) && p.length >= MIN_ATOMIC_LENGTH);
         if (allValid) {
           for (const part of parts) {
@@ -517,6 +597,169 @@ function decomposeCompoundClaims(claims: BrowseClaim[]): BrowseClaim[] {
   return result;
 }
 
+/**
+ * LLM-based claim decomposition — catches what regex misses:
+ * - Implicit compounds: "Tesla's revenue grew 20%, exceeding analyst expectations"
+ * - Nested facts: "The product, which launched in 30 countries, generated $5B"
+ * - Relative clauses: "The study found X, making it the largest of its kind"
+ * - Numeric lists: "Revenue was $10B, profit $2B, and margins 20%"
+ *
+ * Only processes claims that look potentially compound (length > 50 chars).
+ * Falls back to regex on any LLM failure.
+ */
+async function llmDecomposeCompoundClaims(
+  claims: BrowseClaim[],
+  apiKey: string,
+): Promise<BrowseClaim[]> {
+  // Separate short/simple claims (already atomic) from candidates
+  const atomic: BrowseClaim[] = [];
+  const candidates: { index: number; claim: BrowseClaim }[] = [];
+
+  for (let i = 0; i < claims.length; i++) {
+    const text = claims[i].claim.trim();
+    // Heuristic: claims under 50 chars or without compound indicators are likely atomic
+    const hasCompoundSignal = text.length > 50 && (
+      /\band\b/i.test(text) ||
+      /;\s/.test(text) ||
+      /,\s*(?:which|making|while|whereas|with|resulting|leading|exceeding|bringing|reaching)/i.test(text) ||
+      /,\s*\w+ing\b/i.test(text) ||  // participial phrases: ", generating", ", reaching"
+      (text.match(/\d+/g)?.length ?? 0) >= 3  // multiple numbers often = multiple facts
+    );
+
+    if (hasCompoundSignal) {
+      candidates.push({ index: i, claim: claims[i] });
+    } else {
+      atomic.push(claims[i]);
+    }
+  }
+
+  // If no candidates, return as-is
+  if (candidates.length === 0) return claims;
+
+  try {
+    const claimTexts = candidates.map((c, i) => `${i + 1}. ${c.claim.claim}`).join("\n");
+
+    const res = await fetchWithRetry(LLM_ENDPOINT, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: LLM_MODEL,
+        messages: [
+          {
+            role: "system",
+            content: `You decompose compound claims into atomic, independently verifiable facts.
+
+Rules:
+- Each output claim must contain exactly ONE verifiable fact
+- Preserve the original meaning — do not add or remove information
+- Keep each claim self-contained (reader should understand it without context)
+- If a claim is already atomic, return it unchanged
+- Return the result using the tool provided`,
+          },
+          {
+            role: "user",
+            content: `Decompose these claims into atomic facts:\n\n${claimTexts}`,
+          },
+        ],
+        tools: [{
+          type: "function" as const,
+          function: {
+            name: "return_atomic_claims",
+            description: "Return decomposed atomic claims grouped by original claim index",
+            parameters: {
+              type: "object",
+              properties: {
+                decomposed: {
+                  type: "array",
+                  items: {
+                    type: "object",
+                    properties: {
+                      original_index: { type: "number", description: "1-based index of the original claim" },
+                      atomic_claims: {
+                        type: "array",
+                        items: { type: "string" },
+                        description: "List of atomic claims derived from the original",
+                      },
+                    },
+                    required: ["original_index", "atomic_claims"],
+                  },
+                },
+              },
+              required: ["decomposed"],
+            },
+          },
+        }],
+        tool_choice: { type: "function", function: { name: "return_atomic_claims" } },
+        max_tokens: 800,
+      }),
+    });
+
+    if (!res.ok) {
+      // LLM failed — fall back to regex
+      return regexDecomposeCompoundClaims(claims);
+    }
+
+    const data = await res.json();
+    const toolCall = data.choices?.[0]?.message?.tool_calls?.[0];
+    if (!toolCall) return regexDecomposeCompoundClaims(claims);
+
+    const parsed = JSON.parse(toolCall.function.arguments);
+    const decomposed: Array<{ original_index: number; atomic_claims: string[] }> = parsed.decomposed || [];
+
+    // Build a map of original index → atomic claims
+    const decomposedMap = new Map<number, string[]>();
+    for (const d of decomposed) {
+      if (d.atomic_claims && d.atomic_claims.length > 0) {
+        decomposedMap.set(d.original_index, d.atomic_claims);
+      }
+    }
+
+    // Reconstruct: atomic claims keep original sources
+    const result: BrowseClaim[] = [...atomic];
+    for (const candidate of candidates) {
+      const idx = candidates.indexOf(candidate) + 1; // 1-based
+      const atomicClaims = decomposedMap.get(idx);
+
+      if (atomicClaims && atomicClaims.length > 1) {
+        for (const ac of atomicClaims) {
+          const trimmed = ac.trim();
+          if (trimmed.length >= MIN_ATOMIC_LENGTH) {
+            result.push({
+              ...candidate.claim,
+              claim: trimmed,
+            });
+          }
+        }
+      } else {
+        // LLM said it's already atomic, or no decomposition returned
+        result.push(candidate.claim);
+      }
+    }
+
+    return result;
+  } catch (e) {
+    console.warn("LLM claim decomposition failed, using regex fallback:", e instanceof Error ? e.message : e);
+    return regexDecomposeCompoundClaims(claims);
+  }
+}
+
+/**
+ * Decompose compound claims into atomic claims.
+ * Uses LLM when API key is available, falls back to regex.
+ */
+async function decomposeCompoundClaims(
+  claims: BrowseClaim[],
+  apiKey?: string,
+): Promise<BrowseClaim[]> {
+  if (apiKey) {
+    return llmDecomposeCompoundClaims(claims, apiKey);
+  }
+  return regexDecomposeCompoundClaims(claims);
+}
+
 export async function extractKnowledge(
   query: string,
   pageContents: string,
@@ -531,6 +774,7 @@ export async function extractKnowledge(
     hfApiKey?: string;
     embeddingApiKey?: string;
   },
+  pageDates?: Map<string, string>,
 ): Promise<Omit<BrowseResult, "trace">> {
   const systemPrompt = getExtractionPrompt(queryType);
 
@@ -589,8 +833,19 @@ export async function extractKnowledge(
   const rawClaims: BrowseClaim[] = knowledge.claims || [];
   const sources: BrowseSource[] = knowledge.sources || [];
 
+  // Attach publication dates to sources from scraped page metadata
+  if (pageDates && pageDates.size > 0) {
+    for (const source of sources) {
+      const date = pageDates.get(source.url);
+      if (date) source.publishedDate = date;
+    }
+  }
+
+  // Compute source recency score (0-1) for confidence adjustment
+  const recencyScore = computeRecencyScore(sources, queryType);
+
   // Atomic claim decomposition: split compound claims the LLM missed
-  const claims = decomposeCompoundClaims(rawClaims);
+  const claims = await decomposeCompoundClaims(rawClaims, apiKey);
 
   // Run post-extraction verification if page texts are available
   if (pageTexts && pageTexts.size > 0) {
@@ -613,6 +868,7 @@ export async function extractKnowledge(
         verification.contradictions.length,
         queryType,
         adaptiveOptions?.weights,
+        recencyScore,
       ),
       contradictions: verification.contradictions.length > 0
         ? verification.contradictions
@@ -624,7 +880,7 @@ export async function extractKnowledge(
     answer: knowledge.answer,
     claims,
     sources,
-    confidence: computeConfidence(claims, sources),
+    confidence: computeConfidence(claims, sources, 0, 0.5, 0, 0, queryType, undefined, recencyScore),
   };
 }
 
@@ -782,7 +1038,7 @@ export async function streamAnswer(
 
   const rawClaims: BrowseClaim[] = knowledge.claims || [];
   const sources: BrowseSource[] = knowledge.sources || [];
-  const claims = decomposeCompoundClaims(rawClaims);
+  const claims = await decomposeCompoundClaims(rawClaims, apiKey);
 
   // Run verification if page texts are available
   if (pageTexts && pageTexts.size > 0) {

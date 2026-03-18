@@ -9,6 +9,8 @@ export type ParsedPage = {
   excerpt: string;
   siteName: string | null;
   byline: string | null;
+  /** ISO date string extracted from meta tags, URL, or content. null if unknown. */
+  publishedDate: string | null;
 };
 
 function isAllowedUrl(url: string): boolean {
@@ -47,6 +49,75 @@ function isAllowedUrl(url: string): boolean {
   }
 }
 
+// ─── Date Extraction ──────────────────────────────────────────────
+
+/** Try to extract a publication date from HTML meta tags. */
+function extractDateFromMeta(document: { querySelector: (s: string) => { getAttribute: (a: string) => string | null } | null }): string | null {
+  // Priority order: most specific → least specific
+  const selectors = [
+    'meta[property="article:published_time"]',
+    'meta[name="date"]',
+    'meta[name="publish-date"]',
+    'meta[name="publication_date"]',
+    'meta[name="DC.date.issued"]',
+    'meta[property="og:article:published_time"]',
+    'meta[name="sailthru.date"]',
+    'time[datetime]',
+    'meta[name="last-modified"]',
+    'meta[property="article:modified_time"]',
+  ];
+
+  for (const sel of selectors) {
+    const el = document.querySelector(sel);
+    if (!el) continue;
+    const value = sel.includes("time[") ? el.getAttribute("datetime") : el.getAttribute("content");
+    if (value) {
+      const parsed = parseLooseDate(value);
+      if (parsed) return parsed;
+    }
+  }
+
+  return null;
+}
+
+/** Try to extract a date from a URL path (e.g. /2024/03/15/article-name). */
+function extractDateFromUrl(url: string): string | null {
+  // Match /YYYY/MM/DD/ or /YYYY/MM/ patterns
+  const match = url.match(/\/(\d{4})\/(0[1-9]|1[0-2])(?:\/(0[1-9]|[12]\d|3[01]))?(?:\/|$)/);
+  if (match) {
+    const year = parseInt(match[1]);
+    if (year >= 1990 && year <= 2030) {
+      const month = match[2];
+      const day = match[3] || "01";
+      return `${year}-${month}-${day}`;
+    }
+  }
+  // Match /YYYY-MM-DD- in slug patterns
+  const slugMatch = url.match(/\/(\d{4})-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])-/);
+  if (slugMatch) {
+    const year = parseInt(slugMatch[1]);
+    if (year >= 1990 && year <= 2030) {
+      return `${year}-${slugMatch[2]}-${slugMatch[3]}`;
+    }
+  }
+  return null;
+}
+
+/** Parse a loose date string into ISO format (YYYY-MM-DD). Returns null if unparseable. */
+function parseLooseDate(dateStr: string): string | null {
+  try {
+    // Try ISO format first
+    const d = new Date(dateStr);
+    if (!isNaN(d.getTime())) {
+      const year = d.getFullYear();
+      if (year >= 1990 && year <= 2030) {
+        return d.toISOString().split("T")[0];
+      }
+    }
+  } catch { /* ignore */ }
+  return null;
+}
+
 export async function fetchAndParse(url: string): Promise<ParsedPage> {
   if (!isAllowedUrl(url)) {
     throw new Error("URL not allowed: only public http/https URLs are supported");
@@ -71,6 +142,10 @@ export async function fetchAndParse(url: string): Promise<ParsedPage> {
 
   const html = await res.text();
   const { document } = parseHTML(html);
+
+  // Extract publication date before Readability strips meta tags
+  const publishedDate = extractDateFromMeta(document) || extractDateFromUrl(url);
+
   // linkedom's Document type is compatible but not identical to Readability's expected Document
   const reader = new Readability(document as unknown as Document);
   const article = reader.parse();
@@ -85,5 +160,6 @@ export async function fetchAndParse(url: string): Promise<ParsedPage> {
     excerpt: sanitizeText(article.excerpt || ""),
     siteName: article.siteName ? sanitizeText(article.siteName) : null,
     byline: article.byline ? sanitizeText(article.byline) : null,
+    publishedDate,
   };
 }

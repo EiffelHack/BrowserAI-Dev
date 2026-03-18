@@ -446,7 +446,9 @@ const AlternativeDetail = () => {
             transition={{ delay: 0.25 }}
             className="text-[11px] text-muted-foreground/50 text-center max-w-2xl mx-auto leading-relaxed"
           >
-            Information on this page is based on publicly available documentation as of March 2026. Features and pricing
+            This comparison is based on publicly available documentation as of March 2026 and may contain inaccuracies.
+            We are actively working to verify all claims on this page. Features described as limitations may exist
+            in forms not found in official public documentation at the time of writing. Features and pricing
             may have changed. All trademarks belong to their respective owners. If you represent {competitor.name} and
             believe any information is inaccurate, please contact us at{" "}
             <a href="mailto:shreyassaw@gmail.com" className="underline hover:text-muted-foreground/70">shreyassaw@gmail.com</a>{" "}
