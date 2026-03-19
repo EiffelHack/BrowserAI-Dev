@@ -28,6 +28,7 @@ import {
   ADAPTIVE_PAGE_COUNT,
   MAX_PER_DOMAIN,
 } from "./searchUtils.js";
+import { semanticCacheGet, semanticCacheSet } from "./semanticCache.js";
 
 // ─── Cached Secondary Search Wrappers ──────────────────────────────
 // Brave and Exa results are cached so refreshes/retries don't waste API credits.
@@ -598,11 +599,29 @@ export async function answerQuery(
   // Zero data retention mode skips cache entirely
   const cacheKey = (sessionContext || noRetention) ? null : `answer:${depth}:${hashKey(query)}`;
   if (cacheKey) {
+    // 1. Exact match (fast, no API call)
     const cached = await cache.get(cacheKey);
     if (cached) {
       const result = JSON.parse(cached) as BrowseResult;
       result.trace = [{ step: "Cache Hit", duration_ms: 0, detail: "Served from cache" }, ...result.trace];
       return result;
+    }
+
+    // 2. Semantic match — find similar cached queries via embedding cosine similarity
+    //    Saves API credits when users rephrase the same question
+    try {
+      const semanticHit = await semanticCacheGet(query, depth, cache, env.OPENROUTER_API_KEY);
+      if (semanticHit) {
+        const result = JSON.parse(semanticHit.result) as BrowseResult;
+        result.trace = [{
+          step: "Semantic Cache Hit",
+          duration_ms: 0,
+          detail: `Similar to "${semanticHit.originalQuery.slice(0, 60)}" (${Math.round(semanticHit.similarity * 100)}% match)`,
+        }, ...result.trace];
+        return result;
+      }
+    } catch {
+      // Semantic cache is non-fatal — continue to full pipeline
     }
   }
 
@@ -610,7 +629,10 @@ export async function answerQuery(
   if (depth === "deep") {
     const { answerQueryDeep } = await import("./deep.js");
     const result = await answerQueryDeep(query, env, cache, sessionContext, options);
-    if (cacheKey && !noRetention) await cache.set(cacheKey, JSON.stringify(result), getCacheTTL(query));
+    if (cacheKey && !noRetention) {
+      await cache.set(cacheKey, JSON.stringify(result), getCacheTTL(query));
+      semanticCacheSet(query, depth, cacheKey, env.OPENROUTER_API_KEY).catch(() => {});
+    }
     return result;
   }
 
@@ -777,7 +799,10 @@ export async function answerQuery(
     // Apply counter-query penalties to final contradictions count
     const totalContradictions = (bestKnowledge.contradictions?.length || 0) + extraContradictions;
     const result = { ...bestKnowledge, trace };
-    if (cacheKey && !noRetention) await cache.set(cacheKey, JSON.stringify(result), getCacheTTL(query));
+    if (cacheKey && !noRetention) {
+      await cache.set(cacheKey, JSON.stringify(result), getCacheTTL(query));
+      semanticCacheSet(query, depth, cacheKey, env.OPENROUTER_API_KEY).catch(() => {});
+    }
 
     // Record learning signals (fire-and-forget)
     try {
@@ -801,7 +826,10 @@ export async function answerQuery(
   // Fast mode: apply enhanced claims if premium
   const finalClaims = isPremium ? enhancedClaims : knowledge.claims;
   const result = { ...knowledge, claims: finalClaims, trace };
-  if (cacheKey && !noRetention) await cache.set(cacheKey, JSON.stringify(result), getCacheTTL(query));
+  if (cacheKey && !noRetention) {
+    await cache.set(cacheKey, JSON.stringify(result), getCacheTTL(query));
+    semanticCacheSet(query, depth, cacheKey, env.OPENROUTER_API_KEY).catch(() => {});
+  }
 
   // Record learning signals (fire-and-forget)
   try {
