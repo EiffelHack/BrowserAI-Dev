@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, useRef } from "react";
+import { useEffect, useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowLeft, Share2, GitCompare, Check, Zap, Brain } from "lucide-react";
@@ -50,7 +50,7 @@ const Results = () => {
   // Track whether we're in the "streaming tokens" phase
   const isStreamingTokens = loading && streamingText.length > 0;
 
-  const handleStreamEvent = useCallback((event: StreamEvent) => {
+  const handleStreamEvent = (event: StreamEvent) => {
     switch (event.type) {
       case "trace":
         setTraceSteps((prev) => [...prev, event.data]);
@@ -73,7 +73,7 @@ const Results = () => {
         setStreamDone(true);
         break;
     }
-  }, []);
+  };
 
   useEffect(() => {
     if (!query) return;
@@ -94,7 +94,8 @@ const Results = () => {
       })
       .catch((e) => setError(e.message))
       .finally(() => setLoading(false));
-  }, [query, depth, handleStreamEvent]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [query, depth]);
 
   const handleShare = () => {
     if (!result?.shareId) return;
