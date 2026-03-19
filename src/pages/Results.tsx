@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, useRef } from "react";
+import { useEffect, useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowLeft, Share2, GitCompare, Check, Zap, Brain } from "lucide-react";
@@ -18,18 +18,21 @@ import { BrowseBadge } from "@/components/BrowseBadge";
 import { LoginModal } from "@/components/LoginModal";
 import { UserMenu } from "@/components/UserMenu";
 import { useAuth } from "@/contexts/AuthContext";
-import { DepthToggle, formatResetTime } from "@/components/DepthToggle";
+import { DepthToggle, isDepthBlocked, formatResetTime } from "@/components/DepthToggle";
 
 const Results = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
   const query = searchParams.get("q") || "";
-  const depth = (searchParams.get("depth") as "fast" | "thorough" | "deep") || "fast";
+  const rawDepth = (searchParams.get("depth") as "fast" | "thorough" | "deep") || "fast";
   const [result, setResult] = useState<BrowseResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
   const { user, loading: authLoading } = useAuth();
+
+  // Auto-downgrade deep → thorough when user can't access deep mode
+  const depth = isDepthBlocked(rawDepth, !!user, null) ? "thorough" : rawDepth;
 
   // Streaming state
   const [traceSteps, setTraceSteps] = useState<TraceEvent[]>([]);
@@ -47,7 +50,7 @@ const Results = () => {
   // Track whether we're in the "streaming tokens" phase
   const isStreamingTokens = loading && streamingText.length > 0;
 
-  const handleStreamEvent = useCallback((event: StreamEvent) => {
+  const handleStreamEvent = (event: StreamEvent) => {
     switch (event.type) {
       case "trace":
         setTraceSteps((prev) => [...prev, event.data]);
@@ -70,7 +73,7 @@ const Results = () => {
         setStreamDone(true);
         break;
     }
-  }, []);
+  };
 
   useEffect(() => {
     if (!query) return;
@@ -91,7 +94,8 @@ const Results = () => {
       })
       .catch((e) => setError(e.message))
       .finally(() => setLoading(false));
-  }, [query, depth, handleStreamEvent]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [query, depth]);
 
   const handleShare = () => {
     if (!result?.shareId) return;
@@ -102,7 +106,8 @@ const Results = () => {
   };
 
   const handleFollowUp = (q: string) => {
-    const depthParam = followUpDepth !== "fast" ? followUpDepth : undefined;
+    const effectiveFollowUpDepth = isDepthBlocked(followUpDepth, !!user, quota) ? "thorough" : followUpDepth;
+    const depthParam = effectiveFollowUpDepth !== "fast" ? effectiveFollowUpDepth : undefined;
     setSearchParams({ q, ...(depthParam && { depth: depthParam }) });
     setFollowUpInput("");
     window.scrollTo({ top: 0, behavior: "smooth" });
