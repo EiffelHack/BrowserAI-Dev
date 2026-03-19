@@ -691,7 +691,7 @@ export async function answerQuery(
   if (depth === "thorough" && knowledge.confidence < THOROUGH_CONFIDENCE_THRESHOLD) {
     const MAX_ITERATIONS = 3;
     let bestKnowledge = { ...knowledge, claims: enhancedClaims };
-    let currentPageTexts = pageTexts;
+    const currentPageTexts = pageTexts;
     const previousQueries = new Set<string>([query]);
 
     for (let iteration = 1; iteration <= MAX_ITERATIONS; iteration++) {

@@ -85,12 +85,37 @@ export function DepthToggle({ depth, setDepth, quota, size = "md" }: DepthToggle
     ? "bg-accent/10 border-accent/40 text-accent"
     : "bg-secondary border-border text-muted-foreground hover:text-foreground";
 
+  if (size === "pill") {
+    return (
+      <>
+        <button onClick={handleClick} className={`${baseClass} ${colorClass} flex items-center gap-1`}>
+          {blocked && <Lock className="w-3 h-3" />}
+          {depth === "deep" ? "Deep" : depth === "thorough" ? "Thorough" : "Fast"} Mode
+        </button>
+        <AnimatePresence>
+          {hint && (
+            <motion.div
+              initial={{ opacity: 0, y: -4 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -4 }}
+              className="w-full flex justify-center mt-1"
+            >
+              <span className="px-2.5 py-1 rounded-full bg-purple-500/10 border border-purple-500/20 text-[10px] text-purple-400">
+                <Lock className="w-2.5 h-2.5 inline mr-1" />
+                {hint}
+              </span>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </>
+    );
+  }
+
   return (
     <div className="relative">
       <button onClick={handleClick} className={`${baseClass} ${colorClass} flex items-center gap-1`}>
         {blocked && <Lock className="w-3 h-3" />}
         {depth === "deep" ? "Deep" : depth === "thorough" ? "Thorough" : "Fast"}
-        {size === "pill" && " Mode"}
       </button>
       <AnimatePresence>
         {hint && (
@@ -98,11 +123,7 @@ export function DepthToggle({ depth, setDepth, quota, size = "md" }: DepthToggle
             initial={{ opacity: 0, y: -4 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -4 }}
-            className={
-              size === "pill"
-                ? "absolute top-full mt-2 left-1/2 -translate-x-1/2 z-50 whitespace-nowrap px-2.5 py-1 rounded-full bg-purple-500/10 border border-purple-500/20 text-[10px] text-purple-400"
-                : "absolute top-full mt-1.5 right-0 z-50 whitespace-nowrap px-3 py-1.5 rounded-lg bg-card border border-border shadow-lg text-[11px] text-muted-foreground"
-            }
+            className="absolute top-full mt-1.5 right-0 z-50 whitespace-nowrap px-3 py-1.5 rounded-lg bg-card border border-border shadow-lg text-[11px] text-muted-foreground"
           >
             <Lock className="w-2.5 h-2.5 inline mr-1" />
             {hint}
