@@ -37,6 +37,7 @@ export type ReasoningStepEvent = {
 export type StreamEvent =
   | { type: "trace"; data: TraceEvent }
   | { type: "sources"; data: SourcePreview[] }
+  | { type: "token"; data: { text: string } }
   | { type: "result"; data: BrowseResult }
   | { type: "error"; data: { error: string } }
   | { type: "reasoning_step"; data: ReasoningStepEvent }
@@ -113,6 +114,7 @@ export async function streamAnswer(
           const event: StreamEvent =
             currentEvent === "trace" ? { type: "trace", data } :
             currentEvent === "sources" ? { type: "sources", data } :
+            currentEvent === "token" ? { type: "token", data } :
             currentEvent === "result" ? { type: "result", data } :
             currentEvent === "error" ? { type: "error", data } :
             currentEvent === "reasoning_step" ? { type: "reasoning_step", data } :

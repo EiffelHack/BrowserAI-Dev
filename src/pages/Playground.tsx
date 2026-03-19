@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { SEO } from "@/components/SEO";
 import { motion } from "framer-motion";
@@ -12,9 +12,14 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { DepthToggle, isDepthBlocked, formatResetTime } from "@/components/DepthToggle";
 import {
-  browseKnowledge, browseSearch, browseExtract, browseCompare, browseOpen, browseFeedback,
+  browseSearch, browseExtract, browseCompare, browseOpen, browseFeedback,
   type BrowseSource, type BrowseClaim, type QuotaInfo,
 } from "@/lib/api/browse";
+import { streamAnswer as streamAnswerApi, type TraceEvent, type SourcePreview, type StreamEvent, type PremiumQuota } from "@/lib/api/stream";
+import { StreamingAnswer } from "@/components/results/StreamingAnswer";
+import { StreamingPipeline } from "@/components/results/StreamingPipeline";
+import { FollowUpSuggestions } from "@/components/FollowUpSuggestions";
+import { SearchInput, saveRecentQuery } from "@/components/SearchInput";
 import { LoginModal } from "@/components/LoginModal";
 import { UserMenu } from "@/components/UserMenu";
 import { useAuth } from "@/contexts/AuthContext";
@@ -142,50 +147,6 @@ const PLACEHOLDERS: Record<string, string> = {
   compare: "Compare raw LLM vs evidence-backed…",
 };
 
-// ── Pipeline animation for loading state ─────────────────────────────
-
-const PIPELINE_STEPS = {
-  fast: ["Search Web", "Fetch Pages", "Extract Claims", "Verify Evidence", "Generate Answer"],
-  thorough: ["Search Web", "Fetch Pages", "Extract & Verify", "Rephrase Query", "Second Pass", "Select Best"],
-  deep: ["Initial Search", "Extract Claims", "Gap Analysis", "Follow-up Search", "Merge Knowledge", "Final Verification"],
-};
-
-function PipelineSteps({ depth }: { depth: "fast" | "thorough" | "deep" }) {
-  const steps = PIPELINE_STEPS[depth];
-  const [activeStep, setActiveStep] = useState(0);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setActiveStep((prev) => (prev + 1) % steps.length);
-    }, 2000);
-    return () => clearInterval(interval);
-  }, [steps.length]);
-
-  return (
-    <div className="flex flex-wrap items-center justify-center gap-1.5 max-w-sm">
-      {steps.map((step, i) => (
-        <motion.span
-          key={step}
-          animate={{
-            opacity: i <= activeStep ? 1 : 0.3,
-            scale: i === activeStep ? 1.05 : 1,
-          }}
-          transition={{ duration: 0.3 }}
-          className={`text-[10px] px-2 py-0.5 rounded-full border font-mono ${
-            i < activeStep
-              ? "text-emerald-400 border-emerald-500/30"
-              : i === activeStep
-              ? "text-accent border-accent/40"
-              : "text-muted-foreground border-border"
-          }`}
-        >
-          {i < activeStep ? "✓" : i === activeStep ? "●" : "○"} {step}
-        </motion.span>
-      ))}
-    </div>
-  );
-}
-
 // ── Helpers ──────────────────────────────────────────────────────────
 
 function confidenceBg(c: number): string {
@@ -211,6 +172,43 @@ const Playground = () => {
   const [loginOpen, setLoginOpen] = useState(false);
   const [quota, setQuota] = useState<QuotaInfo | null>(null);
 
+  // Streaming state (answer tab only)
+  const [streamingText, setStreamingText] = useState("");
+  const [traceSteps, setTraceSteps] = useState<TraceEvent[]>([]);
+  const [previewSources, setPreviewSources] = useState<SourcePreview[]>([]);
+  const [streamDone, setStreamDone] = useState(false);
+  const [lastQuery, setLastQuery] = useState("");
+
+  const isStreamingTokens = loading && activeTab === "answer" && streamingText.length > 0;
+
+  const handleStreamEvent = useCallback((event: StreamEvent) => {
+    switch (event.type) {
+      case "trace":
+        setTraceSteps((prev) => [...prev, event.data]);
+        break;
+      case "sources":
+        setPreviewSources(event.data);
+        break;
+      case "token":
+        setStreamingText((prev) => prev + event.data.text);
+        break;
+      case "result":
+        // Will be set via the promise resolution
+        break;
+      case "done":
+        if (event.data?.quota) setQuota(event.data as any);
+        setStreamDone(true);
+        break;
+    }
+  }, []);
+
+  const resetStreamState = () => {
+    setStreamingText("");
+    setTraceSteps([]);
+    setPreviewSources([]);
+    setStreamDone(false);
+  };
+
   const runScenario = (scenario: typeof TUTORIAL_SCENARIOS[number]) => {
     setActiveTab(scenario.tab);
     setDepth(scenario.depth);
@@ -219,7 +217,7 @@ const Playground = () => {
     setResponse(null);
     setShowRawJson(false);
     setFeedbackSent(null);
-    // Pass depth + tab directly to avoid stale closure
+    resetStreamState();
     setTimeout(() => run(scenario.query, scenario.depth, scenario.tab), 50);
   };
 
@@ -232,6 +230,10 @@ const Playground = () => {
     setResponse(null);
     setShowRawJson(false);
     setFeedbackSent(null);
+    resetStreamState();
+    setLastQuery(q);
+    saveRecentQuery(q);
+
     try {
       let result;
       if (currentTab === "search") {
@@ -243,10 +245,8 @@ const Playground = () => {
       } else if (currentTab === "compare") {
         result = await browseCompare(q);
       } else {
-        result = await browseKnowledge(q, currentDepth);
-        if (result.quota) {
-          setQuota(result.quota);
-        }
+        // Use streaming API for answer tab
+        result = await streamAnswerApi(q, currentDepth, handleStreamEvent);
       }
       setResponse(result);
     } catch (e: any) {
@@ -259,6 +259,11 @@ const Playground = () => {
   const handleExample = (example: string) => {
     setInput(example);
     run(example);
+  };
+
+  const handleFollowUp = (q: string) => {
+    setInput(q);
+    run(q);
   };
 
   const copyJson = () => {
@@ -373,7 +378,7 @@ const Playground = () => {
         </div>
 
         {/* Tabs + Input */}
-        <Tabs value={activeTab} onValueChange={(v) => { setActiveTab(v); setResponse(null); setShowRawJson(false); setFeedbackSent(null); }}>
+        <Tabs value={activeTab} onValueChange={(v) => { setActiveTab(v); setResponse(null); setShowRawJson(false); setFeedbackSent(null); resetStreamState(); }}>
           <TabsList className="bg-secondary flex-wrap h-auto gap-1 p-1">
             {TABS.map((tab) => (
               <TabsTrigger key={tab} value={tab} className="font-mono text-xs">
@@ -385,14 +390,24 @@ const Playground = () => {
           {TABS.map((tab) => (
             <TabsContent key={tab} value={tab}>
               <div className="flex gap-2 mt-4">
-                <input
-                  value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && run()}
-                  placeholder={PLACEHOLDERS[tab]}
-                  aria-label="Research query"
-                  className="flex-1 h-12 px-4 rounded-lg bg-secondary border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-accent/50 text-sm font-mono"
-                />
+                {tab === "answer" ? (
+                  <SearchInput
+                    value={input}
+                    onChange={setInput}
+                    onSubmit={(q) => run(q)}
+                    placeholder={PLACEHOLDERS[tab]}
+                    className="flex-1"
+                  />
+                ) : (
+                  <input
+                    value={input}
+                    onChange={(e) => setInput(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && run()}
+                    placeholder={PLACEHOLDERS[tab]}
+                    aria-label="Research query"
+                    className="flex-1 h-12 px-4 rounded-lg bg-secondary border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-accent/50 text-sm font-mono"
+                  />
+                )}
                 {tab === "answer" && (
                   <DepthToggle depth={depth} setDepth={setDepth} quota={quota} />
                 )}
@@ -401,8 +416,8 @@ const Playground = () => {
                 </Button>
               </div>
 
-              {/* Example pills */}
-              {EXAMPLES[tab]?.length > 0 && (
+              {/* Example pills for non-answer tabs (answer tab has autocomplete) */}
+              {tab !== "answer" && !response && !loading && EXAMPLES[tab]?.length > 0 && (
                 <div className="flex flex-wrap gap-2 mt-3">
                   <span className="text-xs text-muted-foreground py-1">Try:</span>
                   {EXAMPLES[tab].map((ex) => (
@@ -420,28 +435,45 @@ const Playground = () => {
           ))}
         </Tabs>
 
-        {/* Loading indicator with pipeline animation */}
-        {loading && (
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="flex flex-col items-center justify-center gap-4 py-12"
-          >
-            <div className="relative">
-              <Loader2 className="w-8 h-8 text-accent animate-spin" />
-              <div className="absolute inset-0 w-8 h-8 rounded-full bg-accent/10 animate-ping" />
+        {/* ── Streaming answer (tokens flowing in) ── */}
+        {activeTab === "answer" && loading && (
+          <div className="grid grid-cols-1 lg:grid-cols-[1fr_240px] gap-6">
+            <div>
+              {streamingText ? (
+                <StreamingAnswer text={streamingText} streaming={true} />
+              ) : (
+                <div className="flex flex-col items-center justify-center py-8">
+                  <div className="relative">
+                    <Loader2 className="w-8 h-8 text-accent animate-spin" />
+                    <div className="absolute inset-0 w-8 h-8 rounded-full bg-accent/10 animate-ping" />
+                  </div>
+                  <motion.span
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="text-sm font-medium text-accent mt-3"
+                  >
+                    {depth === "deep" ? "Deep reasoning" : depth === "thorough" ? "Thorough analysis" : "Researching"}…
+                  </motion.span>
+                </div>
+              )}
             </div>
-            <div className="flex flex-col items-center gap-1.5">
-              <motion.span
-                key={depth}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="text-sm font-medium text-accent"
-              >
-                {depth === "deep" ? "Deep reasoning" : depth === "thorough" ? "Thorough analysis" : "Researching"}…
-              </motion.span>
-              <PipelineSteps depth={depth} />
+            {/* Sidebar pipeline progress */}
+            <div className="hidden lg:block">
+              <StreamingPipeline
+                steps={traceSteps}
+                sources={previewSources}
+                done={false}
+                depth={depth}
+              />
             </div>
+          </div>
+        )}
+
+        {/* Non-answer loading (other tabs) */}
+        {activeTab !== "answer" && loading && (
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="flex items-center justify-center gap-3 py-12">
+            <Loader2 className="w-6 h-6 text-accent animate-spin" />
+            <span className="text-sm text-muted-foreground">Loading…</span>
           </motion.div>
         )}
 
@@ -459,24 +491,6 @@ const Playground = () => {
                   Sign in — get a free BAI key
                 </Button>
                 <span className="text-xs text-muted-foreground">Unlimited queries + premium verification</span>
-              </div>
-            )}
-            {(response.error.includes("expired") || response.error.includes("trial ended") || response.error.includes("credits")) && (
-              <div className="flex items-center gap-2">
-                <a href="https://app.tavily.com" target="_blank" rel="noopener noreferrer">
-                  <Button size="sm" variant="outline" className="text-xs border-yellow-500/30 text-yellow-400 hover:bg-yellow-500/10">
-                    Upgrade Tavily plan
-                  </Button>
-                </a>
-                <span className="text-xs text-muted-foreground">Your Tavily key needs a plan upgrade or credit top-up</span>
-              </div>
-            )}
-            {(response.error.includes("Invalid") && response.error.includes("key")) && (
-              <div className="flex items-center gap-2">
-                <Button size="sm" variant="outline" className="text-xs border-orange-500/30 text-orange-400 hover:bg-orange-500/10" onClick={() => navigate("/dashboard")}>
-                  Check keys in Settings
-                </Button>
-                <span className="text-xs text-muted-foreground">Your API key may be incorrect or revoked</span>
               </div>
             )}
           </motion.div>
@@ -506,12 +520,6 @@ const Playground = () => {
                   {quota.premiumActive ? "Premium" : "Standard"} · {quota.used}/{quota.limit}
                 </Badge>
               )}
-              {depth === "deep" && response.effectiveDepth && response.effectiveDepth !== "deep" && (
-                <Badge variant="outline" className="text-[10px] px-2 py-0.5 text-amber-400 border-amber-500/30">
-                  Ran as thorough — deep mode {user ? `quota exhausted, resets in ${formatResetTime(quota?.resetsInSeconds)}` : "requires sign in"}
-                </Badge>
-              )}
-              {/* Feedback buttons */}
               {hasShareId && (
                 <div className="flex items-center gap-1 ml-auto">
                   {feedbackSent ? (
@@ -561,28 +569,6 @@ const Playground = () => {
                         )}
                       </div>
                     </div>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {/* Reasoning Steps (deep mode) */}
-            {response.reasoningSteps?.length > 0 && (
-              <div className="space-y-2">
-                <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1">
-                  <Brain className="w-3.5 h-3.5 text-purple-400" />
-                  Deep Reasoning ({response.reasoningSteps.length} steps)
-                </h3>
-                {response.reasoningSteps.map((rs: any, i: number) => (
-                  <div key={i} className="p-3 rounded-lg bg-purple-400/5 border border-purple-400/20 text-sm space-y-1">
-                    <div className="flex items-center gap-2">
-                      <Badge variant="outline" className="text-[10px] px-1.5 border-purple-400/30 text-purple-400">Step {rs.step}</Badge>
-                      <span className="text-xs text-muted-foreground">{rs.claimCount} claims · {Math.round(rs.confidence * 100)}% confidence</span>
-                    </div>
-                    <p className="text-xs font-mono text-muted-foreground">"{rs.query}"</p>
-                    {rs.gapAnalysis && rs.gapAnalysis !== "Initial research pass" && (
-                      <p className="text-xs text-muted-foreground/70">Gap: {rs.gapAnalysis}</p>
-                    )}
                   </div>
                 ))}
               </div>
@@ -643,6 +629,15 @@ const Playground = () => {
               </div>
             )}
 
+            {/* Follow-up suggestions */}
+            <FollowUpSuggestions
+              query={lastQuery || input}
+              answer={response.answer}
+              claims={response.claims}
+              contradictions={response.contradictions}
+              onSelect={handleFollowUp}
+            />
+
             {/* Pipeline trace */}
             {response.trace?.length > 0 && (
               <div className="flex flex-wrap gap-2">
@@ -659,9 +654,7 @@ const Playground = () => {
         {/* ── Open result (page content) ── */}
         {isOpenResult && (
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-3">
-            {response.title && (
-              <h3 className="text-sm font-semibold">{response.title}</h3>
-            )}
+            {response.title && <h3 className="text-sm font-semibold">{response.title}</h3>}
             {response.url && (
               <div className="flex items-center gap-2 text-xs text-muted-foreground">
                 <Globe className="w-3 h-3" />
@@ -683,7 +676,6 @@ const Playground = () => {
         {isCompareResult && (
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* Raw LLM */}
               <div className="p-4 rounded-xl bg-card border border-border space-y-3">
                 <div className="flex items-center gap-2">
                   <Badge variant="outline" className="text-xs">Raw LLM</Badge>
@@ -694,8 +686,6 @@ const Playground = () => {
                 <p className="text-sm leading-relaxed line-clamp-[12]">{response.raw_llm.answer}</p>
                 <p className="text-xs text-muted-foreground">No confidence score — LLM cannot self-assess accuracy</p>
               </div>
-
-              {/* Evidence-backed */}
               <div className="p-4 rounded-xl bg-card border border-accent/30 space-y-3">
                 <div className="flex items-center gap-2">
                   <Badge className={`${confidenceBg(response.evidence_backed.confidence)} text-xs`}>

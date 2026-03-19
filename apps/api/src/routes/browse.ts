@@ -548,6 +548,51 @@ export function registerBrowseRoutes(
     return { success: true, result: providers };
   });
 
+  // Suggest: autocomplete suggestions via Google Suggest proxy
+  app.get("/browse/suggest", async (request, reply) => {
+    const { q } = request.query as { q?: string };
+    if (!q || typeof q !== "string" || q.trim().length < 2) {
+      return { success: true, result: [] };
+    }
+
+    // Cap query length to prevent abuse
+    const query = q.trim().slice(0, 200);
+
+    // Rate limit: 60 suggest requests per minute per IP
+    const ip = request.ip;
+    const rateLimitKey = `suggest_rl:${ip}`;
+    const reqCount = await cache.incr(rateLimitKey, 60);
+    if (reqCount > 60) {
+      return reply.status(429).send({ success: true, result: [] });
+    }
+
+    // Check cache first (1 hour TTL for suggestions)
+    const cacheKey = `suggest:${query.toLowerCase().slice(0, 80)}`;
+    const cached = await cache.get(cacheKey);
+    if (cached) {
+      try {
+        return { success: true, result: JSON.parse(cached) };
+      } catch {
+        // Corrupted cache entry, fall through to fetch
+      }
+    }
+
+    try {
+      const url = `https://suggestqueries.google.com/complete/search?client=firefox&q=${encodeURIComponent(query)}`;
+      const res = await fetch(url, {
+        headers: { "User-Agent": "Mozilla/5.0" },
+        signal: AbortSignal.timeout(2000),
+      });
+      if (!res.ok) return { success: true, result: [] };
+      const data = await res.json() as [string, string[]];
+      const suggestions = (data[1] || []).slice(0, 8);
+      await cache.set(cacheKey, JSON.stringify(suggestions), 3600);
+      return { success: true, result: suggestions };
+    } catch {
+      return { success: true, result: [] };
+    }
+  });
+
   // Share: get a stored result
   app.get("/browse/share/:id", async (request, reply) => {
     const { id } = request.params as { id: string };

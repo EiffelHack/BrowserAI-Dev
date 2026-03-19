@@ -1,10 +1,11 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { SEO } from "@/components/SEO";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   Search, ArrowRight, GitCompare, Terminal, Globe, Quote,
   Shield, ShieldAlert, CheckCircle2, Copy, Check, ArrowDown, Target, Rocket, Github, Sparkles, Mail, Menu, Star, MessageCircle, LogIn, ExternalLink, Brain, Key,
+  Clock,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -16,12 +17,7 @@ import { UserMenu } from "@/components/UserMenu";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTypewriter } from "@/hooks/useTypewriter";
 import { DepthToggle, isDepthBlocked } from "@/components/DepthToggle";
-
-const EXAMPLE_PROMPTS = [
-  "How do mRNA vaccines work?",
-  "Solar vs wind energy comparison",
-  "Latest JWST discoveries",
-];
+import { saveRecentQuery } from "@/components/SearchInput";
 
 const TYPEWRITER_QUERIES = [
   "How does quantum computing work?",
@@ -56,6 +52,49 @@ const PIPELINE_STEPS = [
   { label: "Answer", detail: "Streamed" },
 ];
 
+// ── Autocomplete suggestions for landing page ──────────────────────
+
+const API_BASE = import.meta.env.VITE_API_URL || "/api";
+const RECENT_KEY = "browseai_recent_queries";
+function getRecentQueries(): string[] {
+  try { return JSON.parse(localStorage.getItem(RECENT_KEY) || "[]"); } catch { return []; }
+}
+
+const suggestCache = new Map<string, string[]>();
+async function fetchSuggestionsLanding(q: string): Promise<string[]> {
+  const key = q.trim().toLowerCase();
+  if (suggestCache.has(key)) return suggestCache.get(key)!;
+  try {
+    const res = await fetch(`${API_BASE}/browse/suggest?q=${encodeURIComponent(q.trim())}`, { signal: AbortSignal.timeout(2000) });
+    if (!res.ok) return [];
+    const data = await res.json();
+    const results = (data.result || []) as string[];
+    suggestCache.set(key, results);
+    if (suggestCache.size > 200) { const first = suggestCache.keys().next().value; if (first) suggestCache.delete(first); }
+    return results;
+  } catch { return []; }
+}
+
+type SuggestionItem = { text: string; type: "recent" | "suggest" };
+
+function buildLandingSuggestions(input: string, apiResults: string[]): SuggestionItem[] {
+  const q = input.trim().toLowerCase();
+  const suggestions: SuggestionItem[] = [];
+  const seen = new Set<string>();
+  const add = (text: string, type: SuggestionItem["type"]) => {
+    const key = text.toLowerCase();
+    if (!seen.has(key) && key !== q) { seen.add(key); suggestions.push({ text, type }); }
+  };
+  const recent = getRecentQueries();
+  if (!q) {
+    for (const r of recent.slice(0, 5)) add(r, "recent");
+  } else {
+    for (const r of recent) { if (r.toLowerCase().includes(q)) add(r, "recent"); }
+    for (const s of apiResults) add(s, "suggest");
+  }
+  return suggestions.slice(0, 8);
+}
+
 const Index = () => {
   const [query, setQuery] = useState("");
   const [copied, setCopied] = useState<string | null>(null);
@@ -70,6 +109,29 @@ const Index = () => {
   const [showAllTools, setShowAllTools] = useState(false);
   const [showAllEndpoints, setShowAllEndpoints] = useState(false);
   const [showAllRoadmap, setShowAllRoadmap] = useState(false);
+  const [searchFocused, setSearchFocused] = useState(false);
+  const [selectedSuggestion, setSelectedSuggestion] = useState(-1);
+  const [apiSuggestions, setApiSuggestions] = useState<string[]>([]);
+  // Dropdown close handled by onBlur + setTimeout
+  const suggestDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Debounced fetch from suggest API
+  useEffect(() => {
+    const q = query.trim();
+    if (q.length < 2) { setApiSuggestions([]); return; }
+    if (suggestDebounceRef.current) clearTimeout(suggestDebounceRef.current);
+    suggestDebounceRef.current = setTimeout(() => {
+      fetchSuggestionsLanding(q).then(setApiSuggestions);
+    }, 150);
+    return () => { if (suggestDebounceRef.current) clearTimeout(suggestDebounceRef.current); };
+  }, [query]);
+
+  const searchSuggestions = buildLandingSuggestions(query, apiSuggestions);
+  const showSuggestions = searchFocused && searchSuggestions.length > 0;
+
+  useEffect(() => {
+    setSelectedSuggestion(-1);
+  }, [query, searchFocused]);
 
   const handleProWaitlist = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
@@ -84,6 +146,7 @@ const Index = () => {
   const handleSearch = (q?: string) => {
     const searchQuery = q || query;
     if (!searchQuery.trim()) return;
+    saveRecentQuery(searchQuery.trim());
     const depthParam = depth !== "fast" ? `&depth=${depth}` : "";
     navigate(`/results?q=${encodeURIComponent(searchQuery.trim())}${depthParam}`);
   };
@@ -260,11 +323,11 @@ const Index = () => {
             </p>
           </div>
 
-          {/* Search */}
+          {/* Search with autocomplete */}
           <div className="relative max-w-2xl mx-auto">
             <div className="relative group">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground group-focus-within:text-accent transition-colors z-10" />
-              {!query && (
+              {!query && !searchFocused && (
                 <div className="absolute left-12 right-16 sm:right-36 top-1/2 -translate-y-1/2 text-left text-muted-foreground text-sm sm:text-base pointer-events-none select-none truncate">
                   {typedText}<span className="animate-pulse">|</span>
                 </div>
@@ -273,19 +336,67 @@ const Index = () => {
                 type="text"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && !isDepthBlocked(depth, !!user, null) && handleSearch()}
+                onFocus={() => setSearchFocused(true)}
+                onBlur={() => setTimeout(() => setSearchFocused(false), 200)}
+                onKeyDown={(e) => {
+                  if (showSuggestions) {
+                    if (e.key === "ArrowDown") { e.preventDefault(); setSelectedSuggestion((prev) => Math.min(prev + 1, searchSuggestions.length - 1)); }
+                    else if (e.key === "ArrowUp") { e.preventDefault(); setSelectedSuggestion((prev) => Math.max(prev - 1, -1)); }
+                    else if (e.key === "Enter") {
+                      e.preventDefault();
+                      if (selectedSuggestion >= 0) { const s = searchSuggestions[selectedSuggestion].text; setQuery(s); handleSearch(s); }
+                      else if (!isDepthBlocked(depth, !!user, null)) { handleSearch(); }
+                      setSearchFocused(false);
+                    }
+                    else if (e.key === "Escape") { setSearchFocused(false); }
+                  } else if (e.key === "Enter" && !isDepthBlocked(depth, !!user, null)) {
+                    handleSearch();
+                  }
+                }}
+                placeholder={searchFocused ? "Ask a research question…" : ""}
                 aria-label="Search query"
-                className="w-full h-14 pl-12 pr-16 sm:pr-36 rounded-xl bg-secondary border border-border text-foreground focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent/50 transition-all text-base"
+                aria-autocomplete="list"
+                aria-expanded={showSuggestions}
+                className={`w-full h-14 pl-12 pr-16 sm:pr-36 bg-secondary border border-border text-foreground focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent/50 transition-all text-base ${showSuggestions ? "rounded-t-xl rounded-b-none border-b-transparent" : "rounded-xl"}`}
               />
               <Button
                 onClick={() => handleSearch()}
                 disabled={!query.trim() || isDepthBlocked(depth, !!user, null)}
-                className="absolute right-2 top-1/2 -translate-y-1/2 bg-accent text-accent-foreground hover:bg-accent/90 rounded-lg px-3 sm:px-4 h-10 text-sm font-semibold gap-2"
+                className="absolute right-2 top-1/2 -translate-y-1/2 bg-accent text-accent-foreground hover:bg-accent/90 rounded-lg px-3 sm:px-4 h-10 text-sm font-semibold gap-2 z-10"
               >
                 <span className="hidden sm:inline">Search</span>
                 <ArrowRight className="w-4 h-4" />
               </Button>
             </div>
+            {/* Autocomplete dropdown */}
+            <AnimatePresence>
+              {showSuggestions && (
+                <motion.div
+                  initial={{ opacity: 0, y: -4 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -4 }}
+                  transition={{ duration: 0.15 }}
+                  className="absolute z-50 w-full bg-secondary border border-border border-t-0 rounded-b-xl shadow-lg overflow-hidden"
+                >
+                  {searchSuggestions.map((item, i) => (
+                    <button
+                      key={`${item.type}-${i}-${item.text}`}
+                      onMouseDown={() => { setQuery(item.text); handleSearch(item.text); setSearchFocused(false); }}
+                      onMouseEnter={() => setSelectedSuggestion(i)}
+                      className={`flex items-center gap-3 w-full px-5 py-3 text-left text-sm transition-colors ${i === selectedSuggestion ? "bg-accent/10 text-accent" : "text-foreground hover:bg-muted/50"}`}
+                    >
+                      {item.type === "recent" ? (
+                        <Clock className="w-4 h-4 text-muted-foreground shrink-0" />
+                      ) : (
+                        <Search className="w-4 h-4 text-muted-foreground shrink-0" />
+                      )}
+                      <span className="flex-1 truncate">{item.text}</span>
+                      <ArrowRight className="w-3.5 h-3.5 text-muted-foreground/30 shrink-0" />
+                    </button>
+                  ))}
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
 
           <div className="flex flex-wrap justify-center gap-2">
@@ -300,15 +411,6 @@ const Index = () => {
                 Research Sessions
               </Button>
             )}
-            {EXAMPLE_PROMPTS.map((prompt) => (
-              <button
-                key={prompt}
-                onClick={() => { if (!isDepthBlocked(depth, !!user, null)) { setQuery(prompt); handleSearch(prompt); } }}
-                className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-full border border-border text-xs sm:text-sm text-muted-foreground hover:text-foreground hover:border-accent/40 transition-all whitespace-nowrap ${isDepthBlocked(depth, !!user, null) ? "opacity-50 cursor-not-allowed" : ""}`}
-              >
-                {prompt}
-              </button>
-            ))}
           </div>
         </motion.div>
 
@@ -414,7 +516,9 @@ const Index = () => {
                 { phase: "Shipped", text: "Multi-pass consistency — thorough mode cross-checks claims across extraction passes, penalizing inconsistencies (SelfCheckGPT-inspired)" },
                 { phase: "Shipped", text: "Auto-calibrated confidence — predicted confidence auto-adjusts from user feedback data using isotonic calibration curves" },
                 { phase: "Shipped", text: "Multi-provider search — parallel search across multiple providers for broader source diversity and stronger consensus" },
-                { phase: "Shipped", text: "Thorough mode — auto-retries with rephrased queries when confidence is low, merges sources from both passes" },
+                { phase: "Shipped", text: "Thorough mode — iterative confidence-gated loop (up to 3 passes) with per-claim evidence retrieval and counter-query adversarial verification" },
+                { phase: "Shipped", text: "Per-claim evidence retrieval — weak claims get targeted search queries, each verified individually across all providers (SAFE-inspired)" },
+                { phase: "Shipped", text: "Counter-query verification — verified claims stress-tested with adversarial searches to find contradicting evidence (SANCTUARY-inspired)" },
                 { phase: "Shipped", text: "Self-learning pipeline — adaptive thresholds, consensus tuning, confidence weight optimization, and user feedback loop" },
                 { phase: "Shipped", text: "Token streaming — real-time SSE streaming with per-token answer delivery, automatic retry with exponential backoff on all external APIs" },
                 { phase: "Shipped", text: "Neural cross-encoder re-ranker — semantic query-document scoring via cross-encoder for more relevant source selection before page fetching" },
