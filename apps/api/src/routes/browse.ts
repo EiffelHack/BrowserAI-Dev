@@ -6,6 +6,7 @@ import {
   AnswerRequestSchema,
   FeedbackRequestSchema,
   CompareRequestSchema,
+  HardenRequestSchema,
   DISCLAIMER,
 } from "@browse/shared";
 import { search } from "../services/search.js";
@@ -15,6 +16,7 @@ import { answerQuery } from "../services/answer.js";
 import type { AnswerOptions } from "../services/answer.js";
 import { answerQueryStreaming } from "../services/stream.js";
 import { compareAnswers, getAvailableProviders } from "../services/compare.js";
+import { hardenPrompt } from "../services/harden.js";
 import { getUserIdFromRequest } from "../lib/auth.js";
 import { updateDomainScore, getDynamicStats } from "../lib/verify.js";
 import { recordFeedback, applyFeedbackToType } from "../lib/learning.js";
@@ -673,6 +675,37 @@ export function registerBrowseRoutes(
     } catch (e: unknown) {
       const err = e as { message?: string };
       return reply.status(500).send({ success: false, error: err.message || "Failed to fetch analytics summary" });
+    }
+  });
+
+  // Anti-hallucination prompt hardening
+  app.post("/browse/harden", async (request, reply) => {
+    const parsed = HardenRequestSchema.safeParse(request.body);
+    if (!parsed.success)
+      return reply
+        .status(400)
+        .send({ success: false, error: zodMessage(parsed.error) });
+
+    try {
+      const { env: reqEnv, isOwnKeys, hasBaiKey } = await getRequestEnv(request, env, apiKeyService, cache);
+      if (!hasBaiKey && !isOwnKeys) {
+        return reply.status(403).send({ success: false, error: "Prompt hardening requires a BrowseAI Dev API key or your own API keys. Get a free key at browseai.dev/dashboard" });
+      }
+      const limitError = await checkDemoLimit(request, cache, isOwnKeys);
+      if (limitError) return reply.status(429).send({ success: false, error: limitError });
+      const result = await hardenPrompt(parsed.data.prompt, {
+        context: parsed.data.context,
+        intent: parsed.data.intent,
+        verify: parsed.data.verify,
+        env: reqEnv,
+        cache,
+        hasBaiKey,
+      });
+      return { success: true, result, disclaimer: DISCLAIMER };
+    } catch (e: unknown) {
+      request.log.error(e);
+      const { status, error } = errorResponse(e, "Prompt hardening failed");
+      return reply.status(status).send({ success: false, error });
     }
   });
 

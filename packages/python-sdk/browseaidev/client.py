@@ -19,6 +19,7 @@ from .exceptions import (
 from .models import (
     BrowseResult,
     CompareResult,
+    HardenResult,
     KnowledgeEntry,
     PageResult,
     PremiumQuota,
@@ -205,6 +206,36 @@ class BrowseAIDev:
         """Compare raw LLM answer vs evidence-backed answer."""
         data = self._post("/browse/compare", {"query": query})
         return CompareResult(**data)
+
+    def harden(
+        self,
+        prompt: str,
+        *,
+        context: str | None = None,
+        intent: str | None = None,
+        verify: bool = False,
+    ) -> HardenResult:
+        """Harden a prompt to reduce LLM hallucinations.
+
+        Analyzes intent, detects hallucination risks, and returns a rewritten
+        system prompt + user prompt with anti-hallucination techniques applied.
+
+        Args:
+            prompt: The raw prompt to harden.
+            context: Optional context documents to ground against.
+            intent: Override auto-detected intent (factual_question, document_qa,
+                    content_generation, agent_pipeline, code_generation, general).
+            verify: Also run evidence verification via browse_answer.
+        """
+        body: dict[str, Any] = {"prompt": prompt}
+        if context is not None:
+            body["context"] = context
+        if intent is not None:
+            body["intent"] = intent
+        if verify:
+            body["verify"] = True
+        data = self._post("/browse/harden", body)
+        return HardenResult(**data)
 
     def get_shared(self, share_id: str) -> dict[str, Any]:
         """Retrieve a shared result by ID."""
@@ -434,6 +465,25 @@ class AsyncBrowseAIDev:
     async def compare(self, query: str) -> CompareResult:
         data = await self._post("/browse/compare", {"query": query})
         return CompareResult(**data)
+
+    async def harden(
+        self,
+        prompt: str,
+        *,
+        context: str | None = None,
+        intent: str | None = None,
+        verify: bool = False,
+    ) -> HardenResult:
+        """Harden a prompt to reduce LLM hallucinations. See sync client for full docs."""
+        body: dict[str, Any] = {"prompt": prompt}
+        if context is not None:
+            body["context"] = context
+        if intent is not None:
+            body["intent"] = intent
+        if verify:
+            body["verify"] = True
+        data = await self._post("/browse/harden", body)
+        return HardenResult(**data)
 
     async def get_shared(self, share_id: str) -> dict[str, Any]:
         return await self._get(f"/browse/share/{share_id}")

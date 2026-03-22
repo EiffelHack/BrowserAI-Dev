@@ -328,6 +328,7 @@ API responses include quota info when using a BAI key:
 | `POST /browse/answer` | Full pipeline: search + extract + cite. `depth`: `"fast"`, `"thorough"`, or `"deep"` |
 | `POST /browse/answer/stream` | Streaming answer via SSE — real-time token streaming + progress events |
 | `POST /browse/compare` | Compare raw LLM vs evidence-backed answer |
+| `POST /browse/harden` | Anti-hallucination prompt hardening — detects intent, rewrites prompts with grounding techniques |
 | `GET /browse/share/:id` | Get a shared result |
 | `GET /browse/stats` | Total queries answered |
 | `GET /browse/sources/top` | Top cited source domains |

@@ -137,6 +137,44 @@ export type RecallRequest = {
   limit?: number;
 };
 
+// ── Harden (Anti-Hallucination) ──
+
+export type HardenIntent = "factual_question" | "document_qa" | "content_generation" | "agent_pipeline" | "code_generation" | "general";
+
+export type HardenTechnique =
+  | "uncertainty_permission"
+  | "direct_quote_grounding"
+  | "citation_then_verify"
+  | "chain_of_verification"
+  | "step_back_abstraction"
+  | "source_attribution"
+  | "external_knowledge_restriction";
+
+export type HardenRequest = {
+  prompt: string;
+  /** Optional context documents to ground the prompt against */
+  context?: string;
+  /** Force a specific intent instead of auto-detecting */
+  intent?: HardenIntent;
+  /** Whether to also verify the output via browse_answer after generation */
+  verify?: boolean;
+};
+
+export type HardenResult = {
+  /** The original prompt */
+  original: string;
+  /** Auto-detected or user-specified intent */
+  intent: HardenIntent;
+  /** Hardened system prompt with anti-hallucination techniques baked in */
+  systemPrompt: string;
+  /** Hardened user prompt (rewritten for factual grounding) */
+  userPrompt: string;
+  /** Which techniques were applied */
+  techniques: HardenTechnique[];
+  /** Optional: verification result if verify=true was set */
+  verification?: BrowseResult;
+};
+
 // ── Feedback ──
 
 export type FeedbackRequest = {
