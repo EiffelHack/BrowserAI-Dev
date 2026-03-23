@@ -224,7 +224,7 @@ const Recipes = () => {
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ delay: i * 0.08 }}
+                transition={{ delay: Math.min(i * 0.04, 0.3) }}
                 className="p-6 rounded-xl bg-card border border-border hover:border-accent/30 transition-colors flex flex-col"
               >
                 <div className="flex items-center gap-3 mb-3">

@@ -462,7 +462,7 @@ const Index = () => {
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 0.8 }}
+          transition={{ delay: 0.4 }}
           className="absolute bottom-8"
         >
           <ArrowDown className="w-5 h-5 text-muted-foreground/40 animate-bounce" />
@@ -686,7 +686,7 @@ const Index = () => {
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ delay: i * 0.1 }}
+                transition={{ delay: Math.min(i * 0.05, 0.3) }}
                 className="flex items-center gap-4"
               >
                 <div className="flex flex-col items-center text-center">
@@ -932,7 +932,7 @@ curl -X POST https://browseai.dev/api/browse/answer \\
                 initial={{ opacity: 0, x: -10 }}
                 whileInView={{ opacity: 1, x: 0 }}
                 viewport={{ once: true }}
-                transition={{ delay: i * 0.05 }}
+                transition={{ delay: Math.min(i * 0.03, 0.2) }}
                 className="flex items-center gap-4 p-4 rounded-xl bg-card border border-border hover:border-accent/30 transition-colors"
               >
                 <code className="text-sm font-mono text-accent font-semibold whitespace-nowrap">{tool.name}</code>
