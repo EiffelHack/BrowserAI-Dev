@@ -318,7 +318,7 @@ const Developers = () => {
                         rel="noopener noreferrer"
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.4 + i * 0.1 }}
+                        transition={{ delay: 0.2 + i * 0.05 }}
                         className={`flex flex-col items-center gap-3 p-6 rounded-xl border ${bgColors[i]} ${medals[i].split(" ")[1]} hover:border-accent/30 transition-colors group`}
                       >
                         <Badge variant="outline" className={`text-xs ${medals[i]}`}>
@@ -341,7 +341,7 @@ const Developers = () => {
                             <motion.div
                               initial={{ width: 0 }}
                               animate={{ width: `${percentage}%` }}
-                              transition={{ delay: 0.6 + i * 0.1, duration: 0.8 }}
+                              transition={{ delay: 0.3 + i * 0.05, duration: 0.5 }}
                               className={`h-full rounded-full ${i === 0 ? "bg-amber-400" : i === 1 ? "bg-gray-400" : "bg-amber-600"}`}
                             />
                           </div>
@@ -665,7 +665,7 @@ curl -X POST https://browseai.dev/api/browse/clarity \\
                   initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
-                  transition={{ delay: i * 0.08 }}
+                  transition={{ delay: Math.min(i * 0.04, 0.3) }}
                   className="p-5 rounded-xl bg-card border border-border hover:border-accent/40 transition-colors group"
                 >
                   <span className="font-semibold text-sm group-hover:text-accent transition-colors block mb-2">
@@ -703,7 +703,7 @@ curl -X POST https://browseai.dev/api/browse/clarity \\
                   initial={{ opacity: 0, x: -10 }}
                   whileInView={{ opacity: 1, x: 0 }}
                   viewport={{ once: true }}
-                  transition={{ delay: i * 0.1 }}
+                  transition={{ delay: Math.min(i * 0.03, 0.3) }}
                   className={`p-5 rounded-xl border ${item.done ? "bg-accent/5 border-accent/20" : "bg-card border-border"}`}
                 >
                   <div className="flex items-start gap-3">
@@ -750,7 +750,7 @@ curl -X POST https://browseai.dev/api/browse/clarity \\
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ delay: i * 0.1 }}
+                transition={{ delay: Math.min(i * 0.05, 0.3) }}
                 className="p-5 rounded-xl bg-card border border-border"
               >
                 <div className="flex items-center gap-2 mb-3">
