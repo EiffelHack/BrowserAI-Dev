@@ -140,4 +140,4 @@ Every time a new feature is implemented, go through this checklist before consid
 - **Discord:** https://discord.gg/ubAuT4YQsT
 - **npm:** https://www.npmjs.com/package/browseai-dev
 - **PyPI:** https://pypi.org/project/browseaidev/
-- **License:** MIT
+- **License:** MIT (clients), MIT + Commons Clause (API server — cannot be offered as competing hosted service)

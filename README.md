@@ -589,4 +589,6 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for setup instructions, coding convention
 
 ## License
 
-[MIT](LICENSE)
+[MIT](LICENSE) — all client packages (MCP server, Python SDK, LangChain, CrewAI, LlamaIndex, shared types, frontend) are MIT with no restrictions.
+
+The API server (`apps/api/`) is MIT + [Commons Clause](apps/api/LICENSE) — you can use, modify, and self-host it, but you cannot offer it as a competing hosted commercial service.
