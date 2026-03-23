@@ -213,32 +213,39 @@ class BrowseAIDev:
         *,
         context: str | None = None,
         intent: str | None = None,
+        mode: str | None = None,
         verify: bool = False,
     ) -> ClarityResult:
         """Clarity — anti-hallucination answer engine.
 
-        Two modes:
-        - Default (verify=False): Rewrites prompt with anti-hallucination techniques,
+        Three modes:
+        - mode="prompt": Returns only enhanced system + user prompts (no LLM call,
+          no internet). Use when your own LLM (e.g. Claude) should answer using
+          the anti-hallucination prompts.
+        - mode="answer" (default): Rewrites prompt with anti-hallucination techniques,
           calls LLM with grounding instructions, returns a higher-quality answer
           with extracted claims. Fast, no internet.
-        - Verified (verify=True): Does the above, then also runs the full browse
-          pipeline (search + extract + verify), fuses the best of both — keeps
-          source-backed claims, drops fabricated ones, returns one unified answer.
+        - mode="verified": Does the above, then also runs the full browse pipeline
+          (search + extract + verify), fuses the best of both — keeps source-backed
+          claims, drops fabricated ones, returns one unified answer.
 
         Args:
             prompt: The prompt to answer with anti-hallucination techniques.
             context: Optional context documents to ground against.
             intent: Override auto-detected intent (factual_question, document_qa,
                     content_generation, agent_pipeline, code_generation, general).
-            verify: When True, also verifies LLM answer against web sources and
-                    fuses the best of both (slower but more accurate).
+            mode: 'prompt' (prompts only), 'answer' (LLM answer), or 'verified'
+                  (LLM + web fusion). Defaults to 'answer'.
+            verify: Deprecated. Use mode='verified' instead.
         """
         body: dict[str, Any] = {"prompt": prompt}
         if context is not None:
             body["context"] = context
         if intent is not None:
             body["intent"] = intent
-        if verify:
+        if mode is not None:
+            body["mode"] = mode
+        elif verify:
             body["verify"] = True
         data = self._post("/browse/clarity", body)
         return ClarityResult(**data)
@@ -478,6 +485,7 @@ class AsyncBrowseAIDev:
         *,
         context: str | None = None,
         intent: str | None = None,
+        mode: str | None = None,
         verify: bool = False,
     ) -> ClarityResult:
         """Clarity — anti-hallucination answer engine. See sync client for full docs."""
@@ -486,7 +494,9 @@ class AsyncBrowseAIDev:
             body["context"] = context
         if intent is not None:
             body["intent"] = intent
-        if verify:
+        if mode is not None:
+            body["mode"] = mode
+        elif verify:
             body["verify"] = True
         data = await self._post("/browse/clarity", body)
         return ClarityResult(**data)

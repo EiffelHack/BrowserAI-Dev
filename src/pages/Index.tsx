@@ -34,7 +34,7 @@ const TOOLS = [
   { name: "browse_extract", desc: "Extract structured claims from a page" },
   { name: "browse_answer", desc: "Full pipeline: search + extract + cite" },
   { name: "browse_compare", desc: "Compare raw LLM vs evidence-backed answer" },
-  { name: "browse_clarity", desc: "Clarity: anti-hallucination prompt engineering for factual grounding" },
+  { name: "browse_clarity", desc: "Clarity: anti-hallucination engine — 3 modes: prompt, answer, verified" },
   { name: "browse_session_create", desc: "Create a research session (requires bai_ API key)" },
   { name: "browse_session_ask", desc: "Research within a session (recalls prior knowledge)" },
   { name: "browse_session_recall", desc: "Query session knowledge without new web search" },
@@ -772,7 +772,7 @@ const Index = () => {
                 <li className="flex items-start gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 mt-0.5 shrink-0" /> Evidence-based confidence (8-factor score, auto-calibrated from feedback)</li>
                 <li className="flex items-start gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 mt-0.5 shrink-0" /> Neural re-ranking — cross-encoder semantic scoring for best source selection</li>
                 <li className="flex items-start gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 mt-0.5 shrink-0" /> 3 depth modes — fast (default), thorough (auto-retry + multi-pass), deep (premium: NLI reranking, multi-provider search, multi-pass consistency)</li>
-                <li className="flex items-start gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 mt-0.5 shrink-0" /> Clarity — anti-hallucination answer engine. Returns LLM answers with reduced hallucinations (fast, no internet). With verify=true, also runs web pipeline and fuses the best of both into one source-backed answer</li>
+                <li className="flex items-start gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 mt-0.5 shrink-0" /> Clarity — anti-hallucination answer engine with 3 modes: prompt (enhanced prompts for your own LLM), answer (fast LLM-only with reduced hallucinations), verified (LLM + web fusion into one source-backed answer)</li>
               </ul>
             </motion.div>
           </div>
@@ -969,7 +969,7 @@ curl -X POST https://browseai.dev/api/browse/answer \\
               { method: "POST", path: "/browse/answer", desc: "Full pipeline with citations" },
               { method: "POST", path: "/browse/compare", desc: "Raw LLM vs evidence-backed" },
               { method: "POST", path: "/browse/answer/stream", desc: "Streaming SSE (real-time progress)" },
-              { method: "POST", path: "/browse/clarity", desc: "Clarity — anti-hallucination prompt engineering" },
+              { method: "POST", path: "/browse/clarity", desc: "Clarity — anti-hallucination engine (prompt/answer/verified modes)" },
               { method: "POST", path: "/browse/feedback", desc: "Submit accuracy feedback" },
               { method: "GET", path: "/browse/share/:id", desc: "Get a shared result" },
               { method: "GET", path: "/browse/stats", desc: "Total queries answered" },

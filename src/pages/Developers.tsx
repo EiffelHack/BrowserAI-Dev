@@ -537,25 +537,27 @@ print(result.answer, result.confidence)`}</pre>
                   <span className="font-semibold">Clarity — Anti-Hallucination Answer Engine</span>
                 </div>
                 <p className="text-sm text-muted-foreground mb-3">
-                  Send any prompt through <code className="text-xs bg-secondary px-1 py-0.5 rounded">browse_clarity</code> — it auto-detects intent, identifies hallucination risks, and generates an answer using anti-hallucination grounding techniques (CoVe, citation-verify, quote extraction). Fast mode (default): LLM-only answer with reduced hallucinations, no internet. Verified mode (<code className="text-xs bg-secondary px-1 py-0.5 rounded">verify: true</code>): also runs the web pipeline and fuses the best of both into one source-backed answer. Works with any agent.
+                  Send any prompt through <code className="text-xs bg-secondary px-1 py-0.5 rounded">browse_clarity</code> — it auto-detects intent, identifies hallucination risks, and applies anti-hallucination grounding techniques (CoVe, citation-verify, quote extraction). Three modes: <strong>Prompt</strong> (<code className="text-xs bg-secondary px-1 py-0.5 rounded">mode: "prompt"</code>) returns enhanced prompts only — use when your own LLM should answer. <strong>Answer</strong> (default) gives a fast LLM-only answer with reduced hallucinations. <strong>Verified</strong> (<code className="text-xs bg-secondary px-1 py-0.5 rounded">mode: "verified"</code>) also runs the web pipeline and fuses the best of both into one source-backed answer. Works with any agent.
                 </p>
-                <pre className="text-xs font-mono text-muted-foreground bg-secondary rounded-lg p-4 overflow-x-auto">{`# MCP tool — fast (LLM only, no internet)
+                <pre className="text-xs font-mono text-muted-foreground bg-secondary rounded-lg p-4 overflow-x-auto">{`# MCP — prompt mode (get enhanced prompts for your own LLM)
+browse_clarity({ prompt: "What are the side effects of metformin?", mode: "prompt" })
+# Returns: systemPrompt, userPrompt, techniques, risks (no LLM call)
+
+# MCP — answer mode (LLM answers with anti-hallucination, default)
 browse_clarity({ prompt: "What are the side effects of metformin?" })
 
-# MCP tool — verified (LLM + web sources fused)
-browse_clarity({ prompt: "What are the side effects of metformin?", verify: true })
+# MCP — verified mode (LLM + web sources fused)
+browse_clarity({ prompt: "What are the side effects of metformin?", mode: "verified" })
 
-# Python
-result = client.clarity("Write a blog post about quantum computing")
-# result.answer      → LLM answer with reduced hallucinations
-# result.claims      → extracted claims (origin: "llm")
-# result.confidence  → confidence score
-# result.techniques  → ["citation_then_verify", "source_attribution", ...]
+# Python — all three modes
+prompts = client.clarity("...", mode="prompt")   # Enhanced prompts only
+answer  = client.clarity("...", mode="answer")   # LLM answer
+verified = client.clarity("...", mode="verified") # LLM + web fusion
 
 # REST API
 curl -X POST https://browseai.dev/api/browse/clarity \\
   -H "X-API-Key: bai_xxx" -H "Content-Type: application/json" \\
-  -d '{"prompt": "Is coffee good for you?", "verify": true}'`}</pre>
+  -d '{"prompt": "Is coffee good for you?", "mode": "verified"}'`}</pre>
               </div>
             </div>
           </motion.div>

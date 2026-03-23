@@ -43,14 +43,20 @@ extract = client.extract("https://example.com", query="pricing info")
 # Compare raw LLM vs evidence-backed
 compare = client.compare("Is Python faster than Rust?")
 
-# Clarity — anti-hallucination answer engine (fast, no internet)
-clarity = client.clarity("Write a blog post about quantum computing")
+# Clarity — prompt mode (get enhanced prompts for your own LLM)
+prompts = client.clarity("Write a blog post about quantum computing", mode="prompt")
+print(prompts.system_prompt)  # Anti-hallucination system prompt
+print(prompts.user_prompt)    # Rewritten user prompt with grounding cues
+print(prompts.techniques)     # Which techniques were selected
+
+# Clarity — answer mode (LLM answers with reduced hallucinations, no internet)
+clarity = client.clarity("Write a blog post about quantum computing", mode="answer")
 print(clarity.answer)         # LLM answer with reduced hallucinations
 print(clarity.claims)         # Extracted claims (origin: "llm")
 print(clarity.confidence)     # Confidence score
 
-# Clarity with web verification — fuses LLM + web sources
-verified = client.clarity("Explain CRISPR gene editing", verify=True)
+# Clarity — verified mode (LLM + web fusion for maximum accuracy)
+verified = client.clarity("Explain CRISPR gene editing", mode="verified")
 print(verified.answer)        # Fused answer (best of LLM + web sources)
 print(verified.claims)        # Claims with origin: "confirmed", "llm", or "source"
 print(verified.sources)       # Web sources used for verification

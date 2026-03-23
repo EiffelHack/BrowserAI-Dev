@@ -115,24 +115,27 @@ def BrowseAIDevCompareTool(api_key: str, base_url: str = "https://browseai.dev/a
 def BrowseAIDevClarityTool(api_key: str, base_url: str = "https://browseai.dev/api") -> FunctionTool:
     """Create a LlamaIndex tool for Clarity anti-hallucination answer engine.
 
-    Two modes: (1) Default: fast LLM-only answer with anti-hallucination
-    techniques (no internet). (2) Verified (verify=True): also runs web
-    pipeline and fuses the best of both into one source-backed answer.
+    Three modes: (1) mode='prompt': returns only enhanced system + user prompts
+    (no LLM call, no internet) — use when your own LLM should answer.
+    (2) mode='answer' (default): fast LLM-only answer with anti-hallucination
+    techniques (no internet). (3) mode='verified': also runs web pipeline and
+    fuses the best of both into one source-backed answer.
     """
     client = _get_client(api_key, base_url)
 
-    def clarity(prompt: str, context: str | None = None, verify: bool = False) -> str:
-        """Clarity — anti-hallucination answer engine. Default: fast LLM answer with reduced hallucinations (no internet). verify=True: also runs web pipeline and fuses LLM + source-backed claims."""
-        result = client.clarity(prompt, context=context, verify=verify)
+    def clarity(prompt: str, context: str | None = None, mode: str | None = None, verify: bool = False) -> str:
+        """Clarity — anti-hallucination answer engine. Three modes: mode='prompt' (prompts only, no LLM call), mode='answer' (default, LLM answer with reduced hallucinations), mode='verified' (LLM + web fusion)."""
+        result = client.clarity(prompt, context=context, mode=mode, verify=verify)
 
         parts = [
             f"**Intent:** {result.intent}",
+            f"**Mode:** {result.mode}",
             f"**Confidence:** {result.confidence:.0%}",
             f"**Verified:** {result.verified}",
-            "",
-            "**Answer:**",
-            result.answer,
         ]
+
+        if result.answer:
+            parts.extend(["", "**Answer:**", result.answer])
 
         if result.claims:
             parts.append(f"\n**Claims ({len(result.claims)}):**")
@@ -148,6 +151,8 @@ def BrowseAIDevClarityTool(api_key: str, base_url: str = "https://browseai.dev/a
             parts.append(f"\n**Risks Detected ({len(result.risks)}):**")
             for r in result.risks:
                 parts.append(f"  - {r}")
+
+        parts.extend(["", "**System Prompt:**", result.system_prompt, "", "**User Prompt:**", result.user_prompt])
 
         return "\n".join(parts)
 

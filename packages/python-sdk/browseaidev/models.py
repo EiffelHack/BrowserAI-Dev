@@ -93,9 +93,11 @@ class ClarityClaim(BaseModel):
 class ClarityResult(BaseModel):
     """Clarity — anti-hallucination answer engine result.
 
-    Two modes:
-    - verify=false (default): LLM-only answer with anti-hallucination techniques. Fast, no internet.
-    - verify=true: LLM answer + web-verified pipeline, fused into one answer with source-backed claims.
+    Three modes:
+    - mode="prompt": Returns only enhanced system + user prompts. No LLM call, no internet.
+      Use when your own LLM (e.g. Claude) should answer using the anti-hallucination prompts.
+    - mode="answer" (default): LLM-only answer with anti-hallucination techniques. Fast, no internet.
+    - mode="verified": LLM answer + web-verified pipeline, fused into one answer with source-backed claims.
     """
     original: str
     intent: Literal["factual_question", "document_qa", "content_generation", "agent_pipeline", "code_generation", "general"]
@@ -106,6 +108,7 @@ class ClarityResult(BaseModel):
     techniques: list[str]
     risks: list[str] = []
     verified: bool = False
+    mode: Literal["prompt", "answer", "verified"] = "answer"
     trace: list[TraceStep] = []
     system_prompt: str = Field(alias="systemPrompt")
     user_prompt: str = Field(alias="userPrompt")
