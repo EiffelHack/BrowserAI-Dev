@@ -79,8 +79,8 @@ class BrowseResult(BaseModel):
     model_config = {"populate_by_name": True}
 
 
-class HardenResult(BaseModel):
-    """Anti-hallucination prompt hardening result."""
+class ClarityResult(BaseModel):
+    """Clarity — anti-hallucination prompt engineering result."""
     original: str
     intent: Literal["factual_question", "document_qa", "content_generation", "agent_pipeline", "code_generation", "general"]
     system_prompt: str = Field(alias="systemPrompt")

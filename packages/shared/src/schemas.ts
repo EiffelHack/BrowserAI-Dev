@@ -122,9 +122,9 @@ export const PremiumQuotaSchema = z.object({
   premiumActive: z.boolean(),
 });
 
-// ── Harden (Anti-Hallucination) schema ──
+// ── Clarity (Anti-Hallucination) schema ──
 
-export const HardenRequestSchema = z.object({
+export const ClarityRequestSchema = z.object({
   prompt: z.string().min(1).max(2000),
   context: z.string().max(50000).optional(),
   intent: z.enum(["factual_question", "document_qa", "content_generation", "agent_pipeline", "code_generation", "general"]).optional(),

@@ -48,7 +48,7 @@ if (args.includes("--help") || args.includes("-h")) {
     browse_extract         Extract structured knowledge from a page
     browse_answer          Full pipeline: search + extract + answer
     browse_compare         Compare raw LLM vs evidence-backed answer
-    browse_harden          Harden prompts to reduce hallucinations
+    browse_clarity         Clarity: anti-hallucination prompt engineering for factual grounding
     browse_session_create  Create a research session (persistent memory)
     browse_session_ask     Research within a session (recalls prior knowledge)
     browse_session_recall  Query session knowledge without new searches
@@ -546,13 +546,13 @@ function registerTools(server: McpServer) {
       };
     }
   );
-  // --- Anti-Hallucination Prompt Hardening ---
+  // --- Clarity — Anti-Hallucination Prompt Engineering ---
 
   server.tool(
-    "browse_harden",
-    "Harden any prompt to reduce LLM hallucinations. Analyzes intent, detects hallucination risks, and returns a rewritten system prompt + user prompt with anti-hallucination techniques applied. Optionally verifies with real sources.",
+    "browse_clarity",
+    "Clarity — anti-hallucination prompt engineering: analyzes intent, detects hallucination risks, and returns a rewritten system prompt + user prompt with grounding techniques applied. Reduces LLM hallucinations by giving them clearer instructions to cite sources, flag uncertainty, and verify claims. Agents empowered with Clarity automatically get anti-hallucination prompts for every LLM call. Optionally verifies with real sources.",
     {
-      prompt: z.string().describe("The raw prompt to harden"),
+      prompt: z.string().describe("The raw prompt to apply Clarity anti-hallucination techniques to"),
       context: z.string().optional().describe("Optional context documents to ground against"),
       intent: z.enum(["factual_question", "document_qa", "content_generation", "agent_pipeline", "code_generation", "general"]).optional().describe("Override auto-detected intent"),
       verify: z.boolean().optional().describe("Also run evidence verification via browse_answer (slower but validates claims)"),
@@ -563,11 +563,11 @@ function registerTools(server: McpServer) {
         if (context) body.context = context;
         if (intent) body.intent = intent;
         if (verify) body.verify = verify;
-        const result = await apiCall("/browse/harden", body);
+        const result = await apiCall("/browse/clarity", body);
         return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
       }
 
-      // BYOK mode: Use LLM to analyze and harden
+      // BYOK mode: Use LLM to analyze and apply clarity
       const { OPENROUTER_API_KEY } = getEnvKeys();
       const res = await fetch(LLM_ENDPOINT, {
         method: "POST",
@@ -581,11 +581,11 @@ function registerTools(server: McpServer) {
           messages: [
             {
               role: "system",
-              content: `You are an anti-hallucination prompt engineer. Analyze the user's prompt, detect intent and hallucination risks, then return a hardened system prompt and rewritten user prompt.
+              content: `You are a Clarity prompt engineer specializing in anti-hallucination techniques. Analyze the user's prompt, detect intent and hallucination risks, then return a Clarity system prompt and rewritten user prompt that reduces hallucinations.
 
 Intent types: factual_question, document_qa, content_generation, agent_pipeline, code_generation, general
 
-Available techniques:
+Available anti-hallucination techniques:
 - uncertainty_permission: Allow saying "I don't know"
 - direct_quote_grounding: Extract quotes before reasoning
 - citation_then_verify: Cite sources, then verify each claim
@@ -594,32 +594,32 @@ Available techniques:
 - source_attribution: Attribute every claim to a source
 - external_knowledge_restriction: Use only provided context
 
-Select 2-4 techniques. Return a hardened system prompt with technique instructions and a rewritten user prompt with natural grounding cues.`,
+Select 2-4 techniques. Return a Clarity system prompt with anti-hallucination technique instructions and a rewritten user prompt with natural grounding cues.`,
             },
             {
               role: "user",
-              content: `Harden this prompt:\n\n"${prompt}"${context ? `\n\nContext provided (${context.length} chars)` : ""}`,
+              content: `Apply anti-hallucination techniques to this prompt:\n\n"${prompt}"${context ? `\n\nContext provided (${context.length} chars)` : ""}`,
             },
           ],
           tools: [{
             type: "function" as const,
             function: {
-              name: "return_hardened",
-              description: "Return the hardened prompt",
+              name: "return_clarity",
+              description: "Return the Clarity anti-hallucination prompt",
               parameters: {
                 type: "object",
                 properties: {
                   intent: { type: "string", enum: ["factual_question", "document_qa", "content_generation", "agent_pipeline", "code_generation", "general"] },
                   techniques: { type: "array", items: { type: "string" } },
                   risks: { type: "array", items: { type: "string" } },
-                  systemPrompt: { type: "string", description: "Hardened system prompt with technique instructions" },
-                  userPrompt: { type: "string", description: "Rewritten user prompt with natural grounding cues" },
+                  systemPrompt: { type: "string", description: "Clarity system prompt with anti-hallucination technique instructions" },
+                  userPrompt: { type: "string", description: "Rewritten user prompt with anti-hallucination grounding cues" },
                 },
                 required: ["intent", "techniques", "risks", "systemPrompt", "userPrompt"],
               },
             },
           }],
-          tool_choice: { type: "function", function: { name: "return_hardened" } },
+          tool_choice: { type: "function", function: { name: "return_clarity" } },
         }),
       });
 

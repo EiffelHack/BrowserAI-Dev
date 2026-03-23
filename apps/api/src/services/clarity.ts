@@ -1,13 +1,13 @@
 /**
- * Anti-Hallucination Prompt Hardening Service
+ * Clarity — Anti-Hallucination Prompt Engineering Service
  *
  * Takes a raw prompt, uses LLM to detect intent and hallucination risks,
- * then dynamically composes a hardened version with the right anti-hallucination
- * techniques applied.
+ * then dynamically composes a clarity-enhanced version with the right
+ * anti-hallucination techniques applied.
  */
 
 import { LLM_ENDPOINT, LLM_MODEL } from "@browse/shared";
-import type { HardenIntent, HardenTechnique, HardenResult, BrowseResult } from "@browse/shared";
+import type { ClarityIntent, ClarityTechnique, ClarityResult, BrowseResult } from "@browse/shared";
 import { fetchWithRetry } from "../lib/retry.js";
 import { answerQuery } from "./answer.js";
 import type { Env } from "../config/env.js";
@@ -15,7 +15,7 @@ import type { CacheService } from "./cache.js";
 
 // ── Technique Library (used by LLM to compose the final prompt) ──
 
-const TECHNIQUE_FRAGMENTS: Record<HardenTechnique, { label: string; instruction: string }> = {
+const TECHNIQUE_FRAGMENTS: Record<ClarityTechnique, { label: string; instruction: string }> = {
   uncertainty_permission: {
     label: "Uncertainty Permission",
     instruction: `If you are unsure about any part of your answer, say "I don't have enough information to confidently assess this" rather than guessing. Partial answers with acknowledged gaps are better than complete answers with fabricated details.`,
@@ -46,18 +46,18 @@ const TECHNIQUE_FRAGMENTS: Record<HardenTechnique, { label: string; instruction:
   },
 };
 
-const ALL_TECHNIQUES = Object.keys(TECHNIQUE_FRAGMENTS) as HardenTechnique[];
+const ALL_TECHNIQUES = Object.keys(TECHNIQUE_FRAGMENTS) as ClarityTechnique[];
 
 // ── LLM-Powered Intent Detection + Technique Selection ──
 
 type AnalysisResult = {
-  intent: HardenIntent;
-  techniques: HardenTechnique[];
+  intent: ClarityIntent;
+  techniques: ClarityTechnique[];
   risks: string[];
   userPromptRewrite: string;
 };
 
-async function analyzeAndHarden(
+async function analyzeForClarity(
   prompt: string,
   context: string | undefined,
   apiKey: string,
@@ -109,7 +109,7 @@ Rewrite the user prompt to naturally incorporate grounding cues without making i
           type: "function" as const,
           function: {
             name: "return_analysis",
-            description: "Return the prompt analysis and hardening plan",
+            description: "Return the prompt analysis and clarity plan",
             parameters: {
               type: "object",
               properties: {
@@ -162,8 +162,8 @@ Rewrite the user prompt to naturally incorporate grounding cues without making i
 
   // Validate techniques are real
   const validTechniques = (parsed.techniques as string[]).filter(
-    t => ALL_TECHNIQUES.includes(t as HardenTechnique)
-  ) as HardenTechnique[];
+    t => ALL_TECHNIQUES.includes(t as ClarityTechnique)
+  ) as ClarityTechnique[];
 
   return {
     intent: parsed.intent || "general",
@@ -175,25 +175,23 @@ Rewrite the user prompt to naturally incorporate grounding cues without making i
 
 // ── Main Function ──
 
-export async function hardenPrompt(
+export async function clarityPrompt(
   prompt: string,
   options: {
     context?: string;
-    intent?: HardenIntent;
+    intent?: ClarityIntent;
     verify?: boolean;
     env: Env;
     cache: CacheService;
-    hasBaiKey: boolean;
   },
-): Promise<HardenResult> {
+): Promise<ClarityResult> {
   const apiKey = options.env.OPENROUTER_API_KEY;
 
   // Use LLM to analyze intent, detect risks, select techniques, and rewrite prompt
-  const analysis = await analyzeAndHarden(prompt, options.context, apiKey);
+  const analysis = await analyzeForClarity(prompt, options.context, apiKey);
 
-  // Allow user to override intent (recalculate techniques if overridden)
   const intent = options.intent || analysis.intent;
-  const techniques = options.intent ? analysis.techniques : analysis.techniques;
+  const techniques = analysis.techniques;
 
   // Build system prompt from selected techniques
   const systemParts = [
@@ -236,7 +234,7 @@ export async function hardenPrompt(
     try {
       verification = await answerQuery(prompt, options.env, options.cache, "fast");
     } catch {
-      // Verification is best-effort — don't fail the harden call
+      // Verification is best-effort — don't fail the clarity call
     }
   }
 

@@ -19,7 +19,7 @@ from .exceptions import (
 from .models import (
     BrowseResult,
     CompareResult,
-    HardenResult,
+    ClarityResult,
     KnowledgeEntry,
     PageResult,
     PremiumQuota,
@@ -207,21 +207,22 @@ class BrowseAIDev:
         data = self._post("/browse/compare", {"query": query})
         return CompareResult(**data)
 
-    def harden(
+    def clarity(
         self,
         prompt: str,
         *,
         context: str | None = None,
         intent: str | None = None,
         verify: bool = False,
-    ) -> HardenResult:
-        """Harden a prompt to reduce LLM hallucinations.
+    ) -> ClarityResult:
+        """Clarity — anti-hallucination prompt engineering to reduce LLM hallucinations.
 
         Analyzes intent, detects hallucination risks, and returns a rewritten
-        system prompt + user prompt with anti-hallucination techniques applied.
+        system prompt + user prompt with grounding techniques applied.
+        Gives LLMs clearer instructions to stay factual and cite sources.
 
         Args:
-            prompt: The raw prompt to harden.
+            prompt: The raw prompt to apply Clarity anti-hallucination techniques to.
             context: Optional context documents to ground against.
             intent: Override auto-detected intent (factual_question, document_qa,
                     content_generation, agent_pipeline, code_generation, general).
@@ -234,8 +235,8 @@ class BrowseAIDev:
             body["intent"] = intent
         if verify:
             body["verify"] = True
-        data = self._post("/browse/harden", body)
-        return HardenResult(**data)
+        data = self._post("/browse/clarity", body)
+        return ClarityResult(**data)
 
     def get_shared(self, share_id: str) -> dict[str, Any]:
         """Retrieve a shared result by ID."""
@@ -466,15 +467,15 @@ class AsyncBrowseAIDev:
         data = await self._post("/browse/compare", {"query": query})
         return CompareResult(**data)
 
-    async def harden(
+    async def clarity(
         self,
         prompt: str,
         *,
         context: str | None = None,
         intent: str | None = None,
         verify: bool = False,
-    ) -> HardenResult:
-        """Harden a prompt to reduce LLM hallucinations. See sync client for full docs."""
+    ) -> ClarityResult:
+        """Clarity — anti-hallucination prompt engineering. See sync client for full docs."""
         body: dict[str, Any] = {"prompt": prompt}
         if context is not None:
             body["context"] = context
@@ -482,8 +483,8 @@ class AsyncBrowseAIDev:
             body["intent"] = intent
         if verify:
             body["verify"] = True
-        data = await self._post("/browse/harden", body)
-        return HardenResult(**data)
+        data = await self._post("/browse/clarity", body)
+        return ClarityResult(**data)
 
     async def get_shared(self, share_id: str) -> dict[str, Any]:
         return await self._get(f"/browse/share/{share_id}")

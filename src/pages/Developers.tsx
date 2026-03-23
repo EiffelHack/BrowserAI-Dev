@@ -534,22 +534,22 @@ print(result.answer, result.confidence)`}</pre>
               <div className="p-5 rounded-xl bg-card border border-accent/30">
                 <div className="flex items-center gap-2 mb-2">
                   <Badge variant="outline" className="text-[10px] border-accent/50 text-accent">NEW</Badge>
-                  <span className="font-semibold">Anti-Hallucination Hardening</span>
+                  <span className="font-semibold">Clarity — Anti-Hallucination Prompt Engineering</span>
                 </div>
                 <p className="text-sm text-muted-foreground mb-3">
-                  Send any prompt through <code className="text-xs bg-secondary px-1 py-0.5 rounded">browse_harden</code> — it auto-detects intent, identifies hallucination risks, and rewrites your prompt with grounding techniques (CoVe, citation-verify, quote extraction). Works with any LLM.
+                  Send any prompt through <code className="text-xs bg-secondary px-1 py-0.5 rounded">browse_clarity</code> — it auto-detects intent, identifies hallucination risks, and rewrites your prompt with anti-hallucination grounding techniques (CoVe, citation-verify, quote extraction). When agents are empowered with Clarity, every LLM call gets a rewritten system prompt that instructs the model to cite sources, flag uncertainty, and verify claims — reducing hallucinations automatically without changing your agent's workflow. Works with any LLM.
                 </p>
                 <pre className="text-xs font-mono text-muted-foreground bg-secondary rounded-lg p-4 overflow-x-auto">{`# MCP tool
-browse_harden({ prompt: "What are the side effects of metformin?", verify: true })
+browse_clarity({ prompt: "What are the side effects of metformin?", verify: true })
 
 # Python
-result = client.harden("Write a blog post about quantum computing")
-# result.system_prompt → hardened system prompt with anti-hallucination rules
+result = client.clarity("Write a blog post about quantum computing")
+# result.system_prompt → Clarity system prompt with anti-hallucination grounding rules
 # result.user_prompt   → rewritten prompt with natural grounding cues
 # result.techniques    → ["citation_then_verify", "source_attribution", ...]
 
 # REST API
-curl -X POST https://browseai.dev/api/browse/harden \\
+curl -X POST https://browseai.dev/api/browse/clarity \\
   -H "X-API-Key: bai_xxx" -H "Content-Type: application/json" \\
   -d '{"prompt": "Is coffee good for you?", "verify": true}'`}</pre>
               </div>
@@ -810,7 +810,7 @@ curl -X POST https://browseai.dev/api/browse/harden \\
                 { name: "browse-compare-claims", desc: "Settle factual disputes — evidence vs raw LLM side-by-side" },
                 { name: "browse-monitor", desc: "Track evolving topics over time, diff against prior knowledge" },
                 { name: "browse-cite", desc: "Generate formatted citations (APA/MLA) with authority scores" },
-                { name: "browse-anti-hallucination", desc: "Reduce LLM hallucinations through evidence-backed prompt engineering" },
+                { name: "browse-clarity", desc: "Clarity — reduce LLM hallucinations through evidence-backed prompt engineering" },
               ].map((skill) => (
                 <a
                   key={skill.name}

@@ -137,11 +137,11 @@ export type RecallRequest = {
   limit?: number;
 };
 
-// ── Harden (Anti-Hallucination) ──
+// ── Clarity (Anti-Hallucination) ──
 
-export type HardenIntent = "factual_question" | "document_qa" | "content_generation" | "agent_pipeline" | "code_generation" | "general";
+export type ClarityIntent = "factual_question" | "document_qa" | "content_generation" | "agent_pipeline" | "code_generation" | "general";
 
-export type HardenTechnique =
+export type ClarityTechnique =
   | "uncertainty_permission"
   | "direct_quote_grounding"
   | "citation_then_verify"
@@ -150,27 +150,27 @@ export type HardenTechnique =
   | "source_attribution"
   | "external_knowledge_restriction";
 
-export type HardenRequest = {
+export type ClarityRequest = {
   prompt: string;
   /** Optional context documents to ground the prompt against */
   context?: string;
   /** Force a specific intent instead of auto-detecting */
-  intent?: HardenIntent;
+  intent?: ClarityIntent;
   /** Whether to also verify the output via browse_answer after generation */
   verify?: boolean;
 };
 
-export type HardenResult = {
+export type ClarityResult = {
   /** The original prompt */
   original: string;
   /** Auto-detected or user-specified intent */
-  intent: HardenIntent;
-  /** Hardened system prompt with anti-hallucination techniques baked in */
+  intent: ClarityIntent;
+  /** Clarity system prompt with anti-hallucination techniques baked in */
   systemPrompt: string;
-  /** Hardened user prompt (rewritten for factual grounding) */
+  /** Clarity user prompt (rewritten for factual grounding) */
   userPrompt: string;
   /** Which techniques were applied */
-  techniques: HardenTechnique[];
+  techniques: ClarityTechnique[];
   /** Optional: verification result if verify=true was set */
   verification?: BrowseResult;
 };
