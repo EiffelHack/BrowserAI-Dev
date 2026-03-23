@@ -252,6 +252,18 @@ function errorResponse(e: unknown, fallbackMsg: string): { status: number; error
   return { status: 500, error: fallbackMsg };
 }
 
+const SSE_ALLOWED_ORIGINS = new Set([
+  "https://browseai.dev",
+  "https://www.browseai.dev",
+  ...(process.env.NODE_ENV !== "production" ? ["http://localhost:8080", "http://localhost:5173", "http://localhost:3000"] : []),
+]);
+
+function getSseOrigin(request: FastifyRequest): string {
+  const origin = request.headers.origin;
+  if (origin && SSE_ALLOWED_ORIGINS.has(origin)) return origin;
+  return "https://browseai.dev";
+}
+
 export function registerBrowseRoutes(
   app: FastifyInstance,
   env: Env,
@@ -480,7 +492,7 @@ export function registerBrowseRoutes(
         "Content-Type": "text/event-stream",
         "Cache-Control": "no-cache",
         Connection: "keep-alive",
-        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Origin": getSseOrigin(request),
       });
 
       const emit = (event: string, data: unknown) => {
