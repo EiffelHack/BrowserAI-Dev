@@ -156,8 +156,17 @@ export type ClarityRequest = {
   context?: string;
   /** Force a specific intent instead of auto-detecting */
   intent?: ClarityIntent;
-  /** Whether to also verify the output via browse_answer after generation */
+  /** When true, also verifies LLM answer against web sources and fuses the best of both */
   verify?: boolean;
+};
+
+export type ClarityClaim = {
+  claim: string;
+  /** "llm" = from Clarity LLM only, "source" = from web pipeline only, "confirmed" = LLM claim backed by sources */
+  origin: "llm" | "source" | "confirmed";
+  sources: string[];
+  verified?: boolean;
+  verificationScore?: number;
 };
 
 export type ClarityResult = {
@@ -165,14 +174,28 @@ export type ClarityResult = {
   original: string;
   /** Auto-detected or user-specified intent */
   intent: ClarityIntent;
-  /** Clarity system prompt with anti-hallucination techniques baked in */
-  systemPrompt: string;
-  /** Clarity user prompt (rewritten for factual grounding) */
-  userPrompt: string;
-  /** Which techniques were applied */
+  /** The LLM-generated answer (using anti-hallucination system prompt) */
+  answer: string;
+  /** Extracted claims with origin tracking */
+  claims: ClarityClaim[];
+  /** Sources (empty when verify=false, populated when verify=true) */
+  sources: BrowseSource[];
+  /** Confidence: LLM-assessed when verify=false, evidence-based when verify=true */
+  confidence: number;
+  /** Which anti-hallucination techniques were applied */
   techniques: ClarityTechnique[];
-  /** Optional: verification result if verify=true was set */
-  verification?: BrowseResult;
+  /** Detected hallucination risks */
+  risks: string[];
+  /** Whether web verification was performed */
+  verified: boolean;
+  /** Execution trace */
+  trace: TraceStep[];
+  /** The anti-hallucination system prompt (for transparency) */
+  systemPrompt: string;
+  /** The rewritten user prompt */
+  userPrompt: string;
+  /** Contradictions found between LLM claims and sources (verify=true only) */
+  contradictions?: Contradiction[];
 };
 
 // ── Feedback ──

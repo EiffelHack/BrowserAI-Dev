@@ -255,7 +255,7 @@ const Results = () => {
                   {clarityLoading && <Loader2 className="w-3 h-3 text-amber-400 animate-spin" />}
                 </div>
                 <p className="text-[11px] text-muted-foreground leading-relaxed">
-                  Anti-hallucination prompt engineering — analyzes your query, detects hallucination risks, and rewrites it with grounding techniques (chain-of-verification, quote extraction, source attribution). When agents are empowered with Clarity, they automatically get rewritten prompts that instruct LLMs to cite sources, flag uncertainty, and verify claims before responding — reducing hallucinations without changing your workflow. Copy these into your own LLM calls or let your agent use them directly. Experimental — results may vary.
+                  Anti-hallucination answer engine — analyzes your query, detects hallucination risks, and generates an answer using grounding techniques to reduce LLM hallucinations. No internet search — pure LLM with smarter instructions.
                 </p>
                 {clarityResult && (
                   <>
@@ -263,20 +263,35 @@ const Results = () => {
                       <Badge variant="outline" className="text-[10px] px-2 py-0.5 text-amber-400 border-amber-500/30">
                         {clarityResult.intent}
                       </Badge>
-                      {clarityResult.techniques.map((t) => (
+                      {clarityResult.techniques.map((t: string) => (
                         <Badge key={t} variant="outline" className="text-[10px] px-2 py-0.5 text-muted-foreground">
                           {t.replace(/_/g, " ")}
                         </Badge>
                       ))}
                     </div>
-                    <div className="p-3 rounded-lg bg-amber-500/5 border border-amber-500/20">
-                      <p className="text-[10px] font-semibold text-amber-400 uppercase mb-1">System Prompt</p>
-                      <pre className="text-xs text-muted-foreground whitespace-pre-wrap max-h-40 overflow-y-auto leading-relaxed">{clarityResult.systemPrompt}</pre>
-                    </div>
-                    <div className="p-3 rounded-lg bg-amber-500/5 border border-amber-500/20">
-                      <p className="text-[10px] font-semibold text-amber-400 uppercase mb-1">Clarity User Prompt</p>
-                      <pre className="text-xs text-muted-foreground whitespace-pre-wrap leading-relaxed">{clarityResult.userPrompt}</pre>
-                    </div>
+                    {clarityResult.answer && (
+                      <div className="p-3 rounded-lg bg-amber-500/5 border border-amber-500/20">
+                        <p className="text-[10px] font-semibold text-amber-400 uppercase mb-1">Clarity Answer</p>
+                        <div className="text-xs text-muted-foreground whitespace-pre-wrap leading-relaxed">{clarityResult.answer}</div>
+                      </div>
+                    )}
+                    {clarityResult.claims && clarityResult.claims.length > 0 && (
+                      <div className="space-y-1.5">
+                        <p className="text-[10px] font-semibold text-amber-400 uppercase">Claims ({clarityResult.claims.length})</p>
+                        {clarityResult.claims.map((c: any, i: number) => (
+                          <div key={i} className="flex items-start gap-2 p-2 rounded-lg bg-card border border-border text-[11px]">
+                            <Badge variant="outline" className={`text-[9px] px-1.5 py-0 shrink-0 ${
+                              c.origin === "confirmed" ? "text-green-400 border-green-500/30" :
+                              c.origin === "source" ? "text-blue-400 border-blue-500/30" :
+                              "text-amber-400 border-amber-500/30"
+                            }`}>
+                              {c.origin}
+                            </Badge>
+                            <span className="text-muted-foreground">{c.claim}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </>
                 )}
               </motion.section>

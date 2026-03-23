@@ -328,7 +328,7 @@ API responses include quota info when using a BAI key:
 | `POST /browse/answer` | Full pipeline: search + extract + cite. `depth`: `"fast"`, `"thorough"`, or `"deep"` |
 | `POST /browse/answer/stream` | Streaming answer via SSE — real-time token streaming + progress events |
 | `POST /browse/compare` | Compare raw LLM vs evidence-backed answer |
-| `POST /browse/clarity` | Clarity — anti-hallucination prompt engineering. Detects intent, rewrites prompts with grounding techniques to reduce hallucinations. Agents empowered with Clarity get anti-hallucination system prompts for every LLM call |
+| `POST /browse/clarity` | Clarity — anti-hallucination answer engine. Default: fast LLM-only answer with reduced hallucinations (no internet). `verify: true`: also runs web pipeline and fuses the best of both into one source-backed answer |
 | `GET /browse/share/:id` | Get a shared result |
 | `GET /browse/stats` | Total queries answered |
 | `GET /browse/sources/top` | Top cited source domains |
@@ -574,7 +574,7 @@ npx skills add BrowseAI-HQ/browseAIDev_Skills
 | [browse-compare-claims](https://github.com/BrowseAI-HQ/browseAIDev_Skills/tree/main/browse-compare-claims) | Settle factual disputes — evidence-backed vs raw LLM side-by-side |
 | [browse-monitor](https://github.com/BrowseAI-HQ/browseAIDev_Skills/tree/main/browse-monitor) | Track evolving topics over time, diff against prior knowledge |
 | [browse-cite](https://github.com/BrowseAI-HQ/browseAIDev_Skills/tree/main/browse-cite) | Generate formatted citations (APA/MLA) with authority scores |
-| [browse-clarity](https://github.com/BrowseAI-HQ/browseAIDev_Skills/tree/main/browse-clarity) | Clarity — reduce LLM hallucinations through evidence-backed prompt engineering |
+| [browse-clarity](https://github.com/BrowseAI-HQ/browseAIDev_Skills/tree/main/browse-clarity) | Clarity — anti-hallucination answer engine with optional web verification |
 
 [View all skills →](https://github.com/BrowseAI-HQ/browseAIDev_Skills)
 

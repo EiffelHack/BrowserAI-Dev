@@ -169,12 +169,13 @@ class ClarityInput(BaseModel):
 
 
 class BrowseAIDevClarityTool(_ClientMixin, BaseTool):
-    """Clarity — anti-hallucination prompt engineering. Rewrites any prompt with grounding techniques to reduce LLM hallucinations."""
+    """Clarity — anti-hallucination answer engine. Default: fast LLM answer with reduced hallucinations. verify=true: fuses LLM + web-verified results."""
 
     name: str = "browseaidev_clarity"
     description: str = (
-        "Clarity — anti-hallucination prompt engineering. Rewrites any prompt with "
-        "grounding techniques to reduce LLM hallucinations."
+        "Clarity — anti-hallucination answer engine. Default: fast LLM-only answer "
+        "with reduced hallucinations (no internet). verify=true: also runs web pipeline "
+        "and fuses the best of both into one source-backed answer."
     )
     args_schema: Type[BaseModel] = ClarityInput
 
@@ -184,11 +185,16 @@ class BrowseAIDevClarityTool(_ClientMixin, BaseTool):
 
         parts = [
             f"**Intent:** {result.intent}",
-            f"\n**System Prompt:**\n{result.system_prompt}",
-            f"\n**User Prompt:**\n{result.user_prompt}",
+            f"**Confidence:** {result.confidence:.0%}",
+            f"**Verified:** {result.verified}",
+            f"\n**Answer:**\n{result.answer}",
             f"\n**Techniques ({len(result.techniques)}):**",
         ]
         for t in result.techniques:
             parts.append(f"  - {t}")
+        if result.claims:
+            parts.append(f"\n**Claims ({len(result.claims)}):**")
+            for c in result.claims:
+                parts.append(f"  - [{c.origin}] {c.claim}")
 
         return "\n".join(parts)

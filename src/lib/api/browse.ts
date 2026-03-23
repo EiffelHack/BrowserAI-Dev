@@ -168,13 +168,28 @@ export async function browseFeedback(resultId: string, rating: "good" | "bad" | 
   });
 }
 
+export type ClarityClaim = {
+  claim: string;
+  origin: "llm" | "source" | "confirmed";
+  sources: string[];
+  verified?: boolean;
+  verificationScore?: number;
+};
+
 export type ClarityResult = {
   original: string;
   intent: string;
+  answer: string;
+  claims: ClarityClaim[];
+  sources: BrowseSource[];
+  confidence: number;
+  techniques: string[];
+  risks: string[];
+  verified: boolean;
+  trace: { step: string; duration_ms: number; detail?: string }[];
   systemPrompt: string;
   userPrompt: string;
-  techniques: string[];
-  verification?: BrowseResult;
+  contradictions?: Contradiction[];
 };
 
 export async function browseClarity(

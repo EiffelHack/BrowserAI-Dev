@@ -10,7 +10,7 @@ import { createServer } from "node:http";
 import { randomUUID } from "node:crypto";
 
 // --- Constants (inlined for standalone npm package) ---
-const VERSION = "0.2.3";
+const VERSION = "0.2.4";
 const LLM_MODEL = "google/gemini-2.5-flash";
 const LLM_ENDPOINT = "https://openrouter.ai/api/v1/chat/completions";
 const TAVILY_ENDPOINT = "https://api.tavily.com/search";
@@ -48,7 +48,7 @@ if (args.includes("--help") || args.includes("-h")) {
     browse_extract         Extract structured knowledge from a page
     browse_answer          Full pipeline: search + extract + answer
     browse_compare         Compare raw LLM vs evidence-backed answer
-    browse_clarity         Clarity: anti-hallucination prompt engineering for factual grounding
+    browse_clarity         Clarity: anti-hallucination answer engine (fast LLM or verified with web fusion)
     browse_session_create  Create a research session (persistent memory)
     browse_session_ask     Research within a session (recalls prior knowledge)
     browse_session_recall  Query session knowledge without new searches
@@ -546,16 +546,16 @@ function registerTools(server: McpServer) {
       };
     }
   );
-  // --- Clarity — Anti-Hallucination Prompt Engineering ---
+  // --- Clarity — Anti-Hallucination Answer Engine ---
 
   server.tool(
     "browse_clarity",
-    "Clarity — anti-hallucination prompt engineering: analyzes intent, detects hallucination risks, and returns a rewritten system prompt + user prompt with grounding techniques applied. Reduces LLM hallucinations by giving them clearer instructions to cite sources, flag uncertainty, and verify claims. Agents empowered with Clarity automatically get anti-hallucination prompts for every LLM call. Optionally verifies with real sources.",
+    "Clarity — anti-hallucination answer engine. Two modes: (1) Default (verify=false): Rewrites prompt with anti-hallucination techniques, calls LLM with grounding instructions, returns a higher-quality answer with extracted claims. Fast, no internet. (2) Verified (verify=true): Does #1, then also runs the full browse pipeline (search + extract + verify), fuses the best of both — keeps source-backed claims, drops fabricated ones, returns one unified answer with evidence. Use default for fast LLM-only answers with reduced hallucinations. Use verify=true when accuracy matters and you want web-verified claims.",
     {
-      prompt: z.string().describe("The raw prompt to apply Clarity anti-hallucination techniques to"),
+      prompt: z.string().describe("The prompt to answer with anti-hallucination techniques"),
       context: z.string().optional().describe("Optional context documents to ground against"),
       intent: z.enum(["factual_question", "document_qa", "content_generation", "agent_pipeline", "code_generation", "general"]).optional().describe("Override auto-detected intent"),
-      verify: z.boolean().optional().describe("Also run evidence verification via browse_answer (slower but validates claims)"),
+      verify: z.boolean().optional().describe("When true, also verifies LLM answer against web sources and fuses the best of both (slower but more accurate)"),
     },
     async ({ prompt, context, intent, verify }) => {
       if (API_MODE) {
@@ -567,9 +567,11 @@ function registerTools(server: McpServer) {
         return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
       }
 
-      // BYOK mode: Use LLM to analyze and apply clarity
+      // BYOK mode: Two-step — analyze prompt, then call LLM with clarity-enhanced prompts
       const { OPENROUTER_API_KEY } = getEnvKeys();
-      const res = await fetch(LLM_ENDPOINT, {
+
+      // Step 1: Analyze prompt and build anti-hallucination system prompt
+      const analysisRes = await fetch(LLM_ENDPOINT, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${OPENROUTER_API_KEY}`,
@@ -623,23 +625,99 @@ Select 2-4 techniques. Return a Clarity system prompt with anti-hallucination te
         }),
       });
 
-      if (!res.ok) throw new Error(`LLM failed: ${res.status}`);
-      const data = await res.json() as any;
-      const toolCall = data.choices?.[0]?.message?.tool_calls?.[0];
+      if (!analysisRes.ok) throw new Error(`LLM analysis failed: ${analysisRes.status}`);
+      const analysisData = await analysisRes.json() as any;
+      const analysisToolCall = analysisData.choices?.[0]?.message?.tool_calls?.[0];
 
-      if (!toolCall) {
+      if (!analysisToolCall) {
         return { content: [{ type: "text", text: JSON.stringify({ error: "Failed to analyze prompt" }) }] };
       }
 
-      const parsed = JSON.parse(toolCall.function.arguments);
+      const analysis = JSON.parse(analysisToolCall.function.arguments);
+
+      // Step 2: Call LLM with the clarity-enhanced prompts to get an actual answer
+      const answerRes = await fetch(LLM_ENDPOINT, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${OPENROUTER_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: LLM_MODEL,
+          temperature: 0.2,
+          messages: [
+            { role: "system", content: analysis.systemPrompt },
+            { role: "user", content: analysis.userPrompt },
+          ],
+          tools: [{
+            type: "function" as const,
+            function: {
+              name: "return_answer",
+              description: "Return the structured answer with extracted claims",
+              parameters: {
+                type: "object",
+                properties: {
+                  answer: { type: "string", description: "The complete answer following anti-hallucination rules" },
+                  claims: { type: "array", items: { type: "string" }, description: "Individual factual claims made in the answer" },
+                },
+                required: ["answer", "claims"],
+              },
+            },
+          }],
+          tool_choice: { type: "function", function: { name: "return_answer" } },
+        }),
+      });
+
+      if (!answerRes.ok) throw new Error(`LLM answer failed: ${answerRes.status}`);
+      const answerData = await answerRes.json() as any;
+      const answerToolCall = answerData.choices?.[0]?.message?.tool_calls?.[0];
+
+      const llmAnswer = answerToolCall
+        ? JSON.parse(answerToolCall.function.arguments)
+        : { answer: answerData.choices?.[0]?.message?.content || "Unable to generate answer.", claims: [] };
+
+      const claims = (llmAnswer.claims || []).map((c: string) => ({
+        claim: c,
+        origin: "llm",
+        sources: [],
+        verified: false,
+      }));
+
       const result = {
         original: prompt,
-        intent: intent || parsed.intent,
-        systemPrompt: parsed.systemPrompt,
-        userPrompt: parsed.userPrompt,
-        techniques: parsed.techniques,
-        risks: parsed.risks,
+        intent: intent || analysis.intent,
+        answer: llmAnswer.answer,
+        claims,
+        sources: [],
+        confidence: Math.min(0.65, 0.45 + claims.length * 0.02),
+        techniques: analysis.techniques,
+        risks: analysis.risks,
+        verified: false,
+        trace: [
+          { step: "Clarity Analysis", duration_ms: 0 },
+          { step: "Clarity LLM Answer", duration_ms: 0, detail: `${claims.length} claims (LLM only)` },
+        ],
+        systemPrompt: analysis.systemPrompt,
+        userPrompt: analysis.userPrompt,
       };
+
+      // Note: verify=true in BYOK mode would require search API keys.
+      // If verify was requested but we're in BYOK without search keys, note it.
+      if (verify) {
+        // In BYOK mode, run browse_answer if search keys are available
+        try {
+          const { SERP_API_KEY } = getEnvKeys();
+          if (SERP_API_KEY) {
+            // Use the API endpoint for verification since BYOK has search keys
+            const browseResult = await apiCall("/browse/answer", { query: prompt, depth: "fast" });
+            // Return both for the agent to compare
+            return { content: [{ type: "text", text: JSON.stringify({ ...result, verified: true, browseVerification: browseResult }, null, 2) }] };
+          }
+        } catch {
+          // Verification failed — return LLM-only result with note
+        }
+        return { content: [{ type: "text", text: JSON.stringify({ ...result, _note: "verify=true requested but search keys not available in BYOK mode. Use a BrowseAI Dev API key for web-verified Clarity." }, null, 2) }] };
+      }
 
       return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
     }

@@ -772,7 +772,7 @@ const Index = () => {
                 <li className="flex items-start gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 mt-0.5 shrink-0" /> Evidence-based confidence (7-factor score, auto-calibrated from feedback)</li>
                 <li className="flex items-start gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 mt-0.5 shrink-0" /> Neural re-ranking — cross-encoder semantic scoring for best source selection</li>
                 <li className="flex items-start gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 mt-0.5 shrink-0" /> 3 depth modes — fast (default), thorough (auto-retry + multi-pass), deep (premium: NLI reranking, multi-provider search, multi-pass consistency)</li>
-                <li className="flex items-start gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 mt-0.5 shrink-0" /> Clarity — anti-hallucination prompt engineering that auto-rewrites any prompt with grounding techniques (CoVe, citation-verify, quote extraction). Agents empowered with Clarity automatically reduce hallucinations</li>
+                <li className="flex items-start gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 mt-0.5 shrink-0" /> Clarity — anti-hallucination answer engine. Returns LLM answers with reduced hallucinations (fast, no internet). With verify=true, also runs web pipeline and fuses the best of both into one source-backed answer</li>
               </ul>
             </motion.div>
           </div>

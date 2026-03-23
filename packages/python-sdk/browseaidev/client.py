@@ -215,18 +215,23 @@ class BrowseAIDev:
         intent: str | None = None,
         verify: bool = False,
     ) -> ClarityResult:
-        """Clarity — anti-hallucination prompt engineering to reduce LLM hallucinations.
+        """Clarity — anti-hallucination answer engine.
 
-        Analyzes intent, detects hallucination risks, and returns a rewritten
-        system prompt + user prompt with grounding techniques applied.
-        Gives LLMs clearer instructions to stay factual and cite sources.
+        Two modes:
+        - Default (verify=False): Rewrites prompt with anti-hallucination techniques,
+          calls LLM with grounding instructions, returns a higher-quality answer
+          with extracted claims. Fast, no internet.
+        - Verified (verify=True): Does the above, then also runs the full browse
+          pipeline (search + extract + verify), fuses the best of both — keeps
+          source-backed claims, drops fabricated ones, returns one unified answer.
 
         Args:
-            prompt: The raw prompt to apply Clarity anti-hallucination techniques to.
+            prompt: The prompt to answer with anti-hallucination techniques.
             context: Optional context documents to ground against.
             intent: Override auto-detected intent (factual_question, document_qa,
                     content_generation, agent_pipeline, code_generation, general).
-            verify: Also run evidence verification via browse_answer.
+            verify: When True, also verifies LLM answer against web sources and
+                    fuses the best of both (slower but more accurate).
         """
         body: dict[str, Any] = {"prompt": prompt}
         if context is not None:
@@ -475,7 +480,7 @@ class AsyncBrowseAIDev:
         intent: str | None = None,
         verify: bool = False,
     ) -> ClarityResult:
-        """Clarity — anti-hallucination prompt engineering. See sync client for full docs."""
+        """Clarity — anti-hallucination answer engine. See sync client for full docs."""
         body: dict[str, Any] = {"prompt": prompt}
         if context is not None:
             body["context"] = context
