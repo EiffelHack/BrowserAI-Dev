@@ -1014,6 +1014,45 @@ curl -X POST https://browseai.dev/api/browse/answer \\
         </div>
       </section>
 
+      {/* ===== FRAMEWORK SDKs ===== */}
+      <section className="py-24 px-6 border-t border-border">
+        <div className="max-w-4xl mx-auto">
+          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-12">
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">Agent Framework SDKs</h2>
+            <p className="text-muted-foreground">Drop-in tools for popular agent frameworks. Search, Answer, Extract, Compare, and Clarity — all tools included.</p>
+          </motion.div>
+          <div className="grid md:grid-cols-3 gap-6">
+            {[
+              {
+                name: "LangChain",
+                pkg: "langchain-browseaidev",
+                tools: "BrowseAIDevSearchTool, BrowseAIDevAnswerTool, BrowseAIDevExtractTool, BrowseAIDevCompareTool, BrowseAIDevClarityTool",
+                example: `from langchain_browseaidev import BrowseAIDevAnswerTool, BrowseAIDevClarityTool\nagent_tools = [BrowseAIDevAnswerTool(), BrowseAIDevClarityTool()]`,
+              },
+              {
+                name: "CrewAI",
+                pkg: "crewai-browseaidev",
+                tools: "BrowseAIDevSearchTool, BrowseAIDevAnswerTool, BrowseAIDevExtractTool, BrowseAIDevCompareTool, BrowseAIDevClarityTool",
+                example: `from crewai_browseaidev import BrowseAIDevAnswerTool, BrowseAIDevClarityTool\nagent = Agent(tools=[BrowseAIDevAnswerTool(), BrowseAIDevClarityTool()])`,
+              },
+              {
+                name: "LlamaIndex",
+                pkg: "llamaindex-browseaidev",
+                tools: "BrowseAIDevSearchTool, BrowseAIDevAnswerTool, BrowseAIDevExtractTool, BrowseAIDevCompareTool, BrowseAIDevClarityTool",
+                example: `from llamaindex_browseaidev import BrowseAIDevAnswerTool, BrowseAIDevClarityTool\ntools = [BrowseAIDevAnswerTool(), BrowseAIDevClarityTool()]`,
+              },
+            ].map((fw) => (
+              <motion.div key={fw.name} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="p-6 rounded-xl bg-card border border-border">
+                <h3 className="text-lg font-bold mb-2">{fw.name}</h3>
+                <code className="text-xs text-accent bg-secondary px-2 py-1 rounded block mb-3">pip install {fw.pkg}</code>
+                <pre className="text-[11px] text-muted-foreground bg-secondary/50 rounded-lg p-3 overflow-x-auto mb-3 whitespace-pre-wrap">{fw.example}</pre>
+                <p className="text-[10px] text-muted-foreground leading-relaxed">{fw.tools}</p>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* ===== TECH STACK ===== */}
       <section className="py-24 px-6 border-t border-border">
         <div className="max-w-4xl mx-auto text-center">
