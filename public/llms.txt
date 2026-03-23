@@ -5,7 +5,7 @@
 BrowseAI Dev gives AI agents structured, verifiable web research. Unlike chat-based search engines, it returns JSON with extracted claims, cited sources, confidence scores, and contradiction detection — designed for programmatic evaluation by agents.
 
 ## Available As
-- MCP Server: `npx browseai-dev` (12 tools)
+- MCP Server: `npx browseai-dev` (13 tools)
 - REST API: `https://browseai.dev/api/browse/*`
 - Python SDK: `pip install browseaidev`
 - LangChain: `pip install langchain-browseaidev`
@@ -19,6 +19,7 @@ Previously known as `browse-ai` (npm) and `browseai` (PyPI) — renamed to `brow
 - **Answer**: Full pipeline — search, fetch, extract claims, verify, cite, score confidence
 - **Extract**: Structured claim extraction from any URL
 - **Compare**: Side-by-side raw LLM vs evidence-backed answer
+- **Clarity**: Anti-hallucination prompt engineering — rewrites any prompt with grounding techniques (chain-of-verification, citation-verify, quote extraction) to reduce LLM hallucinations
 - **Research Sessions**: Persistent multi-query sessions with knowledge accumulation
 - **Feedback**: Submit result feedback to improve future accuracy
 

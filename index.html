@@ -4,8 +4,8 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>BrowseAI Dev — Research Infra for AI Agents | MCP Server, REST API, Python SDK</title>
-    <meta name="description" content="Open source research infrastructure for AI agents. Evidence-backed web search with confidence scores, citation verification, and contradiction detection. MCP server, REST API, Python SDK." />
-    <meta name="keywords" content="BrowseAI Dev, browseai.dev, browseaidev, browseai, browse-ai, browseai-dev, langchain-browseaidev, crewai-browseaidev, llamaindex-browseaidev, AI agent research, MCP server for AI, web search API, evidence-backed search, AI research infrastructure, LLM citation tool, fact verification API, Python SDK, LangChain tools, CrewAI tools, LlamaIndex tools, Claude MCP server, agent framework, confidence scoring, hallucination prevention, pip install browseaidev, npx browseai-dev" />
+    <meta name="description" content="Open source research infrastructure for AI agents. Evidence-backed web search with confidence scores, citation verification, contradiction detection, and Clarity anti-hallucination prompt engineering. MCP server, REST API, Python SDK." />
+    <meta name="keywords" content="BrowseAI Dev, browseai.dev, browseaidev, browseai, browse-ai, browseai-dev, langchain-browseaidev, crewai-browseaidev, llamaindex-browseaidev, AI agent research, MCP server for AI, web search API, evidence-backed search, AI research infrastructure, LLM citation tool, fact verification API, Python SDK, LangChain tools, CrewAI tools, LlamaIndex tools, Claude MCP server, agent framework, confidence scoring, hallucination prevention, clarity, anti-hallucination, anti hallucination tool, reduce LLM hallucinations, anti-hallucination prompt engineering, prompt grounding, chain of verification, hallucination detection, LLM accuracy, pip install browseaidev, npx browseai-dev" />
     <meta name="author" content="BrowseAI Dev" />
     <link rel="canonical" href="https://browseai.dev/" />
 
@@ -16,7 +16,7 @@
 
     <!-- Open Graph -->
     <meta property="og:title" content="BrowseAI Dev — Research Infra for AI Agents" />
-    <meta property="og:description" content="Open source research infrastructure for AI agents. Evidence-backed web search with confidence scores and citation verification. MCP server, REST API, Python SDK." />
+    <meta property="og:description" content="Open source research infrastructure for AI agents. Evidence-backed web search with confidence scores, citation verification, and Clarity anti-hallucination. MCP server, REST API, Python SDK." />
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="BrowseAI Dev" />
     <meta property="og:url" content="https://browseai.dev" />
@@ -27,7 +27,7 @@
     <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="BrowseAI Dev — Research Infra for AI Agents" />
-    <meta name="twitter:description" content="Open source research infrastructure for AI agents. Evidence-backed web search with confidence scores and citation verification." />
+    <meta name="twitter:description" content="Open source research infrastructure for AI agents. Evidence-backed web search with confidence scores, citation verification, and Clarity anti-hallucination." />
     <meta name="twitter:image" content="https://browseai.dev/og-image.png" />
 
     <!-- Structured Data: Software Application -->
@@ -37,7 +37,7 @@
       "@type": "SoftwareApplication",
       "name": "BrowseAI Dev",
       "alternateName": ["browseai.dev", "BrowseAI Developer Tools", "browseaidev", "browseai", "browse-ai", "browseai-dev"],
-      "description": "Open source research infrastructure for AI agents. Real-time web search with evidence-backed citations and confidence scores. Available as MCP server, REST API, and Python SDK.",
+      "description": "Open source research infrastructure for AI agents. Real-time web search with evidence-backed citations, confidence scores, and Clarity anti-hallucination prompt engineering. Available as MCP server, REST API, and Python SDK.",
       "url": "https://browseai.dev",
       "applicationCategory": "DeveloperApplication",
       "operatingSystem": "Any",
@@ -65,7 +65,7 @@
       "license": "https://opensource.org/licenses/MIT",
       "codeRepository": "https://github.com/BrowseAI-HQ/BrowseAI-Dev",
       "programmingLanguage": ["TypeScript", "Python"],
-      "keywords": "AI agent, MCP server, web search API, research infrastructure, evidence-backed citations, fact verification, Python SDK, LangChain, CrewAI, LlamaIndex, confidence scoring, hallucination prevention, browseaidev, browseai, browse-ai, browseai-dev, langchain-browseaidev, crewai-browseaidev, llamaindex-browseaidev, pip install browseaidev, npx browseai-dev"
+      "keywords": "AI agent, MCP server, web search API, research infrastructure, evidence-backed citations, fact verification, Python SDK, LangChain, CrewAI, LlamaIndex, confidence scoring, hallucination prevention, clarity, anti-hallucination, anti hallucination tool, reduce LLM hallucinations, anti-hallucination prompt engineering, prompt grounding, chain of verification, browseaidev, browseai, browse-ai, browseai-dev, langchain-browseaidev, crewai-browseaidev, llamaindex-browseaidev, pip install browseaidev, npx browseai-dev"
     }
     </script>
 
@@ -101,10 +101,18 @@
         },
         {
           "@type": "Question",
+          "name": "What is Clarity anti-hallucination?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Clarity is BrowseAI Dev's anti-hallucination prompt engineering tool. It analyzes any prompt, detects hallucination risks, and rewrites it with grounding techniques like chain-of-verification, citation-verify, and quote extraction to reduce LLM hallucinations. Use it via POST /browse/clarity, the browse_clarity MCP tool, or client.clarity() in the Python SDK."
+          }
+        },
+        {
+          "@type": "Question",
           "name": "Is BrowseAI Dev free and open source?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Yes, BrowseAI Dev is fully open source under the MIT license. The source code is available on GitHub. You can self-host it or use the hosted version at browseai.dev with a free demo tier (5 queries/hour) or bring your own API keys for unlimited usage."
+            "text": "BrowseAI Dev is source-available on GitHub. Client packages (MCP server, Python SDK, LangChain, CrewAI, LlamaIndex) are MIT licensed. The API server is MIT + Commons Clause — you can use, modify, and self-host it, but cannot offer it as a competing hosted service. Free demo tier (5 queries/hour) or bring your own API keys for unlimited usage."
           }
         }
       ]

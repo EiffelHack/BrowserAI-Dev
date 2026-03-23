@@ -17,6 +17,7 @@ import { UserMenu } from "@/components/UserMenu";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTypewriter } from "@/hooks/useTypewriter";
 import { DepthToggle, isDepthBlocked } from "@/components/DepthToggle";
+import { ClarityToggle, isClarityBlocked } from "@/components/ClarityToggle";
 import { saveRecentQuery } from "@/components/SearchInput";
 
 const TYPEWRITER_QUERIES = [
@@ -33,6 +34,7 @@ const TOOLS = [
   { name: "browse_extract", desc: "Extract structured claims from a page" },
   { name: "browse_answer", desc: "Full pipeline: search + extract + cite" },
   { name: "browse_compare", desc: "Compare raw LLM vs evidence-backed answer" },
+  { name: "browse_clarity", desc: "Clarity: anti-hallucination prompt engineering for factual grounding" },
   { name: "browse_session_create", desc: "Create a research session (requires bai_ API key)" },
   { name: "browse_session_ask", desc: "Research within a session (recalls prior knowledge)" },
   { name: "browse_session_recall", desc: "Query session knowledge without new web search" },
@@ -106,6 +108,7 @@ const Index = () => {
   const { user, loading: authLoading } = useAuth();
   const [loginOpen, setLoginOpen] = useState(false);
   const [depth, setDepth] = useState<"fast" | "thorough" | "deep">("fast");
+  const [clarityEnabled, setClarityEnabled] = useState(false);
   const [showAllTools, setShowAllTools] = useState(false);
   const [showAllEndpoints, setShowAllEndpoints] = useState(false);
   const [showAllRoadmap, setShowAllRoadmap] = useState(false);
@@ -150,7 +153,8 @@ const Index = () => {
     // Auto-downgrade deep → thorough when user can't access deep mode
     const effectiveDepth = isDepthBlocked(depth, !!user, null) ? "thorough" : depth;
     const depthParam = effectiveDepth !== "fast" ? `&depth=${effectiveDepth}` : "";
-    navigate(`/results?q=${encodeURIComponent(searchQuery.trim())}${depthParam}`);
+    const clarityParam = clarityEnabled && !isClarityBlocked(!!user, null) ? "&clarity=true" : "";
+    navigate(`/results?q=${encodeURIComponent(searchQuery.trim())}${depthParam}${clarityParam}`);
   };
 
   const handleWaitlist = async () => {
@@ -345,6 +349,23 @@ const Index = () => {
                     <span className="hidden sm:inline">Sign In</span>
                   </Button>
                 </>
+              ) : clarityEnabled && isClarityBlocked(!!user, null) ? (
+                <>
+                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-amber-400 z-10" />
+                  <div
+                    className="w-full h-14 pl-12 pr-16 sm:pr-36 bg-amber-500/5 border border-amber-500/30 rounded-xl flex items-center cursor-pointer"
+                    onClick={() => setLoginOpen(true)}
+                  >
+                    <span className="text-amber-400 text-sm">Clarity rewrites prompts to reduce hallucinations — requires BAI key, sign in to unlock</span>
+                  </div>
+                  <Button
+                    onClick={() => setLoginOpen(true)}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 bg-amber-500/20 text-amber-400 hover:bg-amber-500/30 rounded-lg px-3 sm:px-4 h-10 text-sm font-semibold gap-2 z-10 border border-amber-500/30"
+                  >
+                    <LogIn className="w-4 h-4" />
+                    <span className="hidden sm:inline">Sign In</span>
+                  </Button>
+                </>
               ) : (
                 <>
                   <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground group-focus-within:text-accent transition-colors z-10" />
@@ -424,6 +445,7 @@ const Index = () => {
 
           <div className="flex flex-wrap justify-center gap-2">
             <DepthToggle depth={depth} setDepth={setDepth} quota={null} size="pill" />
+            <ClarityToggle enabled={clarityEnabled} setEnabled={setClarityEnabled} quota={null} size="pill" />
             <Button variant="outline" size="sm" className="text-xs gap-1.5" onClick={handleCompare} disabled={!query.trim()}>
               <GitCompare className="w-3.5 h-3.5" />
               Compare vs Raw LLM
@@ -505,7 +527,7 @@ const Index = () => {
             <Badge variant="outline" className="text-xs font-normal mb-6">
               The Problem
             </Badge>
-            <h2 className="text-3xl md:text-4xl font-bold mb-6">The Anti-Hallucination Stack</h2>
+            <h2 className="text-3xl md:text-4xl font-bold mb-6">The Clarity Stack</h2>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
               <span className="text-foreground font-semibold">$67.4 billion</span> — that's what AI hallucinations cost businesses in 2024.
               Every developer using AI agents has felt it: research that sounds right but isn't, citations that don't exist, decisions built on fiction.
@@ -750,6 +772,7 @@ const Index = () => {
                 <li className="flex items-start gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 mt-0.5 shrink-0" /> Evidence-based confidence (7-factor score, auto-calibrated from feedback)</li>
                 <li className="flex items-start gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 mt-0.5 shrink-0" /> Neural re-ranking — cross-encoder semantic scoring for best source selection</li>
                 <li className="flex items-start gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 mt-0.5 shrink-0" /> 3 depth modes — fast (default), thorough (auto-retry + multi-pass), deep (premium: NLI reranking, multi-provider search, multi-pass consistency)</li>
+                <li className="flex items-start gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 mt-0.5 shrink-0" /> Clarity — anti-hallucination prompt engineering that auto-rewrites any prompt with grounding techniques (CoVe, citation-verify, quote extraction). Agents empowered with Clarity automatically reduce hallucinations</li>
               </ul>
             </motion.div>
           </div>
@@ -946,6 +969,7 @@ curl -X POST https://browseai.dev/api/browse/answer \\
               { method: "POST", path: "/browse/answer", desc: "Full pipeline with citations" },
               { method: "POST", path: "/browse/compare", desc: "Raw LLM vs evidence-backed" },
               { method: "POST", path: "/browse/answer/stream", desc: "Streaming SSE (real-time progress)" },
+              { method: "POST", path: "/browse/clarity", desc: "Clarity — anti-hallucination prompt engineering" },
               { method: "POST", path: "/browse/feedback", desc: "Submit accuracy feedback" },
               { method: "GET", path: "/browse/share/:id", desc: "Get a shared result" },
               { method: "GET", path: "/browse/stats", desc: "Total queries answered" },
@@ -987,6 +1011,45 @@ curl -X POST https://browseai.dev/api/browse/answer \\
               </motion.div>
             );
           })()}
+        </div>
+      </section>
+
+      {/* ===== FRAMEWORK SDKs ===== */}
+      <section className="py-24 px-6 border-t border-border">
+        <div className="max-w-4xl mx-auto">
+          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-12">
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">Agent Framework SDKs</h2>
+            <p className="text-muted-foreground">Drop-in tools for popular agent frameworks. Search, Answer, Extract, Compare, and Clarity — all tools included.</p>
+          </motion.div>
+          <div className="grid md:grid-cols-3 gap-6">
+            {[
+              {
+                name: "LangChain",
+                pkg: "langchain-browseaidev",
+                tools: "BrowseAIDevSearchTool, BrowseAIDevAnswerTool, BrowseAIDevExtractTool, BrowseAIDevCompareTool, BrowseAIDevClarityTool",
+                example: `from langchain_browseaidev import BrowseAIDevAnswerTool, BrowseAIDevClarityTool\nagent_tools = [BrowseAIDevAnswerTool(), BrowseAIDevClarityTool()]`,
+              },
+              {
+                name: "CrewAI",
+                pkg: "crewai-browseaidev",
+                tools: "BrowseAIDevSearchTool, BrowseAIDevAnswerTool, BrowseAIDevExtractTool, BrowseAIDevCompareTool, BrowseAIDevClarityTool",
+                example: `from crewai_browseaidev import BrowseAIDevAnswerTool, BrowseAIDevClarityTool\nagent = Agent(tools=[BrowseAIDevAnswerTool(), BrowseAIDevClarityTool()])`,
+              },
+              {
+                name: "LlamaIndex",
+                pkg: "llamaindex-browseaidev",
+                tools: "BrowseAIDevSearchTool, BrowseAIDevAnswerTool, BrowseAIDevExtractTool, BrowseAIDevCompareTool, BrowseAIDevClarityTool",
+                example: `from llamaindex_browseaidev import BrowseAIDevAnswerTool, BrowseAIDevClarityTool\ntools = [BrowseAIDevAnswerTool(), BrowseAIDevClarityTool()]`,
+              },
+            ].map((fw) => (
+              <motion.div key={fw.name} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="p-6 rounded-xl bg-card border border-border">
+                <h3 className="text-lg font-bold mb-2">{fw.name}</h3>
+                <code className="text-xs text-accent bg-secondary px-2 py-1 rounded block mb-3">pip install {fw.pkg}</code>
+                <pre className="text-[11px] text-muted-foreground bg-secondary/50 rounded-lg p-3 overflow-x-auto mb-3 whitespace-pre-wrap">{fw.example}</pre>
+                <p className="text-[10px] text-muted-foreground leading-relaxed">{fw.tools}</p>
+              </motion.div>
+            ))}
+          </div>
         </div>
       </section>
 
