@@ -328,7 +328,7 @@ API responses include quota info when using a BAI key:
 | `POST /browse/answer` | Full pipeline: search + extract + cite. `depth`: `"fast"`, `"thorough"`, or `"deep"` |
 | `POST /browse/answer/stream` | Streaming answer via SSE — real-time token streaming + progress events |
 | `POST /browse/compare` | Compare raw LLM vs evidence-backed answer |
-| `POST /browse/clarity` | Clarity — anti-hallucination answer engine. Default: fast LLM-only answer with reduced hallucinations (no internet). `verify: true`: also runs web pipeline and fuses the best of both into one source-backed answer |
+| `POST /browse/clarity` | Clarity — anti-hallucination answer engine. Three modes: `mode: "prompt"` (enhanced prompts only), `mode: "answer"` (LLM answer, default), `mode: "verified"` (LLM + web fusion). Legacy `verify: true` = `mode: "verified"` |
 | `GET /browse/share/:id` | Get a shared result |
 | `GET /browse/stats` | Total queries answered |
 | `GET /browse/sources/top` | Top cited source domains |
@@ -358,7 +358,7 @@ API responses include quota info when using a BAI key:
 | `browse_extract` | Extract structured claims from a page |
 | `browse_answer` | Full pipeline: search + extract + cite. `depth`: `"fast"`, `"thorough"`, or `"deep"` |
 | `browse_compare` | Compare raw LLM vs evidence-backed answer |
-| `browse_clarity` | Anti-hallucination answer engine — fast LLM-only or verified with web fusion |
+| `browse_clarity` | Anti-hallucination answer engine — three modes: prompt (prompts only), answer (LLM), verified (LLM + web fusion) |
 | `browse_session_create` | Create a research session (persistent memory) |
 | `browse_session_ask` | Research within a session (recalls prior knowledge) |
 | `browse_session_recall` | Query session knowledge without new web search |

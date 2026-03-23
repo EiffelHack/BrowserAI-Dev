@@ -230,24 +230,27 @@ class BrowseAIDevCompareTool(_BrowseAIDevBase):
 class ClarityInput(BaseModel):
     prompt: str = Field(description="The prompt to apply anti-hallucination techniques to")
     context: Optional[str] = Field(default=None, description="Optional context to ground the prompt against")
-    verify: bool = Field(default=False, description="Whether to also verify with real sources")
+    mode: Optional[str] = Field(default=None, description="'prompt' (enhanced prompts only), 'answer' (LLM answer, default), or 'verified' (LLM + web fusion)")
+    verify: bool = Field(default=False, description="Deprecated: use mode='verified' instead")
 
 
 class BrowseAIDevClarityTool(_BrowseAIDevBase):
     """Clarity — anti-hallucination answer engine.
 
-    Two modes: (1) Default (verify=false): fast LLM-only answer with
-    anti-hallucination grounding techniques — no internet, reduced
-    hallucinations. (2) Verified (verify=true): also runs web search
-    pipeline and fuses the best of both — keeps source-backed claims,
-    drops fabricated ones, returns one unified answer.
+    Three modes: (1) mode='prompt': returns only enhanced system + user prompts
+    (no LLM call, no internet) — use when your own LLM should answer.
+    (2) mode='answer' (default): fast LLM-only answer with anti-hallucination
+    grounding techniques — no internet, reduced hallucinations.
+    (3) mode='verified': also runs web search pipeline and fuses the best of
+    both — keeps source-backed claims, drops fabricated ones.
     """
 
     name: str = "browseaidev_clarity"
     description: str = (
-        "Clarity — anti-hallucination answer engine. Default: fast LLM-only answer "
-        "with reduced hallucinations (no internet). verify=true: also runs web pipeline "
-        "and fuses the best of both into one source-backed answer. "
+        "Clarity — anti-hallucination answer engine. Three modes: "
+        "mode='prompt' returns enhanced prompts only (no LLM call). "
+        "mode='answer' (default) returns LLM answer with reduced hallucinations. "
+        "mode='verified' fuses LLM + web-verified results into source-backed answer. "
         "Returns answer, claims (with origin tracking), confidence, and techniques."
     )
     args_schema: Type[BaseModel] = ClarityInput
@@ -256,14 +259,16 @@ class BrowseAIDevClarityTool(_BrowseAIDevBase):
         self,
         prompt: str,
         context: Optional[str] = None,
+        mode: Optional[str] = None,
         verify: bool = False,
         run_manager: Optional[CallbackManagerForToolRun] = None,
     ) -> str:
         client = self._get_client()
-        result = client.clarity(prompt, context=context, verify=verify)
+        result = client.clarity(prompt, context=context, mode=mode, verify=verify)
 
         parts = [
             f"**Intent:** {result.intent}",
+            f"**Mode:** {result.mode}",
             f"**Techniques:** {', '.join(result.techniques)}",
             "",
             "**Clarity System Prompt:**",
@@ -272,5 +277,8 @@ class BrowseAIDevClarityTool(_BrowseAIDevBase):
             "**Clarity User Prompt:**",
             result.user_prompt,
         ]
+
+        if result.answer:
+            parts.extend(["", "**Answer:**", result.answer])
 
         return "\n".join(parts)

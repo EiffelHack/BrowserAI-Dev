@@ -184,6 +184,8 @@ export type ClarityClaim = {
   verificationScore?: number;
 };
 
+export type ClarityMode = "prompt" | "answer" | "verified";
+
 export type ClarityResult = {
   original: string;
   intent: string;
@@ -194,6 +196,7 @@ export type ClarityResult = {
   techniques: string[];
   risks: string[];
   verified: boolean;
+  mode: ClarityMode;
   trace: { step: string; duration_ms: number; detail?: string }[];
   systemPrompt: string;
   userPrompt: string;
@@ -202,7 +205,7 @@ export type ClarityResult = {
 
 export async function browseClarity(
   prompt: string,
-  options?: { context?: string; intent?: string; verify?: boolean },
+  options?: { context?: string; intent?: string; mode?: ClarityMode; verify?: boolean },
 ): Promise<ClarityResult> {
   return apiCall<ClarityResult>("/browse/clarity", {
     prompt,

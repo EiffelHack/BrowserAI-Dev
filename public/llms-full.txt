@@ -83,13 +83,15 @@ Compare raw LLM answer vs evidence-backed answer side-by-side.
 ```
 
 ### POST /browse/clarity
-Clarity — anti-hallucination answer engine. Two modes:
-- **Default (verify=false)**: Rewrites prompt with anti-hallucination techniques, calls LLM with grounding instructions, returns a higher-quality answer with extracted claims. Fast, no internet.
-- **Verified (verify=true)**: Does the above, then also runs the full browse pipeline (search + extract + verify), fuses the best of both — keeps source-backed claims, drops fabricated ones, returns one unified answer.
+Clarity — anti-hallucination answer engine. Three modes:
+- **Prompt (mode="prompt")**: Analyzes prompt, selects anti-hallucination techniques, returns only the enhanced system + user prompts. No LLM call, no internet. Use when your own LLM (e.g. Claude) should answer using the enhanced prompts.
+- **Answer (mode="answer", default)**: Rewrites prompt with anti-hallucination techniques, calls LLM with grounding instructions, returns a higher-quality answer with extracted claims. Fast, no internet.
+- **Verified (mode="verified")**: Does the above, then also runs the full browse pipeline (search + extract + verify), fuses the best of both — keeps source-backed claims, drops fabricated ones, returns one unified answer.
 ```json
-{"prompt": "Explain the causes of the 2008 financial crisis", "context": "optional grounding text", "verify": false}
+{"prompt": "Explain the causes of the 2008 financial crisis", "mode": "answer"}
 ```
-Response includes: `answer` (the LLM-generated answer), `claims[]` (each with `origin`: "llm", "source", or "confirmed"), `confidence` (LLM-assessed when verify=false, evidence-based when verify=true), `techniques`, `risks`, `verified` (boolean), `sources[]` (when verify=true), `systemPrompt`, `userPrompt`.
+Legacy: `verify: true` is equivalent to `mode: "verified"`.
+Response includes: `answer` (empty when mode="prompt"), `claims[]` (each with `origin`: "llm", "source", or "confirmed"), `confidence`, `mode`, `techniques`, `risks`, `verified` (boolean), `sources[]` (when mode="verified"), `systemPrompt`, `userPrompt`.
 
 ### POST /browse/feedback
 Submit feedback on a result to improve future accuracy.

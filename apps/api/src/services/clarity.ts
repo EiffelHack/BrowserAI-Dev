@@ -1,10 +1,13 @@
 /**
  * Clarity — Anti-Hallucination Answer Engine
  *
- * Two modes:
- * 1. Fast (verify=false): Rewrites prompt → calls LLM with anti-hallucination
+ * Three modes:
+ * 1. Prompt (mode="prompt"): Analyzes prompt, selects techniques, rewrites
+ *    prompt → returns only the enhanced system + user prompts. No LLM call,
+ *    no web search. Use when your own LLM (e.g. Claude) should answer.
+ * 2. Answer (mode="answer"): Rewrites prompt → calls LLM with anti-hallucination
  *    instructions → returns answer with claims. No internet. Quick.
- * 2. Verified (verify=true): Does #1, then runs browse pipeline, fuses the
+ * 3. Verified (mode="verified"): Does #2, then runs browse pipeline, fuses the
  *    best of both — keeps source-backed claims, drops fabricated ones,
  *    returns one unified high-quality answer.
  */
@@ -13,6 +16,7 @@ import { LLM_ENDPOINT, LLM_MODEL } from "@browse/shared";
 import type {
   ClarityIntent,
   ClarityTechnique,
+  ClarityMode,
   ClarityResult,
   ClarityClaim,
   BrowseResult,
@@ -397,6 +401,8 @@ export async function clarityPrompt(
   options: {
     context?: string;
     intent?: ClarityIntent;
+    mode?: ClarityMode;
+    /** @deprecated Use mode instead */
     verify?: boolean;
     env: Env;
     cache: CacheService;
@@ -404,7 +410,9 @@ export async function clarityPrompt(
 ): Promise<ClarityResult> {
   const apiKey = options.env.OPENROUTER_API_KEY;
   const trace: TraceStep[] = [];
-  const overallStart = Date.now();
+
+  // Resolve mode: explicit mode takes priority, then legacy verify flag, then default "answer"
+  const mode: ClarityMode = options.mode ?? (options.verify ? "verified" : "answer");
 
   // Step 1: Analyze prompt — detect intent, risks, techniques, rewrite
   const analysisStart = Date.now();
@@ -421,9 +429,27 @@ export async function clarityPrompt(
   const systemPrompt = buildSystemPrompt(techniques, analysis.risks, options.context);
   const userPrompt = analysis.userPromptRewrite;
 
-  // Step 3: Call LLM with clarity-enhanced prompts (always — this is the core value)
-  if (options.verify) {
-    // Verified mode: LLM + browse pipeline in parallel, then fuse
+  // ── Mode: Prompt — return enhanced prompts only, no LLM call ──
+  if (mode === "prompt") {
+    return {
+      original: prompt,
+      intent,
+      answer: "",
+      claims: [],
+      sources: [],
+      confidence: 0,
+      techniques,
+      risks: analysis.risks,
+      verified: false,
+      mode: "prompt",
+      trace,
+      systemPrompt,
+      userPrompt,
+    };
+  }
+
+  // ── Mode: Verified — LLM + browse pipeline in parallel, then fuse ──
+  if (mode === "verified") {
     const llmStart = Date.now();
     const [llmAnswer, browseResult] = await Promise.all([
       callLLMWithClarity(systemPrompt, userPrompt, apiKey),
@@ -436,7 +462,6 @@ export async function clarityPrompt(
       detail: `${llmAnswer.claims.length} claims extracted from LLM`,
     });
 
-    // Fuse: best of both
     const fusionStart = Date.now();
     const fused = fuseClarityWithBrowse(llmAnswer.claims, browseResult);
 
@@ -450,7 +475,6 @@ export async function clarityPrompt(
       detail: `${confirmedCount} confirmed, ${llmOnlyCount} LLM-only, ${sourceOnlyCount} source-only`,
     });
 
-    // Add browse pipeline trace steps
     trace.push(...browseResult.trace);
 
     return {
@@ -463,47 +487,46 @@ export async function clarityPrompt(
       techniques,
       risks: analysis.risks,
       verified: true,
+      mode: "verified",
       trace,
       systemPrompt,
       userPrompt,
       contradictions: fused.contradictions.length > 0 ? fused.contradictions : undefined,
     };
-  } else {
-    // Fast mode: LLM only, no internet
-    const llmStart = Date.now();
-    const llmAnswer = await callLLMWithClarity(systemPrompt, userPrompt, apiKey);
-
-    trace.push({
-      step: "Clarity LLM Answer",
-      duration_ms: Date.now() - llmStart,
-      detail: `${llmAnswer.claims.length} claims (LLM only, no web verification)`,
-    });
-
-    // All claims are LLM-only (no sources)
-    const claims: ClarityClaim[] = llmAnswer.claims.map(claim => ({
-      claim,
-      origin: "llm" as const,
-      sources: [],
-      verified: false,
-    }));
-
-    // LLM self-assessed confidence heuristic (no evidence to verify against)
-    // Base 0.5, slight boost per claim (more claims = more structured = slightly better)
-    const confidence = Math.min(0.65, 0.45 + claims.length * 0.02);
-
-    return {
-      original: prompt,
-      intent,
-      answer: llmAnswer.answer,
-      claims,
-      sources: [],
-      confidence: Math.round(confidence * 100) / 100,
-      techniques,
-      risks: analysis.risks,
-      verified: false,
-      trace,
-      systemPrompt,
-      userPrompt,
-    };
   }
+
+  // ── Mode: Answer (default) — LLM only, no internet ──
+  const llmStart = Date.now();
+  const llmAnswer = await callLLMWithClarity(systemPrompt, userPrompt, apiKey);
+
+  trace.push({
+    step: "Clarity LLM Answer",
+    duration_ms: Date.now() - llmStart,
+    detail: `${llmAnswer.claims.length} claims (LLM only, no web verification)`,
+  });
+
+  const claims: ClarityClaim[] = llmAnswer.claims.map(claim => ({
+    claim,
+    origin: "llm" as const,
+    sources: [],
+    verified: false,
+  }));
+
+  const confidence = Math.min(0.65, 0.45 + claims.length * 0.02);
+
+  return {
+    original: prompt,
+    intent,
+    answer: llmAnswer.answer,
+    claims,
+    sources: [],
+    confidence: Math.round(confidence * 100) / 100,
+    techniques,
+    risks: analysis.risks,
+    verified: false,
+    mode: "answer",
+    trace,
+    systemPrompt,
+    userPrompt,
+  };
 }

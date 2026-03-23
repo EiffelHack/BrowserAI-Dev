@@ -150,13 +150,24 @@ export type ClarityTechnique =
   | "source_attribution"
   | "external_knowledge_restriction";
 
+/**
+ * Clarity mode:
+ * - "prompt": Returns only the enhanced system + user prompts (no LLM call, no web search).
+ *   Use this when you want your own LLM (e.g. Claude) to answer using the anti-hallucination prompts.
+ * - "answer": Calls LLM with anti-hallucination prompts, returns answer + claims. Fast, no internet.
+ * - "verified": Calls LLM + browse pipeline in parallel, fuses the best of both with source-backed claims.
+ */
+export type ClarityMode = "prompt" | "answer" | "verified";
+
 export type ClarityRequest = {
   prompt: string;
   /** Optional context documents to ground the prompt against */
   context?: string;
   /** Force a specific intent instead of auto-detecting */
   intent?: ClarityIntent;
-  /** When true, also verifies LLM answer against web sources and fuses the best of both */
+  /** Clarity mode: "prompt" (prompts only), "answer" (LLM answer), "verified" (LLM + web fusion) */
+  mode?: ClarityMode;
+  /** @deprecated Use mode instead. When true, equivalent to mode="verified". */
   verify?: boolean;
 };
 
@@ -174,13 +185,13 @@ export type ClarityResult = {
   original: string;
   /** Auto-detected or user-specified intent */
   intent: ClarityIntent;
-  /** The LLM-generated answer (using anti-hallucination system prompt) */
+  /** The LLM-generated answer (empty string when mode="prompt") */
   answer: string;
-  /** Extracted claims with origin tracking */
+  /** Extracted claims with origin tracking (empty when mode="prompt") */
   claims: ClarityClaim[];
-  /** Sources (empty when verify=false, populated when verify=true) */
+  /** Sources (empty when mode != "verified") */
   sources: BrowseSource[];
-  /** Confidence: LLM-assessed when verify=false, evidence-based when verify=true */
+  /** Confidence (0 when mode="prompt", LLM-assessed when mode="answer", evidence-based when mode="verified") */
   confidence: number;
   /** Which anti-hallucination techniques were applied */
   techniques: ClarityTechnique[];
@@ -188,13 +199,15 @@ export type ClarityResult = {
   risks: string[];
   /** Whether web verification was performed */
   verified: boolean;
+  /** The mode used: "prompt", "answer", or "verified" */
+  mode: ClarityMode;
   /** Execution trace */
   trace: TraceStep[];
   /** The anti-hallucination system prompt (for transparency) */
   systemPrompt: string;
   /** The rewritten user prompt */
   userPrompt: string;
-  /** Contradictions found between LLM claims and sources (verify=true only) */
+  /** Contradictions found between LLM claims and sources (verified mode only) */
   contradictions?: Contradiction[];
 };
 

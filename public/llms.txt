@@ -19,7 +19,7 @@ Previously known as `browse-ai` (npm) and `browseai` (PyPI) — renamed to `brow
 - **Answer**: Full pipeline — search, fetch, extract claims, verify, cite, score confidence
 - **Extract**: Structured claim extraction from any URL
 - **Compare**: Side-by-side raw LLM vs evidence-backed answer
-- **Clarity**: Anti-hallucination answer engine — two modes: (1) fast LLM-only answer with grounding techniques (no internet), (2) verified mode that also runs web pipeline and fuses the best of both into one source-backed answer
+- **Clarity**: Anti-hallucination answer engine — three modes: (1) prompt mode returns enhanced prompts only for your own LLM, (2) answer mode gives fast LLM-only answer with grounding techniques (no internet), (3) verified mode runs web pipeline and fuses LLM + sources into one source-backed answer
 - **Research Sessions**: Persistent multi-query sessions with knowledge accumulation
 - **Feedback**: Submit result feedback to improve future accuracy
 

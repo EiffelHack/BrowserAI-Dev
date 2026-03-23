@@ -696,6 +696,7 @@ export function registerBrowseRoutes(
       const result = await clarityPrompt(parsed.data.prompt, {
         context: parsed.data.context,
         intent: parsed.data.intent,
+        mode: parsed.data.mode,
         verify: parsed.data.verify,
         env: reqEnv,
         cache,

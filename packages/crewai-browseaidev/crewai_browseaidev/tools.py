@@ -163,33 +163,39 @@ class BrowseAIDevCompareTool(_ClientMixin, BaseTool):
 
 
 class ClarityInput(BaseModel):
-    prompt: str = Field(description="The raw prompt to rewrite with anti-hallucination techniques")
+    prompt: str = Field(description="The prompt to apply anti-hallucination techniques to")
     context: str | None = Field(default=None, description="Optional context for the prompt")
-    verify: bool = Field(default=False, description="Whether to verify the rewritten prompt with evidence")
+    mode: str | None = Field(default=None, description="'prompt' (enhanced prompts only), 'answer' (LLM answer, default), or 'verified' (LLM + web fusion)")
+    verify: bool = Field(default=False, description="Deprecated: use mode='verified' instead")
 
 
 class BrowseAIDevClarityTool(_ClientMixin, BaseTool):
-    """Clarity — anti-hallucination answer engine. Default: fast LLM answer with reduced hallucinations. verify=true: fuses LLM + web-verified results."""
+    """Clarity — anti-hallucination answer engine. Three modes: mode='prompt' (prompts only), mode='answer' (default, LLM answer), mode='verified' (LLM + web fusion)."""
 
     name: str = "browseaidev_clarity"
     description: str = (
-        "Clarity — anti-hallucination answer engine. Default: fast LLM-only answer "
-        "with reduced hallucinations (no internet). verify=true: also runs web pipeline "
-        "and fuses the best of both into one source-backed answer."
+        "Clarity — anti-hallucination answer engine. Three modes: "
+        "mode='prompt' returns enhanced prompts only (no LLM call). "
+        "mode='answer' (default) returns LLM answer with reduced hallucinations. "
+        "mode='verified' fuses LLM + web-verified results into source-backed answer."
     )
     args_schema: Type[BaseModel] = ClarityInput
 
-    def _run(self, prompt: str, context: str | None = None, verify: bool = False) -> str:
+    def _run(self, prompt: str, context: str | None = None, mode: str | None = None, verify: bool = False) -> str:
         client = self._get_client()
-        result = client.clarity(prompt, context=context, verify=verify)
+        result = client.clarity(prompt, context=context, mode=mode, verify=verify)
 
         parts = [
             f"**Intent:** {result.intent}",
+            f"**Mode:** {result.mode}",
             f"**Confidence:** {result.confidence:.0%}",
             f"**Verified:** {result.verified}",
-            f"\n**Answer:**\n{result.answer}",
-            f"\n**Techniques ({len(result.techniques)}):**",
         ]
+
+        if result.answer:
+            parts.append(f"\n**Answer:**\n{result.answer}")
+
+        parts.append(f"\n**Techniques ({len(result.techniques)}):**")
         for t in result.techniques:
             parts.append(f"  - {t}")
         if result.claims:
