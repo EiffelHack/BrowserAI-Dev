@@ -79,14 +79,37 @@ class BrowseResult(BaseModel):
     model_config = {"populate_by_name": True}
 
 
+class ClarityClaim(BaseModel):
+    """A claim from Clarity with origin tracking."""
+    claim: str
+    origin: Literal["llm", "source", "confirmed"]
+    sources: list[str] = []
+    verified: bool | None = None
+    verification_score: float | None = Field(None, alias="verificationScore")
+
+    model_config = {"populate_by_name": True}
+
+
 class ClarityResult(BaseModel):
-    """Clarity — anti-hallucination prompt engineering result."""
+    """Clarity — anti-hallucination answer engine result.
+
+    Two modes:
+    - verify=false (default): LLM-only answer with anti-hallucination techniques. Fast, no internet.
+    - verify=true: LLM answer + web-verified pipeline, fused into one answer with source-backed claims.
+    """
     original: str
     intent: Literal["factual_question", "document_qa", "content_generation", "agent_pipeline", "code_generation", "general"]
+    answer: str
+    claims: list[ClarityClaim] = []
+    sources: list[BrowseSource] = []
+    confidence: float = Field(ge=0, le=1)
+    techniques: list[str]
+    risks: list[str] = []
+    verified: bool = False
+    trace: list[TraceStep] = []
     system_prompt: str = Field(alias="systemPrompt")
     user_prompt: str = Field(alias="userPrompt")
-    techniques: list[str]
-    verification: BrowseResult | None = None
+    contradictions: list[Contradiction] | None = None
 
     model_config = {"populate_by_name": True}
 

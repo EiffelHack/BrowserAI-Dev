@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>BrowseAI Dev — Research Infra for AI Agents | MCP Server, REST API, Python SDK</title>
-    <meta name="description" content="Open source research infrastructure for AI agents. Evidence-backed web search with confidence scores, citation verification, contradiction detection, and Clarity anti-hallucination prompt engineering. MCP server, REST API, Python SDK." />
+    <meta name="description" content="Open source research infrastructure for AI agents. Evidence-backed web search with confidence scores, citation verification, contradiction detection, and Clarity anti-hallucination answer engine. MCP server, REST API, Python SDK." />
     <meta name="keywords" content="BrowseAI Dev, browseai.dev, browseaidev, browseai, browse-ai, browseai-dev, langchain-browseaidev, crewai-browseaidev, llamaindex-browseaidev, AI agent research, MCP server for AI, web search API, evidence-backed search, AI research infrastructure, LLM citation tool, fact verification API, Python SDK, LangChain tools, CrewAI tools, LlamaIndex tools, Claude MCP server, agent framework, confidence scoring, hallucination prevention, clarity, anti-hallucination, anti hallucination tool, reduce LLM hallucinations, anti-hallucination prompt engineering, prompt grounding, chain of verification, hallucination detection, LLM accuracy, pip install browseaidev, npx browseai-dev" />
     <meta name="author" content="BrowseAI Dev" />
     <link rel="canonical" href="https://browseai.dev/" />
@@ -37,7 +37,7 @@
       "@type": "SoftwareApplication",
       "name": "BrowseAI Dev",
       "alternateName": ["browseai.dev", "BrowseAI Developer Tools", "browseaidev", "browseai", "browse-ai", "browseai-dev"],
-      "description": "Open source research infrastructure for AI agents. Real-time web search with evidence-backed citations, confidence scores, and Clarity anti-hallucination prompt engineering. Available as MCP server, REST API, and Python SDK.",
+      "description": "Open source research infrastructure for AI agents. Real-time web search with evidence-backed citations, confidence scores, and Clarity anti-hallucination answer engine. Available as MCP server, REST API, and Python SDK.",
       "url": "https://browseai.dev",
       "applicationCategory": "DeveloperApplication",
       "operatingSystem": "Any",
@@ -104,7 +104,7 @@
           "name": "What is Clarity anti-hallucination?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Clarity is BrowseAI Dev's anti-hallucination prompt engineering tool. It analyzes any prompt, detects hallucination risks, and rewrites it with grounding techniques like chain-of-verification, citation-verify, and quote extraction to reduce LLM hallucinations. Use it via POST /browse/clarity, the browse_clarity MCP tool, or client.clarity() in the Python SDK."
+            "text": "Clarity is BrowseAI Dev's anti-hallucination answer engine. Two modes: (1) Default — fast LLM-only answer with anti-hallucination grounding techniques (no internet), (2) Verified — also runs the web search pipeline and fuses the best of both into one source-backed answer. Returns answer, claims (with origin tracking: llm/source/confirmed), confidence, and techniques applied. Use via POST /browse/clarity, browse_clarity MCP tool, or client.clarity() in the Python SDK."
           }
         },
         {

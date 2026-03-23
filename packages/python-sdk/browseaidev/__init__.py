@@ -13,6 +13,8 @@ from .models import (
     BrowseClaim,
     BrowseResult,
     BrowseSource,
+    ClarityClaim,
+    ClarityResult,
     CompareResult,
     Contradiction,
     KnowledgeEntry,
@@ -53,7 +55,9 @@ __all__ = [
     "PremiumQuota",
     "SearchProviderConfig",
     "NLIScore",
+    "ClarityClaim",
+    "ClarityResult",
     "DISCLAIMER",
 ]
 
-__version__ = "0.1.9"
+__version__ = "0.2.0"

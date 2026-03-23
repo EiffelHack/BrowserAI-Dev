@@ -36,7 +36,7 @@ export function ClarityToggle({ enabled, setEnabled, quota, size = "md" }: Clari
 
     if (next && blocked) {
       if (!isLoggedIn) {
-        setHint("Clarity rewrites prompts to reduce hallucinations — requires BAI key, sign in to unlock");
+        setHint("Clarity generates answers with reduced hallucinations — requires BAI key, sign in to unlock");
       } else if (quota && !quota.premiumActive) {
         setHint("Premium quota exhausted — Clarity unavailable until reset");
       }
@@ -97,7 +97,7 @@ export function ClarityToggle({ enabled, setEnabled, quota, size = "md" }: Clari
       <button
         onClick={handleClick}
         className={`${baseClass} ${colorClass} flex items-center gap-1`}
-        title="Clarity — anti-hallucination prompt engineering"
+        title="Clarity — anti-hallucination answer engine"
       >
         {enabled && blocked && <Lock className="w-3 h-3" />}
         <Shield className="w-3 h-3" />

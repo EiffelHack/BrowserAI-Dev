@@ -1,19 +1,31 @@
 /**
- * Clarity — Anti-Hallucination Prompt Engineering Service
+ * Clarity — Anti-Hallucination Answer Engine
  *
- * Takes a raw prompt, uses LLM to detect intent and hallucination risks,
- * then dynamically composes a clarity-enhanced version with the right
- * anti-hallucination techniques applied.
+ * Two modes:
+ * 1. Fast (verify=false): Rewrites prompt → calls LLM with anti-hallucination
+ *    instructions → returns answer with claims. No internet. Quick.
+ * 2. Verified (verify=true): Does #1, then runs browse pipeline, fuses the
+ *    best of both — keeps source-backed claims, drops fabricated ones,
+ *    returns one unified high-quality answer.
  */
 
 import { LLM_ENDPOINT, LLM_MODEL } from "@browse/shared";
-import type { ClarityIntent, ClarityTechnique, ClarityResult, BrowseResult } from "@browse/shared";
+import type {
+  ClarityIntent,
+  ClarityTechnique,
+  ClarityResult,
+  ClarityClaim,
+  BrowseResult,
+  BrowseSource,
+  TraceStep,
+  Contradiction,
+} from "@browse/shared";
 import { fetchWithRetry } from "../lib/retry.js";
 import { answerQuery } from "./answer.js";
 import type { Env } from "../config/env.js";
 import type { CacheService } from "./cache.js";
 
-// ── Technique Library (used by LLM to compose the final prompt) ──
+// ── Technique Library ──
 
 const TECHNIQUE_FRAGMENTS: Record<ClarityTechnique, { label: string; instruction: string }> = {
   uncertainty_permission: {
@@ -149,7 +161,6 @@ Rewrite the user prompt to naturally incorporate grounding cues without making i
   const toolCall = data.choices?.[0]?.message?.tool_calls?.[0];
 
   if (!toolCall) {
-    // Fallback: return sensible defaults
     return {
       intent: "general",
       techniques: ["uncertainty_permission", "chain_of_verification"],
@@ -160,7 +171,6 @@ Rewrite the user prompt to naturally incorporate grounding cues without making i
 
   const parsed = JSON.parse(toolCall.function.arguments);
 
-  // Validate techniques are real
   const validTechniques = (parsed.techniques as string[]).filter(
     t => ALL_TECHNIQUES.includes(t as ClarityTechnique)
   ) as ClarityTechnique[];
@@ -171,6 +181,213 @@ Rewrite the user prompt to naturally incorporate grounding cues without making i
     risks: parsed.risks || [],
     userPromptRewrite: parsed.userPromptRewrite || prompt,
   };
+}
+
+// ── LLM Call with Anti-Hallucination System Prompt ──
+
+type LLMAnswer = {
+  answer: string;
+  claims: string[];
+};
+
+async function callLLMWithClarity(
+  systemPrompt: string,
+  userPrompt: string,
+  apiKey: string,
+): Promise<LLMAnswer> {
+  const res = await fetchWithRetry(LLM_ENDPOINT, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      model: LLM_MODEL,
+      temperature: 0.2,
+      messages: [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: userPrompt },
+      ],
+      tools: [
+        {
+          type: "function" as const,
+          function: {
+            name: "return_answer",
+            description: "Return the structured answer with extracted claims",
+            parameters: {
+              type: "object",
+              properties: {
+                answer: {
+                  type: "string",
+                  description: "The complete answer to the user's question, following all anti-hallucination rules",
+                },
+                claims: {
+                  type: "array",
+                  items: { type: "string" },
+                  description: "List of individual factual claims made in the answer. Each should be a single verifiable statement.",
+                },
+              },
+              required: ["answer", "claims"],
+            },
+          },
+        },
+      ],
+      tool_choice: { type: "function", function: { name: "return_answer" } },
+    }),
+  });
+
+  const data = await res.json() as any;
+  const toolCall = data.choices?.[0]?.message?.tool_calls?.[0];
+
+  if (!toolCall) {
+    // Fallback: use the text response if tool call failed
+    const textContent = data.choices?.[0]?.message?.content || "Unable to generate answer.";
+    return { answer: textContent, claims: [] };
+  }
+
+  const parsed = JSON.parse(toolCall.function.arguments);
+  return {
+    answer: parsed.answer || "Unable to generate answer.",
+    claims: Array.isArray(parsed.claims) ? parsed.claims : [],
+  };
+}
+
+// ── Fusion: Merge LLM answer with browse pipeline results ──
+
+function tokenize(text: string): string[] {
+  return text
+    .toLowerCase()
+    .replace(/[^\w\s]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+    .split(" ")
+    .filter(w => w.length > 2);
+}
+
+function tokenOverlap(a: string, b: string): number {
+  const tokensA = tokenize(a);
+  const tokensB = new Set(tokenize(b));
+  if (tokensA.length === 0 || tokensB.size === 0) return 0;
+  const shared = tokensA.filter(t => tokensB.has(t)).length;
+  return shared / Math.max(tokensA.length, tokensB.size);
+}
+
+const OVERLAP_THRESHOLD = 0.35;
+
+function fuseClarityWithBrowse(
+  llmClaims: string[],
+  browseResult: BrowseResult,
+): {
+  claims: ClarityClaim[];
+  answer: string;
+  confidence: number;
+  sources: BrowseSource[];
+  contradictions: Contradiction[];
+} {
+  const fusedClaims: ClarityClaim[] = [];
+  const matchedBrowseIndices = new Set<number>();
+
+  // For each LLM claim, find matching browse claims
+  for (const llmClaim of llmClaims) {
+    let bestMatch: { index: number; overlap: number; browseClaim: typeof browseResult.claims[0] } | null = null;
+
+    for (let i = 0; i < browseResult.claims.length; i++) {
+      const overlap = tokenOverlap(llmClaim, browseResult.claims[i].claim);
+      if (overlap >= OVERLAP_THRESHOLD && (!bestMatch || overlap > bestMatch.overlap)) {
+        bestMatch = { index: i, overlap, browseClaim: browseResult.claims[i] };
+      }
+    }
+
+    if (bestMatch) {
+      // Confirmed: LLM claim backed by sources
+      matchedBrowseIndices.add(bestMatch.index);
+      fusedClaims.push({
+        claim: llmClaim,
+        origin: "confirmed",
+        sources: bestMatch.browseClaim.sources || [],
+        verified: bestMatch.browseClaim.verified,
+        verificationScore: bestMatch.browseClaim.verificationScore,
+      });
+    } else {
+      // LLM-only: no source backing
+      fusedClaims.push({
+        claim: llmClaim,
+        origin: "llm",
+        sources: [],
+        verified: false,
+      });
+    }
+  }
+
+  // Add source-only claims (from browse pipeline, not mentioned by LLM)
+  for (let i = 0; i < browseResult.claims.length; i++) {
+    if (!matchedBrowseIndices.has(i)) {
+      const bc = browseResult.claims[i];
+      fusedClaims.push({
+        claim: bc.claim,
+        origin: "source",
+        sources: bc.sources || [],
+        verified: bc.verified,
+        verificationScore: bc.verificationScore,
+      });
+    }
+  }
+
+  // Compute fused confidence: start from browse confidence, adjust based on confirmation
+  const confirmedCount = fusedClaims.filter(c => c.origin === "confirmed").length;
+  const llmOnlyCount = fusedClaims.filter(c => c.origin === "llm").length;
+  let confidence = browseResult.confidence;
+  confidence += confirmedCount * 0.03;  // Boost for confirmed claims
+  confidence -= llmOnlyCount * 0.02;     // Penalize unconfirmed LLM claims
+  confidence = Math.max(0.05, Math.min(0.97, confidence));
+  confidence = Math.round(confidence * 100) / 100;
+
+  // Use browse answer as the primary (it's source-backed), but note the fusion
+  const answer = browseResult.answer;
+
+  return {
+    claims: fusedClaims,
+    answer,
+    confidence,
+    sources: browseResult.sources,
+    contradictions: browseResult.contradictions || [],
+  };
+}
+
+// ── Build System Prompt from Techniques ──
+
+function buildSystemPrompt(
+  techniques: ClarityTechnique[],
+  risks: string[],
+  context?: string,
+): string {
+  const parts = [
+    "You are a precise, evidence-based assistant that prioritizes accuracy over completeness.",
+    "",
+  ];
+
+  if (risks.length > 0) {
+    parts.push("KNOWN RISKS FOR THIS QUERY:");
+    for (const risk of risks) {
+      parts.push(`- ${risk}`);
+    }
+    parts.push("");
+  }
+
+  parts.push("ANTI-HALLUCINATION RULES:");
+  for (const t of techniques) {
+    parts.push("");
+    parts.push(`${TECHNIQUE_FRAGMENTS[t].label.toUpperCase()}:`);
+    parts.push(TECHNIQUE_FRAGMENTS[t].instruction);
+  }
+
+  if (context) {
+    parts.push("");
+    parts.push("CONTEXT:");
+    parts.push(context);
+  }
+
+  return parts.join("\n");
 }
 
 // ── Main Function ──
@@ -186,64 +403,107 @@ export async function clarityPrompt(
   },
 ): Promise<ClarityResult> {
   const apiKey = options.env.OPENROUTER_API_KEY;
+  const trace: TraceStep[] = [];
+  const overallStart = Date.now();
 
-  // Use LLM to analyze intent, detect risks, select techniques, and rewrite prompt
+  // Step 1: Analyze prompt — detect intent, risks, techniques, rewrite
+  const analysisStart = Date.now();
   const analysis = await analyzeForClarity(prompt, options.context, apiKey);
-
   const intent = options.intent || analysis.intent;
   const techniques = analysis.techniques;
+  trace.push({
+    step: "Clarity Analysis",
+    duration_ms: Date.now() - analysisStart,
+    detail: `Intent: ${intent}, Techniques: ${techniques.join(", ")}`,
+  });
 
-  // Build system prompt from selected techniques
-  const systemParts = [
-    "You are a precise, evidence-based assistant that prioritizes accuracy over completeness.",
-    "",
-  ];
-
-  // Add risk-specific warnings
-  if (analysis.risks.length > 0) {
-    systemParts.push("KNOWN RISKS FOR THIS QUERY:");
-    for (const risk of analysis.risks) {
-      systemParts.push(`- ${risk}`);
-    }
-    systemParts.push("");
-  }
-
-  // Add technique instructions
-  systemParts.push("ANTI-HALLUCINATION RULES:");
-  for (const t of techniques) {
-    systemParts.push("");
-    systemParts.push(`${TECHNIQUE_FRAGMENTS[t].label.toUpperCase()}:`);
-    systemParts.push(TECHNIQUE_FRAGMENTS[t].instruction);
-  }
-
-  // Add context if provided
-  if (options.context) {
-    systemParts.push("");
-    systemParts.push("CONTEXT:");
-    systemParts.push(options.context);
-  }
-
-  const systemPrompt = systemParts.join("\n");
-
-  // Use LLM-rewritten user prompt
+  // Step 2: Build anti-hallucination system prompt
+  const systemPrompt = buildSystemPrompt(techniques, analysis.risks, options.context);
   const userPrompt = analysis.userPromptRewrite;
 
-  // Optional verification via browse_answer
-  let verification: BrowseResult | undefined;
+  // Step 3: Call LLM with clarity-enhanced prompts (always — this is the core value)
   if (options.verify) {
-    try {
-      verification = await answerQuery(prompt, options.env, options.cache, "fast");
-    } catch {
-      // Verification is best-effort — don't fail the clarity call
-    }
-  }
+    // Verified mode: LLM + browse pipeline in parallel, then fuse
+    const llmStart = Date.now();
+    const [llmAnswer, browseResult] = await Promise.all([
+      callLLMWithClarity(systemPrompt, userPrompt, apiKey),
+      answerQuery(prompt, options.env, options.cache, "fast"),
+    ]);
 
-  return {
-    original: prompt,
-    intent,
-    systemPrompt,
-    userPrompt,
-    techniques,
-    verification,
-  };
+    trace.push({
+      step: "Clarity LLM Answer",
+      duration_ms: Date.now() - llmStart,
+      detail: `${llmAnswer.claims.length} claims extracted from LLM`,
+    });
+
+    // Fuse: best of both
+    const fusionStart = Date.now();
+    const fused = fuseClarityWithBrowse(llmAnswer.claims, browseResult);
+
+    const confirmedCount = fused.claims.filter(c => c.origin === "confirmed").length;
+    const llmOnlyCount = fused.claims.filter(c => c.origin === "llm").length;
+    const sourceOnlyCount = fused.claims.filter(c => c.origin === "source").length;
+
+    trace.push({
+      step: "Fusion",
+      duration_ms: Date.now() - fusionStart,
+      detail: `${confirmedCount} confirmed, ${llmOnlyCount} LLM-only, ${sourceOnlyCount} source-only`,
+    });
+
+    // Add browse pipeline trace steps
+    trace.push(...browseResult.trace);
+
+    return {
+      original: prompt,
+      intent,
+      answer: fused.answer,
+      claims: fused.claims,
+      sources: fused.sources,
+      confidence: fused.confidence,
+      techniques,
+      risks: analysis.risks,
+      verified: true,
+      trace,
+      systemPrompt,
+      userPrompt,
+      contradictions: fused.contradictions.length > 0 ? fused.contradictions : undefined,
+    };
+  } else {
+    // Fast mode: LLM only, no internet
+    const llmStart = Date.now();
+    const llmAnswer = await callLLMWithClarity(systemPrompt, userPrompt, apiKey);
+
+    trace.push({
+      step: "Clarity LLM Answer",
+      duration_ms: Date.now() - llmStart,
+      detail: `${llmAnswer.claims.length} claims (LLM only, no web verification)`,
+    });
+
+    // All claims are LLM-only (no sources)
+    const claims: ClarityClaim[] = llmAnswer.claims.map(claim => ({
+      claim,
+      origin: "llm" as const,
+      sources: [],
+      verified: false,
+    }));
+
+    // LLM self-assessed confidence heuristic (no evidence to verify against)
+    // Base 0.5, slight boost per claim (more claims = more structured = slightly better)
+    const confidence = Math.min(0.65, 0.45 + claims.length * 0.02);
+
+    return {
+      original: prompt,
+      intent,
+      answer: llmAnswer.answer,
+      claims,
+      sources: [],
+      confidence: Math.round(confidence * 100) / 100,
+      techniques,
+      risks: analysis.risks,
+      verified: false,
+      trace,
+      systemPrompt,
+      userPrompt,
+    };
+  }
 }

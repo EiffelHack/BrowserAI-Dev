@@ -90,15 +90,23 @@ browse_answer({
 
 Present the answer with inline citations, highlight any contradictions between studies, and note the confidence score.
 
-## Clarity: Anti-Hallucination Prompt Engineering
+## Clarity: Anti-Hallucination Answer Engine
 
-Before generating content or answering questions, use `browse_clarity` to automatically apply anti-hallucination techniques to your prompt:
+Use `browse_clarity` to get answers with reduced hallucinations — two modes:
 
+**Fast (no internet)** — LLM-only answer with anti-hallucination grounding techniques:
 ```
-browse_clarity({ prompt: "Your question or instruction here", verify: true })
+browse_clarity({ prompt: "Explain the causes of the 2008 financial crisis" })
 ```
 
-This returns a Clarity system prompt + rewritten user prompt with anti-hallucination grounding cues. Use these with any LLM to get more factual outputs. Combine with `browse_answer` for full verification.
+**Verified (with internet)** — LLM answer + web pipeline, fused into one answer with source-backed claims:
+```
+browse_clarity({ prompt: "Explain the causes of the 2008 financial crisis", verify: true })
+```
+
+The response includes: `answer`, `claims[]` (each with `origin`: "llm", "source", or "confirmed"), `confidence`, `techniques`, `risks`, and `verified` (whether web sources were consulted).
+
+Use fast mode when speed matters. Use verified mode when accuracy matters.
 
 ## Tips
 

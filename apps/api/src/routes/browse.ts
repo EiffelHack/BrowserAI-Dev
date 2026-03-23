@@ -678,7 +678,7 @@ export function registerBrowseRoutes(
     }
   });
 
-  // Clarity — anti-hallucination prompt engineering
+  // Clarity — anti-hallucination answer engine
   app.post("/browse/clarity", async (request, reply) => {
     const parsed = ClarityRequestSchema.safeParse(request.body);
     if (!parsed.success)

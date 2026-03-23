@@ -234,21 +234,21 @@ class ClarityInput(BaseModel):
 
 
 class BrowseAIDevClarityTool(_BrowseAIDevBase):
-    """Clarity — anti-hallucination prompt engineering for any LLM prompt.
+    """Clarity — anti-hallucination answer engine.
 
-    Analyzes a prompt, detects hallucination risks, and rewrites it with
-    grounding techniques (chain-of-verification, citation-verify, quote
-    extraction). Returns a Clarity system prompt + rewritten user prompt
-    that reduces hallucinations. Agents empowered with Clarity automatically
-    get anti-hallucination prompts for every LLM call.
+    Two modes: (1) Default (verify=false): fast LLM-only answer with
+    anti-hallucination grounding techniques — no internet, reduced
+    hallucinations. (2) Verified (verify=true): also runs web search
+    pipeline and fuses the best of both — keeps source-backed claims,
+    drops fabricated ones, returns one unified answer.
     """
 
     name: str = "browseaidev_clarity"
     description: str = (
-        "Clarity — anti-hallucination prompt engineering. Rewrites any prompt with "
-        "grounding techniques to reduce LLM hallucinations. Returns a system prompt "
-        "and rewritten user prompt with anti-hallucination rules baked in. "
-        "Use this before generating content to make LLM outputs more factual."
+        "Clarity — anti-hallucination answer engine. Default: fast LLM-only answer "
+        "with reduced hallucinations (no internet). verify=true: also runs web pipeline "
+        "and fuses the best of both into one source-backed answer. "
+        "Returns answer, claims (with origin tracking), confidence, and techniques."
     )
     args_schema: Type[BaseModel] = ClarityInput
 

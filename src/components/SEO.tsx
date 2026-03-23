@@ -10,7 +10,7 @@ interface SEOProps {
 }
 
 const SITE_NAME = "BrowseAI Dev";
-const DEFAULT_DESC = "Research infrastructure for AI agents. Evidence-backed web search with citations, confidence scores, and Clarity anti-hallucination prompt engineering. MCP server, REST API, and Python SDK.";
+const DEFAULT_DESC = "Research infrastructure for AI agents. Evidence-backed web search with citations, confidence scores, and Clarity anti-hallucination answer engine. MCP server, REST API, and Python SDK.";
 const BASE_URL = "https://browseai.dev";
 
 export function SEO({
