@@ -604,8 +604,12 @@ const Index = () => {
             return (
               <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="flex flex-col lg:flex-row gap-0 rounded-xl border border-border overflow-hidden bg-card">
                 {/* Sidebar */}
-                <div className="lg:w-72 shrink-0 border-b lg:border-b-0 lg:border-r border-border">
-                  <div className="flex lg:flex-col overflow-x-auto lg:overflow-x-visible">
+                <div className="lg:w-72 shrink-0 border-b lg:border-b-0 lg:border-r border-border relative">
+                  {/* Mobile scroll hint */}
+                  <div className="lg:hidden absolute right-0 top-0 bottom-0 w-10 bg-gradient-to-l from-card to-transparent z-10 pointer-events-none flex items-center justify-end pr-1">
+                    <ArrowRight className="w-3.5 h-3.5 text-muted-foreground animate-pulse" />
+                  </div>
+                  <div className="flex lg:flex-col overflow-x-auto lg:overflow-x-visible scrollbar-hide">
                     {useCases.map((uc, i) => {
                       const Icon = uc.icon;
                       return (
@@ -697,6 +701,55 @@ const Index = () => {
               </motion.div>
             );
           })()}
+        </div>
+      </section>
+
+      {/* ===== FOR HUMANS TOO ===== */}
+      <section className="py-24 px-6 border-t border-border relative">
+        <div className="absolute inset-0 grid-bg grid-bg-fade pointer-events-none opacity-30" />
+        <div className="max-w-5xl mx-auto relative">
+          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-16">
+            <Badge variant="outline" className="text-xs font-normal mb-6">Not Just for Agents</Badge>
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">Research you can trust. <span className="text-shimmer">For everyone.</span></h2>
+            <p className="text-muted-foreground max-w-xl mx-auto">Agents use our infrastructure. But so can you. Every search is verified, every claim is sourced, every answer has a confidence score.</p>
+          </motion.div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {[
+              { icon: DollarSign, title: "Shopping & Products", desc: "\"Best noise-cancelling headphones under $300\" — with real reviews, not sponsored content.", query: "Best noise-cancelling headphones under $300 in 2026" },
+              { icon: HeartPulse, title: "Health & Wellness", desc: "\"Is intermittent fasting effective?\" — verified against medical sources, not influencer claims.", query: "Is intermittent fasting effective for weight loss?" },
+              { icon: Newspaper, title: "News & Current Events", desc: "\"What's really happening with AI regulation?\" — cross-referenced across multiple outlets.", query: "What are the latest AI regulations in 2026?" },
+              { icon: GraduationCap, title: "Learning & Education", desc: "\"How do mRNA vaccines work?\" — explained with cited sources, not hallucinated details.", query: "How do mRNA vaccines work?" },
+              { icon: Scale, title: "Legal & Finance", desc: "\"Can my landlord raise rent 20%?\" — backed by actual legal sources for your jurisdiction.", query: "What are tenant rights for rent increases?" },
+              { icon: Microscope, title: "Deep Research", desc: "\"Quantum computing vs classical for drug discovery\" — multi-source analysis with contradictions surfaced.", query: "Quantum computing advantages for drug discovery" },
+            ].map((item, i) => (
+              <motion.div
+                key={item.title}
+                initial={{ opacity: 0, y: 15 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: Math.min(i * 0.08, 0.4) }}
+                className="group p-5 rounded-xl border border-border bg-card/50 card-lift hover:border-accent/20 transition-all duration-300 hover:shadow-lg hover:shadow-accent/5 cursor-pointer"
+                onClick={() => navigate(`/results?q=${encodeURIComponent(item.query)}&depth=thorough`)}
+              >
+                <div className="flex items-start gap-3">
+                  <div className="w-9 h-9 rounded-lg bg-accent/10 flex items-center justify-center shrink-0 group-hover:bg-accent/20 transition-colors">
+                    <item.icon className="w-4 h-4 text-accent" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-sm mb-1">{item.title}</h3>
+                    <p className="text-xs text-muted-foreground leading-relaxed">{item.desc}</p>
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+
+          <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} className="text-center mt-10">
+            <Button variant="outline" size="sm" onClick={() => navigate("/playground")} className="gap-2 hover:border-accent/30">
+              <Search className="w-3.5 h-3.5" /> Try it yourself
+            </Button>
+          </motion.div>
         </div>
       </section>
 
