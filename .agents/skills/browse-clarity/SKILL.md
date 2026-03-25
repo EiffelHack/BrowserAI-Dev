@@ -1,6 +1,6 @@
 ---
 name: browse-clarity
-description: Reduce LLM hallucinations through evidence-backed prompt engineering. Use when crafting prompts, system instructions, or AI pipelines that need factual accuracy — not just vibes.
+description: "Reduce LLM hallucinations through evidence-backed prompt engineering. Use when crafting prompts, system instructions, or AI pipelines that need factual accuracy."
 ---
 
 # BrowseAI Dev — Anti-Hallucination Prompt Engineering

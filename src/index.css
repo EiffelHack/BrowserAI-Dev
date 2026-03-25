@@ -71,6 +71,14 @@
   .glow-accent {
     box-shadow: 0 0 40px -10px hsl(150 60% 45% / 0.3);
   }
+
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
 }
 
 /* ── Flow dot animation ── */
@@ -89,16 +97,22 @@
 
 .glow-pulse {
   animation: glowPulse 3s ease-in-out infinite;
-  will-change: box-shadow;
 }
 
 /* ── Respect reduced motion ── */
 @media (prefers-reduced-motion: reduce) {
-  .glow-pulse, .border-glow, .animate-float, .text-shimmer, .dot-pulse, .terminal-card::after {
-    animation: none !important;
-  }
+  .glow-pulse,
+  .border-glow,
+  .animate-float,
+  .text-shimmer,
+  .dot-pulse,
+  .terminal-card::after,
   .gradient-border::before {
     animation: none !important;
+    transition: none !important;
+  }
+  .card-lift {
+    transition: none !important;
   }
   .card-lift:hover {
     transform: none;
@@ -174,38 +188,49 @@
 }
 
 /* ── Scan line effect for terminal cards ── */
+/* Simplified for mobile Safari: uses opacity transition instead of top animation on ::after */
 @keyframes scanline {
-  0% { top: -4px; }
-  100% { top: 100%; }
+  0% { transform: translateY(-4px); }
+  100% { transform: translateY(var(--scanline-travel, 300px)); }
 }
 
 .terminal-card {
   position: relative;
   overflow: hidden;
+  --scanline-travel: 300px;
 }
 
 .terminal-card::after {
   content: '';
   position: absolute;
-  top: -4px;
+  top: 0;
   left: 0;
   right: 0;
   height: 4px;
   background: linear-gradient(180deg, transparent, hsl(150 60% 45% / 0.1), transparent);
   animation: scanline 4s linear infinite;
   pointer-events: none;
+  will-change: transform;
 }
 
 /* ── Rotating gradient border ── */
+/* @property --angle enables conic-gradient rotation in browsers that support it (Safari 15.4+, Chrome 85+).
+   Fallback: browsers without @property support get a static gradient border instead. */
+@property --angle {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+
 @keyframes rotate-gradient {
   0% { --angle: 0deg; }
   100% { --angle: 360deg; }
 }
 
-@property --angle {
-  syntax: "<angle>";
-  initial-value: 0deg;
-  inherits: false;
+/* Fallback rotation for browsers without @property support (older Safari) */
+@keyframes rotate-gradient-fallback {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 
 .gradient-border {
@@ -220,14 +245,26 @@
   position: absolute;
   inset: -1px;
   border-radius: inherit;
-  background: conic-gradient(from var(--angle), hsl(150 60% 45% / 0.3), transparent 40%, hsl(150 60% 45% / 0.3), transparent 80%);
-  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  /* Fallback: static gradient for browsers without @property */
+  background: conic-gradient(from 0deg, hsl(150 60% 45% / 0.3), transparent 40%, hsl(150 60% 45% / 0.3), transparent 80%);
+  -webkit-mask-image: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
   -webkit-mask-composite: xor;
+  mask-image: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
   mask-composite: exclude;
   padding: 1px;
-  animation: rotate-gradient 4s linear infinite;
   pointer-events: none;
+  /* Fallback animation uses transform rotation on the whole pseudo-element */
+  animation: rotate-gradient-fallback 4s linear infinite;
+  will-change: transform;
+}
+
+/* Progressive enhancement: browsers that support @property get the smooth conic-gradient animation */
+@supports (background: conic-gradient(from var(--angle), red, blue)) {
+  .gradient-border::before {
+    background: conic-gradient(from var(--angle), hsl(150 60% 45% / 0.3), transparent 40%, hsl(150 60% 45% / 0.3), transparent 80%);
+    animation: rotate-gradient 4s linear infinite;
+    will-change: auto;
+  }
 }
 
 /* ── Pulsing dot ── */
@@ -241,11 +278,14 @@
 }
 
 /* ── Card lift on hover ── */
+/* Wrapped in @media (hover: hover) to prevent sticky hover states on mobile touch devices */
 .card-lift {
   transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
-.card-lift:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 30px -10px hsl(150 60% 45% / 0.15);
+@media (hover: hover) {
+  .card-lift:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px -10px hsl(150 60% 45% / 0.15);
+  }
 }
