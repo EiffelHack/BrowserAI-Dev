@@ -453,14 +453,53 @@ export async function clarityPrompt(
     const llmStart = Date.now();
     const [llmAnswer, browseResult] = await Promise.all([
       callLLMWithClarity(systemPrompt, userPrompt, apiKey),
-      answerQuery(prompt, options.env, options.cache, "fast"),
+      answerQuery(prompt, options.env, options.cache, "fast").catch((err) => {
+        // First attempt failed — retry with minimal env (Tavily + OpenRouter only)
+        console.warn("Browse pipeline failed, retrying with minimal keys:", err?.message || err);
+        const minimalEnv = {
+          ...options.env,
+          HF_API_KEY: undefined,
+          BRAVE_API_KEY: undefined,
+          EXA_API_KEY: undefined,
+        };
+        return answerQuery(prompt, minimalEnv, options.cache, "fast").catch((retryErr) => {
+          console.warn("Browse pipeline retry also failed, degrading to LLM-only:", retryErr?.message || retryErr);
+          return null;
+        });
+      }),
     ]);
 
     trace.push({
       step: "Clarity LLM Answer",
       duration_ms: Date.now() - llmStart,
-      detail: `${llmAnswer.claims.length} claims extracted from LLM`,
+      detail: `${llmAnswer.claims.length} claims extracted from LLM${browseResult ? "" : " (browse pipeline failed, LLM-only fallback)"}`,
     });
+
+    // If browse pipeline completely failed (even with minimal keys), return LLM-only answer
+    if (!browseResult) {
+      const claims: ClarityClaim[] = llmAnswer.claims.map(claim => ({
+        claim,
+        origin: "llm" as const,
+        sources: [],
+        verified: false,
+      }));
+
+      return {
+        original: prompt,
+        intent,
+        answer: llmAnswer.answer,
+        claims,
+        sources: [],
+        confidence: 0.4,
+        techniques,
+        risks: [...analysis.risks, "browse pipeline unavailable — LLM answer not verified"],
+        verified: false,
+        mode: "verified",
+        trace,
+        systemPrompt,
+        userPrompt,
+      };
+    }
 
     const fusionStart = Date.now();
     const fused = fuseClarityWithBrowse(llmAnswer.claims, browseResult);

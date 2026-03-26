@@ -247,8 +247,10 @@ function errorResponse(e: unknown, fallbackMsg: string): { status: number; error
   if (msg.includes("Rate limit") || msg.includes("rate limit") || msg.includes("429")) return { status: 429, error: "Rate limit exceeded. Please try again in a minute." };
   if (msg.includes("credits") || msg.includes("insufficient") || msg.includes("402")) return { status: 402, error: msg };
   if (msg.includes("No search results")) return { status: 404, error: "No results found. Try rephrasing your question." };
-  if (msg.includes("Tavily") || msg.includes("search failed")) return { status: 502, error: "Search service temporarily unavailable. Please try again." };
+  if (msg.includes("Tavily") || msg.includes("search failed")) return { status: 502, error: msg || "Search service temporarily unavailable. Please try again." };
   if (msg.includes("LLM") || msg.includes("parse")) return { status: 502, error: "AI processing error. Please try again." };
+  // Pass through actual error message instead of swallowing it
+  if (msg) return { status: 500, error: `${fallbackMsg}: ${msg}` };
   return { status: 500, error: fallbackMsg };
 }
 
@@ -332,9 +334,11 @@ export function registerBrowseRoutes(
     } catch (e: unknown) {
       request.log.error(e);
       const err = e as { statusCode?: number; message?: string };
-      const msg = err.message?.includes("not allowed") ? err.message : "Failed to open page";
-      const { status, error } = err.statusCode ? { status: err.statusCode, error: err.message || msg } : { status: 500, error: msg };
-      return reply.status(status).send({ success: false, error });
+      const msg = err.message || "Failed to open page";
+      const isTimeout = msg.includes("aborted") || msg.includes("timeout") || msg.includes("TIMEOUT");
+      const errorMsg = isTimeout ? `Page fetch timed out: ${msg}` : msg.includes("not allowed") ? msg : `Failed to open page: ${msg}`;
+      const status = err.statusCode || (isTimeout ? 504 : 500);
+      return reply.status(status).send({ success: false, error: errorMsg });
     }
   });
 
