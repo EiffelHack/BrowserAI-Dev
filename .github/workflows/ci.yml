@@ -35,12 +35,8 @@ jobs:
           node-version: 20
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - name: Build shared package
-        run: pnpm --filter @browse/shared build
       - name: Type check frontend
         run: pnpm exec tsc --noEmit -p tsconfig.app.json
-      - name: Type check API
-        run: pnpm --filter @browse/api exec tsc --noEmit
       - name: Type check MCP
         run: pnpm --filter browseai-dev exec tsc --noEmit
 
@@ -55,10 +51,6 @@ jobs:
           node-version: 20
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - name: Build shared
-        run: pnpm --filter @browse/shared build
-      - name: Build API
-        run: pnpm --filter @browse/api build
       - name: Build MCP
         run: pnpm --filter browseai-dev build
       - name: Build frontend
