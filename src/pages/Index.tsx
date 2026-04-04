@@ -452,7 +452,7 @@ const Index = () => {
       <section className="py-24 px-6 border-t border-border overflow-hidden">
         <div className="max-w-4xl mx-auto">
           <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-16">
-            <Badge variant="outline" className="text-xs font-normal mb-6">The Verification Layer</Badge>
+            <Badge variant="outline" className="text-xs font-normal mb-6">Grounded Intelligence</Badge>
             <h2 className="text-3xl md:text-4xl font-bold mb-4">
               Agents act fast.
               <br />
