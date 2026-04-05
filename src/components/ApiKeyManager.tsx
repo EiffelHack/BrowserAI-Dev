@@ -26,6 +26,8 @@ export function ApiKeyManager() {
 
   // Form state
   const [label, setLabel] = useState("");
+  const [openrouterKey, setOpenrouterKey] = useState("");
+  const [tavilyKey, setTavilyKey] = useState("");
   const [creating, setCreating] = useState(false);
 
   // Newly created key dialog
@@ -58,9 +60,13 @@ export function ApiKeyManager() {
     try {
       const result = await createApiKey(
         label.trim() || undefined,
+        openrouterKey.trim() || undefined,
+        tavilyKey.trim() || undefined,
       );
       setNewKey(result.apiKey);
       setLabel("");
+      setOpenrouterKey("");
+      setTavilyKey("");
       fetchKeys();
     } catch (e: any) {
       setError(e.message);
@@ -135,17 +141,23 @@ export function ApiKeyManager() {
           <form className="space-y-3" onSubmit={(e) => { e.preventDefault(); handleCreate(); }}>
             <p className="text-sm text-muted-foreground">
               Generate a BrowseAI Dev API key to use with MCP, Python SDK, REST API, and CLI.
-              Each key includes 100 premium queries/day with the full Grounded Intelligence verification pipeline.
+              Add your OpenRouter and Tavily keys to get unlimited access with the full Grounded Intelligence verification pipeline.
             </p>
-
-            <div className="p-4 rounded-lg bg-accent/5 border border-accent/20 space-y-3">
-              <div className="p-2.5 rounded-md bg-emerald-500/5 border border-emerald-500/15 space-y-1">
-                <p className="text-[11px] font-medium text-emerald-400">What you get with a BAI key</p>
-                <p className="text-[10px] text-muted-foreground leading-relaxed">
-                  One <code className="bg-secondary px-0.5 rounded">bai_xxx</code> key unlocks the full <strong className="text-foreground">Grounded Intelligence</strong> pipeline — semantic NLI verification, cross-source consensus analysis, contradiction detection, Bayesian domain authority scoring, evidence-based confidence calibration, and multi-provider source diversity. Works across MCP, SDK, and API.
-                </p>
-              </div>
-
+            <div className="space-y-2">
+              <Input
+                placeholder="OpenRouter API key (required)"
+                value={openrouterKey}
+                onChange={(e) => setOpenrouterKey(e.target.value)}
+                className="text-xs max-w-md font-mono"
+                type="password"
+              />
+              <Input
+                placeholder="Tavily API key (required)"
+                value={tavilyKey}
+                onChange={(e) => setTavilyKey(e.target.value)}
+                className="text-xs max-w-md font-mono"
+                type="password"
+              />
               <div className="flex items-center gap-3">
                 <Input
                   placeholder="Key label (optional, e.g. 'cursor', 'production')"
@@ -155,7 +167,7 @@ export function ApiKeyManager() {
                 />
                 <Button
                   onClick={handleCreate}
-                  disabled={creating}
+                  disabled={creating || !openrouterKey.trim() || !tavilyKey.trim()}
                   className="gap-1.5 bg-accent text-accent-foreground hover:bg-accent/90"
                   size="sm"
                 >
@@ -163,10 +175,10 @@ export function ApiKeyManager() {
                   {creating ? "Generating..." : "Generate API Key"}
                 </Button>
               </div>
-              <p className="text-[11px] text-muted-foreground">
-                You'll get a single <code className="bg-secondary px-1 rounded">bai_xxx</code> key to use everywhere. 100 premium queries/day included free.
-              </p>
             </div>
+            <p className="text-xs text-muted-foreground">
+              Get your keys: <a href="https://openrouter.ai/keys" target="_blank" rel="noopener" className="text-accent hover:underline">OpenRouter</a> · <a href="https://app.tavily.com/home" target="_blank" rel="noopener" className="text-accent hover:underline">Tavily</a>
+            </p>
           </form>
 
           {/* Existing keys */}
