@@ -570,16 +570,16 @@ const Index = () => {
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ delay: 0.1, duration: 0.5 }}
+            transition={{ duration: 0.4 }}
             className="mt-24"
           >
             <div className="relative max-w-4xl mx-auto">
               {/* E2 Evidence Engine — center stage */}
               <motion.div
-                initial={{ opacity: 0, scale: 0.92 }}
+                initial={{ opacity: 0, scale: 0.95 }}
                 whileInView={{ opacity: 1, scale: 1 }}
                 viewport={{ once: true }}
-                transition={{ delay: 0.15, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+                transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
                 className="relative"
               >
                 {/* Outer glow rings */}
@@ -595,7 +595,7 @@ const Index = () => {
                     initial={{ opacity: 0, y: -10 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
-                    transition={{ delay: 0.3 }}
+                    transition={{ delay: 0.1 }}
                     className="flex justify-center mb-8"
                   >
                     <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-accent/10 border border-accent/20">
@@ -775,7 +775,7 @@ const Index = () => {
                       initial={{ opacity: 0, y: 10 }}
                       whileInView={{ opacity: 1, y: 0 }}
                       viewport={{ once: true }}
-                      transition={{ delay: 0.4, duration: 0.5 }}
+                      transition={{ delay: 0.15, duration: 0.4 }}
                     >
                       <h3 className="text-3xl md:text-4xl font-bold tracking-tight">
                         E<sup className="text-lg md:text-xl">2</sup> Evidence Engine
@@ -791,7 +791,7 @@ const Index = () => {
                       initial={{ opacity: 0, y: 10 }}
                       whileInView={{ opacity: 1, y: 0 }}
                       viewport={{ once: true }}
-                      transition={{ delay: 0.5, duration: 0.4 }}
+                      transition={{ delay: 0.2, duration: 0.3 }}
                       className="grid grid-cols-3 gap-4 mt-8 max-w-lg mx-auto"
                     >
                       {[
@@ -804,7 +804,7 @@ const Index = () => {
                           initial={{ opacity: 0, scale: 0.9 }}
                           whileInView={{ opacity: 1, scale: 1 }}
                           viewport={{ once: true }}
-                          transition={{ delay: 0.6 + i * 0.1 }}
+                          transition={{ delay: 0.25 + i * 0.06 }}
                           className="p-3 rounded-xl bg-accent/[0.04] border border-accent/10"
                         >
                           <div className="text-xl md:text-2xl font-bold text-accent">{stat.value}</div>
@@ -822,7 +822,7 @@ const Index = () => {
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ delay: 0.3, duration: 0.5 }}
+                transition={{ delay: 0.1, duration: 0.4 }}
                 className="mt-10"
               >
                 <h4 className="text-center text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-6">Three models. One mission. Evidence over guesswork.</h4>
@@ -866,7 +866,7 @@ const Index = () => {
                         initial={{ opacity: 0, y: 15 }}
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
-                        transition={{ delay: 0.4 + i * 0.12 }}
+                        transition={{ delay: 0.15 + i * 0.08 }}
                         className="relative p-5 rounded-xl border border-border bg-card hover:border-accent/15 transition-all duration-300"
                       >
                         <div className="flex items-center gap-3 mb-3">
@@ -903,7 +903,7 @@ const Index = () => {
                 initial={{ opacity: 0, y: 15 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ delay: 0.4 }}
+                transition={{ delay: 0.15 }}
                 className="mt-10 p-6 rounded-2xl bg-gradient-to-r from-accent/[0.04] via-accent/[0.08] to-accent/[0.04] border border-accent/15"
               >
                 <div className="flex flex-col md:flex-row items-center gap-6">
@@ -935,7 +935,7 @@ const Index = () => {
                 initial={{ opacity: 0, y: 10 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ delay: 0.5 }}
+                transition={{ delay: 0.2 }}
                 className="flex flex-wrap justify-center gap-2 mt-8"
               >
                 {[
@@ -958,7 +958,7 @@ const Index = () => {
                     initial={{ opacity: 0, scale: 0.9 }}
                     whileInView={{ opacity: 1, scale: 1 }}
                     viewport={{ once: true }}
-                    transition={{ delay: 0.55 + i * 0.04 }}
+                    transition={{ delay: 0.22 + i * 0.02 }}
                     className="px-3 py-1.5 rounded-full bg-card border border-border text-[10px] text-muted-foreground font-medium hover:border-accent/20 hover:text-accent transition-colors"
                   >
                     {step}
