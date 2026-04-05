@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, Shield, ShieldAlert, Globe, Quote, Bot, Clock, CheckCircle2, Code } from "lucide-react";
+import { ArrowLeft, Shield, ShieldAlert, Globe, Quote, Bot, Clock, CheckCircle2, Code, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { BrowseBadge } from "@/components/BrowseBadge";
@@ -19,9 +19,10 @@ const Compare = () => {
   const [loading, setLoading] = useState(false);
   const [showJson, setShowJson] = useState(false);
   const [showLoginGate, setShowLoginGate] = useState(false);
+  const [showApiKeyGate, setShowApiKeyGate] = useState(false);
   const { user, loading: authLoading } = useAuth();
 
-  // When user logs in after hitting demo limit, dismiss the gate and retry
+  // When a non-logged-in user logs in after hitting demo limit, dismiss the gate and retry
   useEffect(() => {
     if (user && showLoginGate) {
       setShowLoginGate(false);
@@ -38,7 +39,7 @@ const Compare = () => {
       .then(setResult)
       .catch((e) => {
         if (e.message?.includes("DEMO_LIMIT_REACHED")) {
-          setShowLoginGate(true);
+          if (user) { setShowApiKeyGate(true); } else { setShowLoginGate(true); }
         } else {
           setError(e.message);
         }
@@ -103,8 +104,8 @@ const Compare = () => {
           </div>
         )}
 
-        {/* Login gate */}
-        {showLoginGate && (
+        {/* Login gate (non-logged-in users) */}
+        {showLoginGate && !user && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="p-8 rounded-xl border border-accent/20 bg-card/60 backdrop-blur-sm text-center space-y-4">
             <Shield className="w-10 h-10 text-accent mx-auto animate-float" />
             <h3 className="text-lg font-semibold">Sign in to continue</h3>
@@ -113,8 +114,22 @@ const Compare = () => {
           </motion.div>
         )}
 
+        {/* API key gate (logged-in users without BAI key) */}
+        {showApiKeyGate && user && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="p-8 rounded-xl border border-accent/20 bg-card/60 backdrop-blur-sm text-center space-y-4">
+            <Zap className="w-10 h-10 text-accent mx-auto animate-float" />
+            <h3 className="text-lg font-semibold">Add an API key for unlimited access</h3>
+            <p className="text-sm text-muted-foreground max-w-md mx-auto">
+              You've used your free demo query. Generate a free API key to get <strong className="text-foreground">100 premium queries/day</strong> with full verification, citations, and confidence scores.
+            </p>
+            <Button onClick={() => navigate("/dashboard#api-keys")} className="bg-accent hover:bg-accent/90 text-accent-foreground">
+              Get your free API key
+            </Button>
+          </motion.div>
+        )}
+
         {/* Error */}
-        {error && !showLoginGate && (
+        {error && !showLoginGate && !showApiKeyGate && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}

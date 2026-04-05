@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import {
   ArrowLeft, Play, Loader2, CheckCircle2, XCircle, AlertTriangle,
   Globe, Copy, Check, Code2, ChevronDown, ChevronUp, ExternalLink,
-  ThumbsUp, ThumbsDown, Brain, FileText, Beaker, LogIn, Lock, Shield,
+  ThumbsUp, ThumbsDown, Brain, FileText, Beaker, LogIn, Lock, Shield, Zap,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -175,6 +175,7 @@ const Playground = () => {
   const [clarityEnabled, setClarityEnabled] = useState(false);
   const [clarityResult, setClarityResult] = useState<ClarityResult | null>(null);
   const [showLoginGate, setShowLoginGate] = useState(false);
+  const [showApiKeyGate, setShowApiKeyGate] = useState(false);
 
   // Streaming state (answer tab only)
   const [streamingText, setStreamingText] = useState("");
@@ -277,7 +278,7 @@ const Playground = () => {
       setResponse(result);
     } catch (e: any) {
       if (e.message?.includes("DEMO_LIMIT_REACHED")) {
-        setShowLoginGate(true);
+        if (user) { setShowApiKeyGate(true); } else { setShowLoginGate(true); }
       } else {
         setResponse({ error: e.message });
       }
@@ -575,8 +576,26 @@ const Playground = () => {
           </motion.div>
         )}
 
+        {/* API key gate: shown when logged-in user hits demo limit without BAI key */}
+        {showApiKeyGate && user && (
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="p-8 rounded-xl bg-card border border-border border-glow text-center space-y-4">
+            <div className="w-12 h-12 mx-auto rounded-full bg-accent/10 flex items-center justify-center animate-float">
+              <Zap className="w-6 h-6 text-accent" />
+            </div>
+            <h3 className="text-lg font-semibold">Add an API key for unlimited access</h3>
+            <p className="text-sm text-muted-foreground max-w-md mx-auto">
+              You've used your free demo query. Generate a free API key to get <strong className="text-foreground">100 premium queries/day</strong> with full verification, citations, and confidence scores.
+            </p>
+            <div className="pt-2">
+              <Button onClick={() => navigate("/dashboard#api-keys")} className="bg-accent hover:bg-accent/90 text-accent-foreground">
+                Get your free API key
+              </Button>
+            </div>
+          </motion.div>
+        )}
+
         {/* Error */}
-        {response?.error && !showLoginGate && (
+        {response?.error && !showLoginGate && !showApiKeyGate && (
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
