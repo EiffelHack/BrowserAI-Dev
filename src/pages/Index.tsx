@@ -607,8 +607,8 @@ const Index = () => {
                     </div>
                   </motion.div>
 
-                  {/* Neural network — bold E2 visualization (hidden on small mobile, simplified) */}
-                  <div className="relative w-full h-36 sm:h-44 md:h-52 mb-6 md:mb-8 hidden sm:block">
+                  {/* Neural network — bold E2 visualization */}
+                  <div className="relative w-full h-36 sm:h-44 md:h-52 mb-6 md:mb-8">
                     <svg className="absolute inset-0 w-full h-full" viewBox="0 0 600 180" fill="none">
                       <defs>
                         <radialGradient id="coreGlow" cx="50%" cy="50%" r="50%">
@@ -767,20 +767,6 @@ const Index = () => {
                         </circle>
                       </g>
                     </svg>
-                  </div>
-
-                  {/* Mobile-only: simple static pipeline flow */}
-                  <div className="sm:hidden flex items-center justify-center gap-2 mb-6 py-4">
-                    {["CLAIMS", "ENCODE", "ATTENTION", "CLASSIFY"].map((step, i) => (
-                      <div key={step} className="flex items-center gap-2">
-                        <div className={`px-2 py-1 rounded-md text-[8px] font-mono font-semibold tracking-wide ${
-                          step === "ATTENTION" ? "bg-accent/15 text-accent border border-accent/30" : "bg-secondary border border-border text-muted-foreground"
-                        }`}>{step}</div>
-                        {i < 3 && <ArrowRight className="w-3 h-3 text-accent/40" />}
-                      </div>
-                    ))}
-                    <ArrowRight className="w-3 h-3 text-emerald-400/60" />
-                    <div className="px-2 py-1 rounded-md bg-emerald-400/10 border border-emerald-400/25 text-[8px] font-mono font-bold text-emerald-400 tracking-wide">VERDICT</div>
                   </div>
 
                   {/* E2 Title */}
