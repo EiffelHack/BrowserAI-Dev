@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, Share2, GitCompare, Check, Zap, Brain, Shield, Loader2, CheckCircle2, AlertTriangle } from "lucide-react";
+import { ArrowLeft, Share2, GitCompare, Check, Zap, Brain, Shield, Loader2, CheckCircle2, AlertTriangle, ThumbsUp, ThumbsDown, Flag } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import type { BrowseResult } from "@/lib/api/browse";
-import { browseClarity, type ClarityResult } from "@/lib/api/browse";
+import { browseClarity, browseFeedback, type ClarityResult } from "@/lib/api/browse";
 import { streamAnswer, type TraceEvent, type SourcePreview, type StreamEvent, type PremiumQuota } from "@/lib/api/stream";
 import { StreamingAnswer } from "@/components/results/StreamingAnswer";
 import { FinalAnswer } from "@/components/results/FinalAnswer";
@@ -51,6 +51,9 @@ const Results = () => {
 
   // Clarity result (when clarity mode is on)
   const [clarityData, setClarityData] = useState<ClarityResult | null>(null);
+
+  // Feedback state
+  const [feedbackSent, setFeedbackSent] = useState<"good" | "bad" | "wrong" | null>(null);
 
   // Login gate: show modal when demo limit is reached (non-logged-in users)
   const [showLoginGate, setShowLoginGate] = useState(false);
@@ -99,6 +102,7 @@ const Results = () => {
     setError(null);
     setResult(null);
     setClarityData(null);
+    setFeedbackSent(null);
     setShowLoginGate(false);
     setShowApiKeyGate(false);
     setStreamingText("");
@@ -268,6 +272,55 @@ const Results = () => {
             {/* Final answer (once result is ready) */}
             {result && !loading && (
               <FinalAnswer answer={result.answer} confidence={result.confidence} />
+            )}
+
+            {/* Feedback bar */}
+            {result && !loading && result.shareId && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.6 }}
+                className="flex items-center gap-2"
+              >
+                <span className="text-xs text-muted-foreground/60">Was this helpful?</span>
+                <div className="flex gap-1">
+                  {([
+                    { rating: "good" as const, icon: ThumbsUp, label: "Good" },
+                    { rating: "bad" as const, icon: ThumbsDown, label: "Bad" },
+                    { rating: "wrong" as const, icon: Flag, label: "Wrong" },
+                  ]).map(({ rating, icon: Icon, label }) => (
+                    <Button
+                      key={rating}
+                      variant="ghost"
+                      size="sm"
+                      className={`h-7 px-2 text-xs gap-1.5 transition-all ${
+                        feedbackSent === rating
+                          ? "text-accent bg-accent/10"
+                          : feedbackSent
+                            ? "opacity-40 pointer-events-none"
+                            : "text-muted-foreground hover:text-foreground"
+                      }`}
+                      onClick={() => {
+                        if (feedbackSent) return;
+                        setFeedbackSent(rating);
+                        browseFeedback(result.shareId!, rating).catch(() => {});
+                      }}
+                    >
+                      <Icon className="w-3 h-3" />
+                      {label}
+                    </Button>
+                  ))}
+                </div>
+                {feedbackSent && (
+                  <motion.span
+                    initial={{ opacity: 0, x: -5 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    className="text-xs text-accent"
+                  >
+                    Thanks!
+                  </motion.span>
+                )}
+              </motion.div>
             )}
 
             {/* Depth fallback notice */}
