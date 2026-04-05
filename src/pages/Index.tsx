@@ -792,7 +792,7 @@ const Index = () => {
                       transition={{ delay: 0.15, duration: 0.4 }}
                     >
                       <h3 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight">
-                        E<sup className="text-sm sm:text-lg md:text-xl">2</sup> Evidence Engine
+                        E2 Evidence Engine
                       </h3>
                       <p className="text-sm sm:text-base text-muted-foreground mt-2 sm:mt-3 max-w-lg mx-auto">
                         Purpose-built NLI models fine-tuned on real verification data.
@@ -1377,7 +1377,7 @@ const Index = () => {
         <div className="max-w-4xl mx-auto">
           <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-16">
             <Badge variant="outline" className="text-xs font-normal mb-6">The Difference</Badge>
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">Raw LLM vs <span className="text-accent">E<sup className="text-base">2</sup> Evidence Engine</span></h2>
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">Raw LLM vs <span className="text-accent">E2 Evidence Engine</span></h2>
             <p className="text-muted-foreground">LLMs guess. E2 verifies. Your agent deserves the difference.</p>
           </motion.div>
 
@@ -1675,7 +1675,7 @@ result = client.ask("What causes aurora borealis?")`}</pre>
         <div className="absolute inset-0 grid-bg grid-bg-fade pointer-events-none opacity-20" />
         <div className="max-w-2xl mx-auto text-center space-y-6 relative">
           <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
-            <h2 className="text-2xl md:text-3xl font-bold mb-3">The E<sup className="text-base">2</sup> Evidence Engine is open — <span className="text-accent">and you can build on it.</span></h2>
+            <h2 className="text-2xl md:text-3xl font-bold mb-3">The E2 Evidence Engine is open — <span className="text-accent">and you can build on it.</span></h2>
             <p className="text-muted-foreground text-sm">
               Open source SDKs. Purpose-built verification models. Star the repo, join Discord, and help build the trust layer agents deserve.
             </p>
