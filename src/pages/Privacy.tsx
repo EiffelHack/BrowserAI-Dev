@@ -20,7 +20,7 @@ const Privacy = () => {
       <div className="max-w-3xl mx-auto px-6 py-12 space-y-8">
         <div>
           <h1 className="text-2xl font-bold mb-2">Privacy Policy</h1>
-          <p className="text-sm text-muted-foreground">Last updated: March 19, 2026</p>
+          <p className="text-sm text-muted-foreground">Last updated: April 5, 2026</p>
         </div>
 
         <div className="prose prose-invert prose-sm max-w-none space-y-6">
@@ -86,15 +86,16 @@ const Privacy = () => {
               <li><strong className="text-foreground">Query & result storage</strong> — Your queries, answers, claims, sources, and confidence scores are stored in our database. This data powers your query history, cached results, and the self-learning systems described below. Results are stored as long as your account is active (or until you delete them).</li>
               <li><strong className="text-foreground">Domain authority scores</strong> — We track how often claims from specific domains are successfully verified. Over time, this data adjusts domain trustworthiness scores via dynamic scoring. Only domain-level aggregates are computed (e.g., "wikipedia.org has an 82% verification rate across 500 queries").</li>
               <li><strong className="text-foreground">Self-learning pipeline</strong> — Verification thresholds, consensus scoring, and confidence weights automatically adapt based on aggregate query outcomes. For example, if a query type consistently shows low verification rates, the system adjusts its thresholds. This operates on aggregated patterns, not individual queries.</li>
+              <li><strong className="text-foreground">Verification model training</strong> — We use anonymized claim-evidence pairs from verification results to train and improve our proprietary evidence verification models (small classifier models, not LLMs). These models determine whether a piece of evidence supports, refutes, or is unrelated to a claim. Training data consists of claim text paired with source evidence text and a verification label — no user identifiers, API keys, or IP addresses are included in training data. This is how our verification accuracy improves over time.</li>
               <li><strong className="text-foreground">Feedback-driven calibration</strong> — When you rate a result as "good", "bad", or "wrong", that feedback is used to calibrate confidence scores via feedback-driven calibration — ensuring that a reported 75% confidence means approximately 75% actual accuracy. Feedback is stored with the result.</li>
               <li><strong className="text-foreground">Co-citation & source usefulness</strong> — We analyze which domains frequently appear together and which sources contribute the most verified claims, to improve source ranking for future queries.</li>
               <li><strong className="text-foreground">Cache</strong> — Results are cached (5 min for news, 30 min for general) to improve response times. All users benefit from the cache.</li>
             </ul>
             <p className="text-sm text-muted-foreground leading-relaxed">
-              <strong className="text-foreground">What we do NOT do:</strong> We do not sell your data. We do not share individual queries or results with third parties (beyond the search/LLM providers needed to process your request). We do not use your queries to train LLM models. Aggregate statistical improvements are computed from patterns across all queries — your individual queries are not exposed to other users.
+              <strong className="text-foreground">What we do NOT do:</strong> We do not sell your data. We do not share individual queries or results with third parties (beyond the search/LLM providers needed to process your request). We do not use your queries to train large language models (LLMs). Aggregate statistical improvements are computed from patterns across all queries — your individual queries are not exposed to other users.
             </p>
             <p className="text-sm text-muted-foreground leading-relaxed">
-              This data flywheel is a core part of how BrowseAI Dev improves over time. By using the managed service, you benefit from the collective verification data of all users — making every result more accurate. <strong className="text-foreground">Your data stays private</strong> — individual queries are never exposed to other users, and we do not use your queries to train LLM models. Only aggregate statistical patterns are used to improve domain authority scores and verification accuracy.
+              This data flywheel is a core part of how BrowseAI Dev improves over time. By using the managed service, you benefit from the collective verification data of all users — making every result more accurate. <strong className="text-foreground">Your data stays private</strong> — individual queries are never exposed to other users, and we do not use your queries to train large language models. Only aggregate patterns and anonymized claim-evidence pairs are used to improve domain authority scores, verification accuracy, and our evidence verification models.
             </p>
           </section>
 
