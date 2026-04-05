@@ -52,8 +52,10 @@ const Results = () => {
   // Clarity result (when clarity mode is on)
   const [clarityData, setClarityData] = useState<ClarityResult | null>(null);
 
-  // Login gate: show modal when demo limit is reached
+  // Login gate: show modal when demo limit is reached (non-logged-in users)
   const [showLoginGate, setShowLoginGate] = useState(false);
+  // API key gate: show prompt when logged-in user has no BAI key and hits limit
+  const [showApiKeyGate, setShowApiKeyGate] = useState(false);
 
   // Track whether we're in the "streaming tokens" phase
   const isStreamingTokens = loading && streamingText.length > 0;
@@ -83,11 +85,10 @@ const Results = () => {
     }
   };
 
-  // When user logs in after hitting demo limit, dismiss the gate and retry
+  // When a non-logged-in user logs in after hitting demo limit, dismiss the gate and retry
   useEffect(() => {
     if (user && showLoginGate) {
       setShowLoginGate(false);
-      // Trigger re-fetch by updating a dependency — navigate to same URL to re-run the query effect
       window.location.reload();
     }
   }, [user, showLoginGate]);
@@ -99,6 +100,7 @@ const Results = () => {
     setResult(null);
     setClarityData(null);
     setShowLoginGate(false);
+    setShowApiKeyGate(false);
     setStreamingText("");
     setTraceSteps([]);
     setPreviewSources([]);
@@ -129,7 +131,7 @@ const Results = () => {
         })
         .catch((e) => {
           if (e.message?.includes("DEMO_LIMIT_REACHED")) {
-            setShowLoginGate(true);
+            if (user) { setShowApiKeyGate(true); } else { setShowLoginGate(true); }
           } else {
             setError(e.message);
           }
@@ -144,7 +146,7 @@ const Results = () => {
         })
         .catch((e) => {
           if (e.message?.includes("DEMO_LIMIT_REACHED")) {
-            setShowLoginGate(true);
+            if (user) { setShowApiKeyGate(true); } else { setShowLoginGate(true); }
           } else {
             setError(e.message);
           }
@@ -299,7 +301,25 @@ const Results = () => {
               </motion.div>
             )}
 
-            {error && !showLoginGate && (
+            {/* API key gate: shown when logged-in user hits demo limit without BAI key */}
+            {showApiKeyGate && user && (
+              <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="p-8 rounded-xl bg-card border border-border text-center space-y-4 transition-all duration-300 hover:border-accent/20 hover:shadow-lg hover:shadow-accent/5">
+                <div className="w-12 h-12 mx-auto rounded-full bg-accent/10 flex items-center justify-center glow-pulse">
+                  <Zap className="w-6 h-6 text-accent" />
+                </div>
+                <h3 className="text-lg font-semibold">Add an API key for unlimited access</h3>
+                <p className="text-sm text-muted-foreground max-w-md mx-auto">
+                  You've used your free demo query. Generate a free API key to get <strong className="text-foreground">100 premium queries/day</strong> with full verification, citations, and confidence scores.
+                </p>
+                <div className="pt-2">
+                  <Button onClick={() => navigate("/dashboard#api-keys")} className="bg-accent hover:bg-accent/90 text-accent-foreground">
+                    Get your free API key
+                  </Button>
+                </div>
+              </motion.div>
+            )}
+
+            {error && !showLoginGate && !showApiKeyGate && (
               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="p-6 rounded-xl bg-destructive/10 border border-destructive/20 text-destructive text-center transition-all duration-300 hover:border-destructive/30 hover:shadow-lg hover:shadow-destructive/5">
                 {error}
               </motion.div>
