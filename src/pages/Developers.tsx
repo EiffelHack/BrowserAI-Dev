@@ -112,10 +112,10 @@ const ROADMAP_ITEMS = [
     done: false,
   },
   {
-    phase: "Coming Soon",
-    title: "Purpose-Built Verification Model",
-    desc: "Custom-trained. Domain-calibrated. 10x faster than general-purpose.",
-    done: false,
+    phase: "Shipped",
+    title: "E2 Verification Models",
+    desc: "E2-Small deployed: 93.1% accuracy, 93.0% F1 macro. Fine-tuned on 2.39M examples. ONNX on CPU — zero inference cost.",
+    done: true,
   },
 ];
 
