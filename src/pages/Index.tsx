@@ -901,33 +901,45 @@ const Index = () => {
                   {[
                     {
                       name: "E2-Small",
-                      model: "Fine-tuned NLI model",
+                      model: "DeBERTa-v3-small fine-tuned",
                       params: "44M params",
                       speed: "~8ms",
                       mode: "Fast mode",
-                      desc: "Fine-tuned for instant verification. Sub-10ms latency on CPU — built for real-time agents.",
+                      accuracy: "93.1%",
+                      f1: "93.0%",
+                      baseline: "87.6%",
+                      desc: "Fine-tuned on 2.39M verification examples. Sub-10ms on CPU — built for real-time agents.",
                       color: "emerald",
                       icon: Zap,
+                      deployed: true,
                     },
                     {
                       name: "E2-Base",
-                      model: "Fine-tuned NLI model",
+                      model: "DeBERTa-v3-base fine-tuned",
                       params: "86M params",
                       speed: "~25ms",
                       mode: "Thorough mode",
-                      desc: "Fine-tuned production workhorse. Best accuracy-to-speed ratio for research tasks.",
+                      accuracy: "Training",
+                      f1: "",
+                      baseline: "",
+                      desc: "Production workhorse. Best accuracy-to-speed ratio for thorough research tasks.",
                       color: "accent",
                       icon: Shield,
+                      deployed: false,
                     },
                     {
                       name: "E2-Large",
-                      model: "Fine-tuned NLI model",
+                      model: "DeBERTa-v3-large fine-tuned",
                       params: "304M params",
                       speed: "~80ms",
                       mode: "Deep mode",
-                      desc: "Fine-tuned for maximum accuracy on high-stakes decisions. Multi-pass cross-verification.",
+                      accuracy: "Training",
+                      f1: "",
+                      baseline: "",
+                      desc: "Maximum accuracy for high-stakes decisions. Multi-pass cross-verification.",
                       color: "purple",
                       icon: Brain,
+                      deployed: false,
                     },
                   ].map((tier, i) => {
                     const TierIcon = tier.icon;
@@ -953,8 +965,25 @@ const Index = () => {
                             <span className="text-[10px] text-muted-foreground font-mono">{tier.model}</span>
                           </div>
                         </div>
+                        {tier.deployed && tier.f1 && (
+                          <div className="mb-3 p-2.5 rounded-lg bg-emerald-400/5 border border-emerald-400/10">
+                            <div className="flex items-center justify-between text-[10px] mb-1.5">
+                              <span className="text-muted-foreground">F1 Macro</span>
+                              <span className="font-mono font-bold text-emerald-400">{tier.f1}</span>
+                            </div>
+                            <div className="w-full h-1.5 bg-secondary rounded-full overflow-hidden">
+                              <div className="h-full bg-emerald-400 rounded-full" style={{ width: tier.f1 }} />
+                            </div>
+                            <p className="text-[9px] text-muted-foreground/60 mt-1">vs {tier.baseline} off-the-shelf (+5.4% F1)</p>
+                          </div>
+                        )}
+                        {!tier.deployed && (
+                          <div className="mb-3 p-2.5 rounded-lg bg-secondary/50 border border-border">
+                            <span className="text-[10px] text-muted-foreground font-mono">{tier.accuracy}</span>
+                          </div>
+                        )}
                         <p className="text-xs text-muted-foreground leading-relaxed mb-4">{tier.desc}</p>
-                        <div className="flex items-center gap-3 text-[10px]">
+                        <div className="flex items-center gap-2 text-[10px] flex-wrap">
                           <span className="px-2 py-0.5 rounded-full bg-secondary border border-border font-mono">{tier.params}</span>
                           <span className="px-2 py-0.5 rounded-full bg-secondary border border-border font-mono">{tier.speed}/claim</span>
                           <span className={`px-2 py-0.5 rounded-full font-medium ${
@@ -1465,13 +1494,13 @@ const Index = () => {
               </div>
               <ul className="space-y-3 text-sm">
                 {[
-                  "Fine-tuned NLI verification models",
+                  "93% F1 — fine-tuned NLI models (vs 87.6% off-the-shelf)",
                   "2.39M+ real training examples & growing",
                   "Atomic claim decomposition",
                   "Bayesian domain authority scoring",
                   "8-factor confidence, isotonic calibration",
-                  "BM25 + dense embeddings + RRF fusion",
-                  "3 models — E2-Small, Base, Large",
+                  "BM25 + NLI entailment + RRF fusion",
+                  "3 models — E2-Small (deployed), Base, Large",
                   "Self-improving with every query",
                 ].map((item, i) => (
                   <motion.li key={i} initial={{ opacity: 0, x: 10 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.05 }} className="flex items-start gap-2.5 py-1">
