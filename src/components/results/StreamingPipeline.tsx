@@ -14,6 +14,8 @@ const STEP_ICONS: Record<string, React.ReactNode> = {
   "Analyzing": <Brain className="w-4 h-4" />,
   "Extract Claims": <Brain className="w-4 h-4" />,
   "Verify Evidence": <Shield className="w-4 h-4" />,
+  "NLI Scoring": <Sparkles className="w-4 h-4" />,
+  "Contradiction Detection": <GitMerge className="w-4 h-4" />,
   "Cross-Source Consensus": <GitMerge className="w-4 h-4" />,
   "Build Evidence Graph": <Globe className="w-4 h-4" />,
   "Generate Answer": <Sparkles className="w-4 h-4" />,
@@ -110,6 +112,8 @@ const STEP_DISPLAY: Record<string, string> = {
   "Analyzing": "Extracting claims",
   "Extract Claims": "Extracting claims",
   "Verify Evidence": "Verifying against evidence",
+  "NLI Scoring": "Semantic entailment scoring",
+  "Contradiction Detection": "Detecting contradictions",
   "Cross-Source Consensus": "Cross-referencing sources",
   "Build Evidence Graph": "Mapping the evidence",
   "Generate Answer": "Synthesizing findings",
@@ -220,8 +224,8 @@ function GroupRow({ group }: { group: Extract<GroupedStep, { type: "group" }> })
 // ── Pill-based pipeline (same style as Playground's PipelineSteps) ──
 
 const PIPELINE_STEPS = {
-  fast: ["Search Web", "Fetch Pages", "Extract Claims", "Verify Evidence", "Generate Answer"],
-  thorough: ["Search Web", "Fetch Pages", "Extract & Verify", "Rephrase Query", "Second Pass", "Select Best"],
+  fast: ["Search Web", "Fetch Pages", "Extract Claims", "NLI Scoring", "Verify Evidence", "Generate Answer"],
+  thorough: ["Search Web", "Fetch Pages", "Extract & Verify", "NLI Scoring", "Rephrase Query", "Second Pass", "Select Best"],
 };
 
 function PipelinePills({ depth, done }: { depth: "fast" | "thorough"; done: boolean }) {
