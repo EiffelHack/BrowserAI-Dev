@@ -942,22 +942,6 @@ const Index = () => {
                   })}
                 </div>
 
-                {/* Pipeline note - the real moat */}
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: 0.3 }}
-                  className="mt-4 p-4 rounded-xl border border-accent/15 bg-accent/[0.03]"
-                >
-                  <div className="flex items-center gap-2 mb-1">
-                    <Layers className="w-3.5 h-3.5 text-accent" />
-                    <h5 className="text-xs font-bold">The pipeline is the engine.</h5>
-                  </div>
-                  <p className="text-[11px] text-muted-foreground leading-relaxed">
-                    NLI is one component. The Evidence Engine is everything around it.
-                  </p>
-                </motion.div>
               </motion.div>
 
               {/* Coming soon: fine-tuning + flywheel */}
