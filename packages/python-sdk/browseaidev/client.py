@@ -201,6 +201,34 @@ class BrowseAIDev:
         data = self._post("/browse/compare", {"query": query})
         return CompareResult(**data)
 
+    def verify_document(
+        self,
+        text: str,
+        *,
+        title: str | None = None,
+        depth: str = "fast",
+        max_claims: int = 20,
+    ) -> dict:
+        """Fact-check an entire document.
+
+        Extracts every atomic claim from the document and verifies each against
+        live web sources via the Evidence Engine pipeline. Returns a per-claim
+        verification report with sources, NLI scores, and an overall A-F grade.
+
+        Args:
+            text: The document text to verify (50-50000 characters).
+            title: Optional document title for context.
+            depth: "fast" for quick triage, "thorough" for high-stakes audits.
+            max_claims: Maximum claims to extract and verify (1-50).
+
+        Returns:
+            Dict with summary stats and per-claim verification details.
+        """
+        body: dict = {"text": text, "depth": depth, "maxClaims": max_claims}
+        if title:
+            body["title"] = title
+        return self._post("/browse/verify-document", body)
+
     def clarity(
         self,
         prompt: str,
@@ -482,6 +510,20 @@ class AsyncBrowseAIDev:
     async def compare(self, query: str) -> CompareResult:
         data = await self._post("/browse/compare", {"query": query})
         return CompareResult(**data)
+
+    async def verify_document(
+        self,
+        text: str,
+        *,
+        title: str | None = None,
+        depth: str = "fast",
+        max_claims: int = 20,
+    ) -> dict:
+        """Fact-check an entire document. See sync version for details."""
+        body: dict = {"text": text, "depth": depth, "maxClaims": max_claims}
+        if title:
+            body["title"] = title
+        return await self._post("/browse/verify-document", body)
 
     async def clarity(
         self,

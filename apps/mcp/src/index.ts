@@ -8,7 +8,7 @@ import { createServer } from "node:http";
 import { randomUUID } from "node:crypto";
 
 // --- Constants (inlined for standalone npm package) ---
-const VERSION = "0.3.3";
+const VERSION = "0.4.0";
 
 // --- BrowseAI Dev API key (required) ---
 const BROWSE_API_KEY = process.env.BROWSE_API_KEY;
@@ -39,6 +39,7 @@ if (args.includes("--help") || args.includes("-h")) {
     browse_extract         Extract structured knowledge from a page
     browse_answer          Full pipeline: search + extract + answer
     browse_compare         Compare raw LLM vs evidence-backed answer
+    browse_verify_document Fact-check an entire document (report, analysis, article)
     browse_clarity         Clarity: anti-hallucination answer engine (fast LLM or verified with web fusion)
     browse_session_create  Create a research session (persistent memory)
     browse_session_ask     Research within a session (recalls prior knowledge)
@@ -171,6 +172,24 @@ function registerTools(server: McpServer) {
     { query: z.string() },
     async ({ query }) => {
       const result = await apiCall("/browse/compare", { query });
+      return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+    }
+  );
+  server.tool(
+    "browse_verify_document",
+    "Fact-check an entire document (AI-generated report, competitive analysis, market research, news article). Extracts every atomic claim and verifies each against live web sources. Returns a per-claim verification status with sources, NLI scores, and an overall A-F grade. Use for auditing the accuracy of long-form content from other AI agents.",
+    {
+      text: z.string().describe("The full document text to verify (50-50000 chars)"),
+      title: z.string().optional().describe("Optional document title for context"),
+      depth: z.enum(["fast", "thorough"]).optional().describe("'fast' (default) for quick triage, 'thorough' for high-stakes audits"),
+      maxClaims: z.number().int().optional().describe("Maximum claims to extract and verify (default 20, max 50)"),
+    },
+    async ({ text, title, depth, maxClaims }) => {
+      const body: Record<string, unknown> = { text };
+      if (title) body.title = title;
+      if (depth) body.depth = depth;
+      if (maxClaims) body.maxClaims = maxClaims;
+      const result = await apiCall("/browse/verify-document", body);
       return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
     }
   );
