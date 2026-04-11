@@ -592,13 +592,7 @@ const Index = () => {
                 transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
                 className="relative"
               >
-                {/* Outer glow rings — subtle */}
-                <div className="absolute inset-0 bg-accent/5 rounded-2xl blur-[60px] -z-10" />
-                <div className="absolute -inset-4 bg-accent/[0.02] rounded-[30px] blur-2xl -z-10" />
-
-                <div className="relative p-4 sm:p-5 md:p-6 rounded-xl sm:rounded-2xl bg-gradient-to-b from-accent/[0.08] via-accent/[0.03] to-transparent border border-accent/20 overflow-hidden">
-                  {/* Background grid pattern */}
-                  <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: "radial-gradient(circle at 1px 1px, currentColor 1px, transparent 0)", backgroundSize: "24px 24px" }} />
+                <div className="relative overflow-hidden">
 
                   {/* E2 badge */}
                   <motion.div

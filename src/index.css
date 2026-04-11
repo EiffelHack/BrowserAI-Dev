@@ -89,14 +89,9 @@
   100% { left: calc(100% + 8px); opacity: 0; }
 }
 
-/* ── Subtle glow pulse on accent elements ── */
-@keyframes glowPulse {
-  0%, 100% { box-shadow: 0 0 20px -5px hsl(150 60% 45% / 0.15); }
-  50% { box-shadow: 0 0 40px -5px hsl(150 60% 45% / 0.3); }
-}
-
+/* ── Subtle glow on accent elements (no pulse — static, minimal) ── */
 .glow-pulse {
-  animation: glowPulse 3s ease-in-out infinite;
+  box-shadow: 0 0 15px -5px hsl(150 60% 45% / 0.08);
 }
 
 /* ── Respect reduced motion ── */
@@ -119,14 +114,9 @@
   }
 }
 
-/* ── Animated gradient border ── */
-@keyframes borderGlow {
-  0%, 100% { border-color: hsl(150 60% 45% / 0.2); }
-  50% { border-color: hsl(150 60% 45% / 0.5); }
-}
-
+/* ── Subtle border accent (no animation) ── */
 .border-glow {
-  animation: borderGlow 3s ease-in-out infinite;
+  border-color: hsl(150 60% 45% / 0.15);
 }
 
 /* ── Grid background pattern ── */
@@ -233,48 +223,16 @@
   100% { transform: rotate(360deg); }
 }
 
+/* ── Accent border (static, no animation) ── */
 .gradient-border {
   position: relative;
   background: hsl(var(--card));
-  border: 1px solid transparent;
-  background-clip: padding-box;
+  border: 1px solid hsl(150 60% 45% / 0.15);
 }
 
-.gradient-border::before {
-  content: '';
-  position: absolute;
-  inset: -1px;
-  border-radius: inherit;
-  /* Fallback: static gradient for browsers without @property */
-  background: conic-gradient(from 0deg, hsl(150 60% 45% / 0.3), transparent 40%, hsl(150 60% 45% / 0.3), transparent 80%);
-  -webkit-mask-image: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  -webkit-mask-composite: xor;
-  mask-image: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  mask-composite: exclude;
-  padding: 1px;
-  pointer-events: none;
-  /* Fallback animation uses transform rotation on the whole pseudo-element */
-  animation: rotate-gradient-fallback 4s linear infinite;
-  will-change: transform;
-}
-
-/* Progressive enhancement: browsers that support @property get the smooth conic-gradient animation */
-@supports (background: conic-gradient(from var(--angle), red, blue)) {
-  .gradient-border::before {
-    background: conic-gradient(from var(--angle), hsl(150 60% 45% / 0.3), transparent 40%, hsl(150 60% 45% / 0.3), transparent 80%);
-    animation: rotate-gradient 4s linear infinite;
-    will-change: auto;
-  }
-}
-
-/* ── Pulsing dot ── */
-@keyframes dotPulse {
-  0%, 100% { opacity: 0.4; transform: scale(1); }
-  50% { opacity: 1; transform: scale(1.2); }
-}
-
+/* ── Dot (static, no pulse) ── */
 .dot-pulse {
-  animation: dotPulse 2s ease-in-out infinite;
+  opacity: 0.7;
 }
 
 /* ── Card lift on hover ── */
