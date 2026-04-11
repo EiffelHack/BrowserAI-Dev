@@ -46,17 +46,35 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => subscription.unsubscribe();
   }, []);
 
+  // Validate redirect path to prevent open redirect attacks
+  const safeRedirectUrl = (redirectTo?: string): string => {
+    if (!redirectTo) return window.location.origin;
+    // Strip to pathname only — never allow external URLs
+    try {
+      const url = new URL(redirectTo, window.location.origin);
+      // Only allow same-origin redirects
+      if (url.origin !== window.location.origin) return window.location.origin;
+      return `${window.location.origin}${url.pathname}${url.search}`;
+    } catch {
+      // If parsing fails, only allow paths starting with /
+      if (/^\/[a-zA-Z0-9/_\-?&=%.]*$/.test(redirectTo)) {
+        return `${window.location.origin}${redirectTo}`;
+      }
+      return window.location.origin;
+    }
+  };
+
   const signInWithGoogle = async (redirectTo?: string) => {
     await supabase.auth.signInWithOAuth({
       provider: "google",
-      options: { redirectTo: redirectTo ? `${window.location.origin}${redirectTo}` : window.location.origin },
+      options: { redirectTo: safeRedirectUrl(redirectTo) },
     });
   };
 
   const signInWithGitHub = async (redirectTo?: string) => {
     await supabase.auth.signInWithOAuth({
       provider: "github",
-      options: { redirectTo: redirectTo ? `${window.location.origin}${redirectTo}` : window.location.origin },
+      options: { redirectTo: safeRedirectUrl(redirectTo) },
     });
   };
 

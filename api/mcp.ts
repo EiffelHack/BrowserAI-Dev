@@ -99,7 +99,8 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
   }
 
   // Users must bring their own API key via headers
-  const apiKey = (req.headers["x-api-key"] || req.headers["authorization"]?.replace("Bearer ", "") || "") as string;
+  const bearerMatch = req.headers["authorization"]?.match(/^Bearer\s+(.+)$/);
+  const apiKey = (req.headers["x-api-key"] || bearerMatch?.[1] || "") as string;
   if (!apiKey) {
     res.setHeader("Content-Type", "application/json");
     res.statusCode = 401;
