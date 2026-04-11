@@ -379,8 +379,7 @@ const Developers = () => {
                 they can use BrowseAI Dev to actually verify their findings against real sources before writing a single line of code.
               </p>
               <p>
-                This is open source because research infrastructure for AI shouldn't be owned by one company.
-                It should be transparent, auditable, and community-driven.
+                Our MCP server, Python SDK, and integrations are open source. The verification engine is hosted as a service.
               </p>
               <p className="text-foreground font-medium">
                 If you believe AI should be honest, you're in the right place.
