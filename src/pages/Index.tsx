@@ -1712,9 +1712,9 @@ result = client.ask("What causes aurora borealis?")`}</pre>
         <div className="absolute inset-0 grid-bg grid-bg-fade pointer-events-none opacity-20" />
         <div className="max-w-2xl mx-auto text-center space-y-6 relative">
           <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
-            <h2 className="text-2xl md:text-3xl font-bold mb-3">The E2 Evidence Engine is open — <span className="text-accent">and you can build on it.</span></h2>
+            <h2 className="text-2xl md:text-3xl font-bold mb-3">Build on <span className="text-accent">BrowseAI Dev.</span></h2>
             <p className="text-muted-foreground text-sm">
-              Open source SDKs. Purpose-built verification models. Star the repo, join Discord, and help build the trust layer agents deserve.
+              Open source MCP server, Python SDK, and REST API. Add verified research to any agent in minutes. Star the repo, join Discord, and help build the trust layer agents deserve.
             </p>
           </motion.div>
           <motion.div

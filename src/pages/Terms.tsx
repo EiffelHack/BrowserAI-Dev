@@ -62,7 +62,7 @@ const Terms = () => {
               <li>Use the Service for any illegal purpose</li>
               <li>Attempt to circumvent rate limits or access controls</li>
               <li>Use the Service to generate spam, misinformation, or harmful content</li>
-              <li>Reverse engineer the hosted API (the source code is open — just read it)</li>
+              <li>Reverse engineer the hosted verification engine</li>
               <li>Overwhelm the Service with excessive automated requests beyond reasonable use</li>
             </ul>
           </section>
